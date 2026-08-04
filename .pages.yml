@@ -18,8 +18,8 @@ content:
       - { name: image, label: Main Header Image, type: image }
       - name: gallery
         label: Image Gallery
-        type: list
-        field: { type: image }
+        type: image
+        list: true
       - { name: artistStatement, label: Artist Statement, type: rich-text }
       - { name: exhibitions, label: Exhibitions, type: rich-text }
       - { name: acknowledgements, label: Acknowledgements, type: rich-text }
