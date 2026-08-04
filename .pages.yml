@@ -15,7 +15,7 @@ content:
       - { name: year, label: Year, type: string }
       - { name: premiereCity, label: Premiere City, type: string }
       - { name: tagline, label: Tagline, type: string }
-      - { name: image, label: Main Header Image, type: image }
+      - { name: image, label: Main Image, type: image }
       - name: gallery
         label: Image Gallery
         type: image
