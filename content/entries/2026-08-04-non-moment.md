@@ -3,6 +3,11 @@ title: Non-moment
 year: "2025"
 premiereCity: Taiwan
 tagline: Video
+image: /assets/NM1.jpg
+gallery:
+  - /assets/NM2.jpg
+  - /assets/NM3.jpg
+  - /assets/NM4.jpg
 artistStatement: "“Several decades from now before I go, I want my eyes to
   flash: mom and the pillowfort she made to nest her playful toddler one yellow
   afternoon, dad's laugh at his own joke, the thick Manila rain that preceded
