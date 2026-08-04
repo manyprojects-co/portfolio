@@ -3,6 +3,13 @@ title: EMERGE:NCY
 year: "2023"
 premiereCity: London
 tagline: Site-specific video art
+image: /assets/EM1.jpg
+gallery:
+  - /assets/EM2.jpg
+  - /assets/EM3.jpg
+  - /assets/EM4.jpg
+  - /assets/EM5.jpg
+  - /assets/EM6-1.jpg
 artistStatement: >-
   EMERGE:NCY is an embodied reaction to the encroaching structural determinism
   of city life within the systems and expectations that entrap us. It is a
