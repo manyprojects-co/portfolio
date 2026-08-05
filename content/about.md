@@ -30,9 +30,9 @@ awardsCommissions: |-
 pressMentions: |-
   2025 - A Youngish Perspective / [Review: Alternative Roots Festival](https://ayoungishperspective.co.uk/2025/11/11/review-alternative-roots-festival/?noamp=mobile)
 
-  2023 - Ocula / [Winning the Public Vote Prize](https://ocula.com/magazine/art-news/cemile-sahin-wins-circa-prize-2023/)
+  2023 - Ocula / [Winning the Public Vote Prize for EMERGE:NCY](https://ocula.com/magazine/art-news/cemile-sahin-wins-circa-prize-2023/)
 
-  2023 - Wallpaper / [Public Vote Prize for EMERGE:NCY](https://www.wallpaper.com/art/circa-prize-2023-cemile-sahin-piccadilly-london)
+  2023 - Wallpaper / [Winning the Public Vote Prize for EMERGE:NCY](https://www.wallpaper.com/art/circa-prize-2023-cemile-sahin-piccadilly-london)
 
   2023 - Artplugged / [Shortlist for CIRCA2023](https://artplugged.co.uk/30-global-artists-shortlisted-for-the-circa-prize-2023/)
 
