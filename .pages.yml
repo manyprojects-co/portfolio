@@ -23,3 +23,42 @@ content:
       - { name: artistStatement, label: Artist Statement, type: rich-text }
       - { name: exhibitions, label: Exhibitions, type: rich-text }
       - { name: acknowledgements, label: Acknowledgements, type: rich-text }
+
+  - name: artworks
+    label: Artworks
+    type: collection
+    path: content/artworks
+    view:
+      fields: [image, title, year]
+    fields:
+      - { name: title, label: Title, type: string, required: true }
+      - { name: year, label: Year, type: string }
+      - { name: premiereCity, label: Premiere City, type: string }
+      - { name: tagline, label: Tagline, type: string }
+      - { name: image, label: Main Image, type: image }
+      - name: gallery
+        label: Image Gallery
+        type: image
+        list: true
+      - { name: artistStatement, label: Artist Statement, type: rich-text }
+      - { name: exhibitions, label: Exhibitions, type: rich-text }
+      - { name: acknowledgements, label: Acknowledgements, type: rich-text }
+
+  - name: news
+    label: News
+    type: collection
+    path: content/news
+    view:
+      fields: [image, title, year]
+    fields:
+      - { name: title, label: Title, type: string, required: true }
+      - { name: year, label: Year, type: string }
+      - { name: location, label: Location, type: string }
+      - { name: city, label: City, type: string }
+      - { name: eventType, label: Event Type, type: string }
+      - { name: image, label: Main Image, type: image }
+      - name: gallery
+        label: Image Gallery
+        type: image
+        list: true
+      - { name: statement, label: Statement, type: rich-text }
