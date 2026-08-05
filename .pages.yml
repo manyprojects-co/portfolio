@@ -3,6 +3,7 @@ media:
   output: /assets
   categories: ["image"]
 
+content:
   - name: artworks
     label: Artworks
     type: collection
