@@ -11,7 +11,8 @@ statement: >-
   animation to transition into next. Prior to recent breakthroughs in video
   generation, branching a complex scene into several alternate paths at this
   degree of seamlessness would have been close to impossible.  
-    
+
+
   Previous iteration of the interaction used Unity to simulate characters
   casting shadows in the SF Asian Art Museum. Those procedural techniques
   yielded uniquely responsive character animations, but at best they moved like
@@ -20,4 +21,5 @@ statement: >-
 
 
   *Curated by So-Yeon Yoon, supported by Cornell Council for the Arts.*
+image: /assets/PSH7.jpg
 ---
