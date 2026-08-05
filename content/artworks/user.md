@@ -1,6 +1,8 @@
 ---
 title: User
 year: "2026"
+featured: true
+featureOrder: 4
 premiereCity: Stockholm
 tagline: Kinetic sculpture
 exhibitions: Helix Art Space (Stockholm), 2026
