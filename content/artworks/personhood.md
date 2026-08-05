@@ -1,6 +1,8 @@
 ---
 title: Personhood
 year: 2024 - 2026
+featured: true
+featureOrder: 2
 premiereCity: San Francisco
 tagline: Interactive projection-mapped installation
 exhibitions: |-
