@@ -4,10 +4,10 @@ media:
   categories: ["image"]
 
 content:
-  - name: artworks
-    label: Artworks
+  - name: entries
+    label: Entries
     type: collection
-    path: content/artworks
+    path: content/entries
     view:
       fields: [image, title, year]
     fields:
