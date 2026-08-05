@@ -1,6 +1,7 @@
 ---
 title: Box Body
 year: "2023"
+featured: false
 premiereCity: Singapore
 tagline: Site-specific installation
 exhibitions: |-
@@ -23,10 +24,10 @@ acknowledgements: >-
 
   **Special thanks to:** Gary Hong (Ten Square Singapore), Ina Conradi (NTU’s
   School of Art Design and Media). image: /assets/BB1-1.jpg
-image: /assets/BB2-1.jpg
+image: /assets/BB3.jpg
 gallery:
-  - /assets/BB2-1.jpg
-  - /assets/BB3-1.jpg
-  - /assets/BB4-1.jpg
   - /assets/BB1.jpg
+  - /assets/BB3.jpg
+  - /assets/BB2.jpg
+  - /assets/BB4-1.jpg
 ---
