@@ -69,7 +69,7 @@ content:
     path: content/about.md
     fields:
       - { name: bio, label: Bio, type: rich-text }
-      - { name: awardsCommissions, label: Awards & Commissions, type: rich-text }
       - { name: exhibitionsAppearances, label: Exhibitions & Appearances, type: rich-text }
+      - { name: awardsCommissions, label: Awards & Commissions, type: rich-text }
       - { name: pressMentions, label: Press & Mentions, type: rich-text }
       - { name: image, label: Profile / Header Image, type: image }
