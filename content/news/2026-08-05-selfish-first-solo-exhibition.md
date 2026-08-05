@@ -1,5 +1,5 @@
 ---
-title: "Self—ish: first solo exhibition"
+title: Self—ish
 year: March 2026
 location: Helix Art Space
 city: Stockholm, Sweden
