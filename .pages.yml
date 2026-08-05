@@ -15,8 +15,8 @@ content:
       - { name: year, label: Year, type: string }
       - { name: premiereCity, label: Premiere City, type: string }
       - { name: tagline, label: Tagline, type: string }
-      - { name: artistStatement, label: Artist Statement, type: rich-text }
       - { name: exhibitions, label: Exhibitions, type: rich-text }
+      - { name: artistStatement, label: Artist Statement, type: rich-text }
       - { name: acknowledgements, label: Acknowledgements, type: rich-text }
       - { name: image, label: Main Image, type: image }
       - name: gallery
