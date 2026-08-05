@@ -16,15 +16,17 @@ content:
       - { name: pressMentions, label: Press & Mentions, type: rich-text }
       - { name: image, label: Profile Image, type: image }
       
-  - name: artworks
+- name: artworks
     label: Artworks
     type: collection
     path: content/artworks
     view:
-      fields: [image, title, year]
+      fields: [image, title, year, featured]
     fields:
       - { name: title, label: Title, type: string, required: true }
       - { name: year, label: Year, type: string }
+      - { name: featured, label: Featured on Front Page?, type: boolean }
+      - { name: featureOrder, label: Feature Display Order, type: number }
       - { name: premiereCity, label: Premiere City, type: string }
       - { name: tagline, label: Tagline, type: string }
       - { name: exhibitions, label: Exhibitions, type: rich-text }
