@@ -2,7 +2,7 @@
 title: EMERGE:NCY
 year: "2023"
 featured: true
-featureOrder: 2
+featureOrder: 3
 premiereCity: London
 tagline: Site-specific video art
 exhibitions: "CIRCA2023 / London, Milan, and Berlin  "
