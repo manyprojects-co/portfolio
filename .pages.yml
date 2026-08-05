@@ -4,6 +4,18 @@ media:
   categories: ["image"]
 
 content:
+
+  - name: about
+    label: About
+    type: file
+    path: content/about.md
+    fields:
+      - { name: bio, label: Bio, type: rich-text }
+      - { name: exhibitionsAppearances, label: Exhibitions & Appearances, type: rich-text }
+      - { name: awardsCommissions, label: Awards & Commissions, type: rich-text }
+      - { name: pressMentions, label: Press & Mentions, type: rich-text }
+      - { name: image, label: Profile Image, type: image }
+      
   - name: artworks
     label: Artworks
     type: collection
@@ -42,14 +54,3 @@ content:
         label: Image Gallery
         type: image
         list: true
-
-  - name: about
-    label: About
-    type: file
-    path: content/about.md
-    fields:
-      - { name: bio, label: Bio, type: rich-text }
-      - { name: exhibitionsAppearances, label: Exhibitions & Appearances, type: rich-text }
-      - { name: awardsCommissions, label: Awards & Commissions, type: rich-text }
-      - { name: pressMentions, label: Press & Mentions, type: rich-text }
-      - { name: image, label: Profile Image, type: image }
