@@ -56,8 +56,8 @@ content:
       - { name: location, label: Location, type: string }
       - { name: city, label: City, type: string }
       - { name: eventType, label: Event Type, type: string }
-      - { name: image, label: Main Image, type: image }
       - { name: statement, label: Statement, type: rich-text }
+      - { name: image, label: Main Image, type: image }
       - name: gallery
         label: Image Gallery
         type: image
