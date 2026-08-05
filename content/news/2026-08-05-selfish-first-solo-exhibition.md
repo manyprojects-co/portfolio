@@ -3,7 +3,7 @@ title: "Self—ish: first solo exhibition"
 year: March 2026
 location: Helix Art Space
 city: Stockholm, Sweden
-eventType: Solo Exhibition
+eventType: Solo exhibition
 statement: >-
   In an era defined by digital surplus, our sense of self is increasingly
   fragmented and recomposed into data traces through platforms designed to
