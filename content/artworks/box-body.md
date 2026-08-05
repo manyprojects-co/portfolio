@@ -13,7 +13,7 @@ artistStatement: >-
   For a few nights in one of the busiest and fastest-growing metropolitan spaces
   in the world, a giant crouched, wedged in a building, contemplating their
   entrapment and ours, too.  
-  
+
   Through Box Body, we developed a production work flow that involves remapping
   filmed imagery from a built scaled model of the screens. It has the potential
   for instant real-time interaction with site-specific 3D visuals, with no need
@@ -22,10 +22,11 @@ acknowledgements: >-
   **In collaboration with:** Ahad Mahmood (DP) and Erving Tan (Videographer)  
 
   **Special thanks to:** Gary Hong (Ten Square Singapore), Ina Conradi (NTU’s
-  School of Art Design and Media).
-  image: /assets/BB1-1.jpg
+  School of Art Design and Media). image: /assets/BB1-1.jpg
+image: /assets/BB2-1.jpg
 gallery:
   - /assets/BB2-1.jpg
   - /assets/BB3-1.jpg
   - /assets/BB4-1.jpg
+  - /assets/BB1.jpg
 ---
