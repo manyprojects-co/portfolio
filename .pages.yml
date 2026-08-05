@@ -24,12 +24,12 @@ content:
     fields:
       - { name: title, label: Title, type: string, required: true }
       - { name: year, label: Year, type: string }
+      - { name: tagline, label: Tagline, type: string }
       - { name: showMedium, label: Show Medium?, type: boolean, default: false }
       - { name: medium, label: Medium, type: string }
       - { name: featured, label: Featured on Front Page?, type: boolean }
       - { name: featureOrder, label: Feature Display Order, type: number }
       - { name: premiereCity, label: Premiere City, type: string }
-      - { name: tagline, label: Tagline, type: string }
       - { name: exhibitions, label: Exhibitions, type: rich-text }
       - { name: artistStatement, label: Artist Statement, type: rich-text }
       - { name: acknowledgements, label: Acknowledgements, type: rich-text }
