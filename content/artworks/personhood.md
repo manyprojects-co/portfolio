@@ -1,10 +1,11 @@
 ---
 title: Personhood
-year: 2024 - 2026
+year: "2024"
+tagline: Interactive projection-mapped installation
+showMedium: false
 featured: true
 featureOrder: 2
 premiereCity: San Francisco
-tagline: Interactive projection-mapped installation
 exhibitions: |-
   Iteration 1 / Asian Art Museum (San Francisco), 2024  
   Iteration 2 / Speculum Artium (Trbovlje, Slovenia), 2025  
