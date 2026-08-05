@@ -1,6 +1,8 @@
 ---
 title: Metadata
 year: "2026"
+featured: true
+featureOrder: 5
 premiereCity: Stockholm
 tagline: Projection-mapped installation
 exhibitions: Helix Art Space (Stockholm), 2026
