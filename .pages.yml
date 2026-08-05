@@ -16,27 +16,27 @@ content:
       - { name: pressMentions, label: Press & Mentions, type: rich-text }
       - { name: image, label: Profile Image, type: image }
       
-- name: artworks
-    label: Artworks
-    type: collection
-    path: content/artworks
-    view:
-      fields: [image, title, year, featured]
-    fields:
-      - { name: title, label: Title, type: string, required: true }
-      - { name: year, label: Year, type: string }
-      - { name: featured, label: Featured on Front Page?, type: boolean }
-      - { name: featureOrder, label: Feature Display Order, type: number }
-      - { name: premiereCity, label: Premiere City, type: string }
-      - { name: tagline, label: Tagline, type: string }
-      - { name: exhibitions, label: Exhibitions, type: rich-text }
-      - { name: artistStatement, label: Artist Statement, type: rich-text }
-      - { name: acknowledgements, label: Acknowledgements, type: rich-text }
-      - { name: image, label: Main Image, type: image }
-      - name: gallery
-        label: Image Gallery
-        type: image
-        list: true
+   - name: artworks
+      label: Artworks
+      type: collection
+      path: content/artworks
+      view:
+        fields: [image, title, year, featured]
+      fields:
+        - { name: title, label: Title, type: string, required: true }
+        - { name: year, label: Year, type: string }
+        - { name: featured, label: Featured on Front Page?, type: boolean }
+        - { name: featureOrder, label: Feature Display Order, type: number }
+        - { name: premiereCity, label: Premiere City, type: string }
+        - { name: tagline, label: Tagline, type: string }
+        - { name: exhibitions, label: Exhibitions, type: rich-text }
+        - { name: artistStatement, label: Artist Statement, type: rich-text }
+        - { name: acknowledgements, label: Acknowledgements, type: rich-text }
+        - { name: image, label: Main Image, type: image }
+        - name: gallery
+          label: Image Gallery
+          type: image
+          list: true
 
   - name: news
     label: News
