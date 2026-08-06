@@ -1,5 +1,5 @@
 ---
-title: Into the Future
+title: You,zip / Into the Future
 isDateRange: true
 date: 2024-09-27
 endDate: 2024-09-29
@@ -33,7 +33,7 @@ statement: >-
   as a part of the *Into the Future* exhibition, co-curated by Anita Gao &
   Jiarong Yu. 
 
-    
+
   -- Xin, 2024
 image: /assets/Youzip1.jpg
 gallery:
