@@ -2,7 +2,6 @@
 title: EMERGE:NCY / Screening at Piccadilly Lights
 isDateRange: false
 date: 2023-09-16
-endDate: 2026-08-06
 location: Piccadilly Lights
 city: London
 eventType: Screening
