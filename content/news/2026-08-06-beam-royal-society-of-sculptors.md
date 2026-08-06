@@ -4,7 +4,7 @@ isDateRange: true
 date: 2023-11-28
 endDate: 2023-12-05
 location: Royal Society of Sculptors
-city: London
+city: London, UK
 eventType: Group exhibition
 statement: >-
   BEAM (Bright Emotive Animated Module) (2023) is a speculative robotic lamp
