@@ -35,4 +35,10 @@ statement: >-
 
     
   -- Xin, 2024
+image: /assets/Youzip1.jpg
+gallery:
+  - /assets/Youzip2.jpg
+  - /assets/Youzip3.jpg
+  - /assets/Youzip4.jpg
+  - /assets/Youzip5.jpg
 ---
