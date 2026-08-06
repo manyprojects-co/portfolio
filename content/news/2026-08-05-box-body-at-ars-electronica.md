@@ -1,5 +1,5 @@
 ---
-title: Box Body at Ars Electronica
+title: Box Body / Ars Electronica
 isDateRange: true
 date: 2023-09-06
 endDate: 2023-09-10
