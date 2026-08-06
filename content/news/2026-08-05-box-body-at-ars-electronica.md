@@ -3,7 +3,7 @@ title: Box Body / Ars Electronica
 isDateRange: true
 date: 2023-09-06
 endDate: 2023-09-10
-location: Ars Electronica / Atelierhaus Salzamt
+location: Atelierhaus Salzamt
 city: Linz, Austria
 eventType: Group exhibition
 statement: "Box Body was exhibited as a part of “Butterfly’s Dreams: The New
