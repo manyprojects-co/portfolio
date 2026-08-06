@@ -1,5 +1,5 @@
 ---
-title: You,zip / Into the Future
+title: You.zip / Into the Future
 isDateRange: true
 date: 2024-09-27
 endDate: 2024-09-29
