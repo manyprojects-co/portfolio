@@ -3,7 +3,7 @@ title: Singapore Art Festival
 year: January 2023
 location: Ten Square
 city: Singapore
-eventType: Exhibition
+eventType: Group exhibition
 statement: >-
   Box Body (2023) was featured as one of the 7 works at the ART-ACT Festival at
   Singapore Art Week 2023.
