@@ -50,7 +50,7 @@ content:
       - { name: year, label: Year, type: string }
       - { name: location, label: Location, type: string }
       - { name: city, label: City, type: string }
-      - {name: eventType
+      - name: eventType
         label: Event Type
         type: select
         options:
@@ -63,7 +63,7 @@ content:
           - label: Artist Talk
             value: Artist Talk
           - label: Press
-            value: Press}
+            value: Press
       - { name: statement, label: Statement, type: rich-text }
       - { name: image, label: Main Image, type: image }
       - name: gallery
