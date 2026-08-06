@@ -16,7 +16,7 @@ exhibitionsAppearances: |-
   2025 - Artist Talk, Cornell University (Ithaca, New York)  
   2024 - Asian Art Museum x RAD (San Francisco)  
   2024 - Into the Future, Whitespace Gallery (Edinburgh)  
-  2024 - Artist Talk, Technarte 2024 (Bilbao)  
+  2024 - Artist Talk, Technarte Conference for Art and Technology (Bilbao)  
   2023 - Royal Society of Sculptors (London)  
   2023 - CIRCA2023, Piccadilly Lights (London; also: Berlin, Milan)  
   2023 - Ars Electronica Festival 2023 (Linz)  
