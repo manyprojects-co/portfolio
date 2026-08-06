@@ -14,11 +14,13 @@ statement: >-
   where we surround ourselves with mere simulacra. Does it tell of a future
   where living machines are built out of an admiration for life, or a
   desperation to mimic what we’ve lost?  
-    
+
+
   BEAM was conceptualized for the 2023 Interplay Kinetic Design Competition. It
   was a finalist and recipient of a £1K Development Prize.
 image: /assets/BEAM-1.jpg
 gallery:
   - /assets/BEAM2.jpg
   - /assets/BEAM-3.jpg
+  - /assets/BEAM-4.jpg
 ---
