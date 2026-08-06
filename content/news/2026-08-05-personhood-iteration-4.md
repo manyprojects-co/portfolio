@@ -1,5 +1,6 @@
 ---
 title: "Personhood: Iteration 4"
+subheading: Test text for slot
 isDateRange: true
 date: 2026-04-25
 endDate: 2026-05-14
