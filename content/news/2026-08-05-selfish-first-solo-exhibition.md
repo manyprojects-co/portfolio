@@ -1,5 +1,8 @@
 ---
 title: Self—ish
+isDateRange: true
+date: 2026-03-07
+endDate: 2026-03-19
 year: March 2026
 location: Helix Art Space
 city: Stockholm, Sweden
