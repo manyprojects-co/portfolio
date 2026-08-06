@@ -2,6 +2,8 @@ media:
   input: public/assets
   output: /assets
   categories: ["image"]
+  view:
+      fields: [image, title, year, featureOrder, medium, premiereCity]
 
 content:
   - name: about
