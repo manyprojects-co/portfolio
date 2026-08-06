@@ -39,4 +39,12 @@ statement: >-
 
   Curated by Ruoxi Gao for the Helix Art Space. Co-developed with Yul Cho and
   Daniel Daboczy.
+image: /assets/SF-1.jpg
+gallery:
+  - /assets/SF-1.jpg
+  - /assets/SF-2.jpg
+  - /assets/SF-3.jpg
+  - /assets/SF-4.jpg
+  - /assets/SF-5.jpg
+  - /assets/SF-6.jpg
 ---
