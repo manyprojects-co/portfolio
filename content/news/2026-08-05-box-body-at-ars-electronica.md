@@ -1,6 +1,8 @@
 ---
 title: Box Body at Ars Electronica
-year: September 2023
+isDateRange: true
+date: 2023-09-01
+endDate: 2023-09-07
 location: Ars Electronica / Atelierhaus Salzamt
 city: Linz, Austria
 eventType: Group exhibition
