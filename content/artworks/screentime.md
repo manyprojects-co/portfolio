@@ -1,8 +1,10 @@
 ---
 title: Screentime
 year: "2024"
+tagline: Multichannel video art
+showMedium: false
+featured: false
 premiereCity: Stockholm
-tagline: Multichannel Video Art
 artistStatement: >-
   Screentime jabs at several poignant aspects of our digital lives: we are all
   constantly surveilled, we are all now more alone, and we are all made more
