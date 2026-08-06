@@ -1,8 +1,7 @@
 ---
 title: "Personhood: Iteration 4"
 isDateRange: false
-date: 2026-04-25
-endDate: 2026-05-15
+date: 2023-10-10
 location: MVR Gallery
 city: Ithaca, NY
 eventType: Solo exhibition
