@@ -44,10 +44,13 @@ content:
     type: collection
     path: content/news
     view:
-      fields: [image, title, year, location, city, eventType]
+      fields: [image, title, date, location, city, eventType]
     fields:
       - { name: title, label: Title, type: string, required: true }
-      - { name: year, label: Year, type: string }
+      - { name: isDateRange, label: Is Date Range?, type: boolean, default: false }
+      - { name: date, label: Date / Start Date, type: date }
+      - { name: endDate, label: End Date (if date range), type: date }
+      - { name: year, label: Display Year, type: string }
       - { name: location, label: Location, type: string }
       - { name: city, label: City, type: string }
       - name: eventType
