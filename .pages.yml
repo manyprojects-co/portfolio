@@ -44,7 +44,7 @@ content:
     type: collection
     path: content/news
     view:
-      fields: [image, title, date, location, city, eventType]
+      fields: [image, title, location, city, date, endDate, eventType]
     fields:
       - { name: title, label: Title, type: string, required: true }
       - { name: isDateRange, label: Date Range?, type: boolean, default: false }
