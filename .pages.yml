@@ -54,11 +54,12 @@ content:
         label: Event Type
         type: select
         options:
-          - Award
-          - Solo exhibition
-          - Group exhibition
-          - Artist Talk
-          - Press
+          - "Award"
+          - "Solo exhibition"
+          - "Group exhibition"
+          - "Artist Talk"
+          - "Conference"
+          - "Press"
       - { name: statement, label: Statement, type: rich-text }
       - { name: image, label: Main Image, type: image }
       - name: gallery
