@@ -1,5 +1,5 @@
 ---
-title: Singapore Art Festival
+title: ART-ACT Festival
 isDateRange: true
 date: 2023-01-12
 endDate: 2023-01-15
