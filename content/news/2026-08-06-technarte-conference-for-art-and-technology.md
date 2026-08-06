@@ -2,7 +2,6 @@
 title: Technarte Conference for Art and Technology
 isDateRange: false
 date: 2025-05-17
-endDate: 2026-08-06
 location: Palacio Euskalduna
 city: Bilbao, Spain
 eventType: Artist Talk
