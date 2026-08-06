@@ -20,7 +20,7 @@ content:
     type: collection
     path: content/artworks
     view:
-      fields: [image, title, year, featureOrder, medium]
+      fields: [image, title, year, tagline, featureOrder, premiereCity]
     fields:
       - { name: title, label: Title, type: string, required: true }
       - { name: year, label: Year, type: string }
