@@ -50,7 +50,6 @@ content:
       - { name: isDateRange, label: Date Range?, type: boolean, default: false }
       - { name: date, label: Date / Start Date, type: date }
       - { name: endDate, label: End Date (if date range), type: date }
-      - { name: year, label: Display Year, type: string }
       - { name: location, label: Location, type: string }
       - { name: city, label: City, type: string }
       - name: eventType
