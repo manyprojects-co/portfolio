@@ -28,7 +28,7 @@ content:
       - { name: showMedium, label: Show Medium?, type: boolean, default: false }
       - { name: medium, label: Medium, type: string }
       - { name: featured, label: Featured on Front Page?, type: boolean }
-      - { name: featureOrder, label: Feature Display Order, type: number }
+      - { name: featureOrder, label: Feature Order, type: number }
       - { name: premiereCity, label: Premiere City, type: string }
       - { name: exhibitions, label: Exhibitions, type: rich-text }
       - { name: artistStatement, label: Artist Statement, type: rich-text }
