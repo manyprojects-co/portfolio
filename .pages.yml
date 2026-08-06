@@ -53,17 +53,11 @@ content:
       - name: eventType
         label: Event Type
         type: select
+        - name: eventType
+        label: Event Type
+        type: select
         options:
-          - label: "Award"
-            value: "Award"
-          - label: "Solo exhibition"
-            value: "Solo exhibition"
-          - label: "Group exhibition"
-            value: "Group exhibition"
-          - label: "Artist Talk"
-            value: "Artist Talk"
-          - label: "Press"
-            value: "Press"
+          values: ["Award", "Solo exhibition", "Group exhibition", "Artist Talk", "Press"]
       - { name: statement, label: Statement, type: rich-text }
       - { name: image, label: Main Image, type: image }
       - name: gallery
