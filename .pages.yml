@@ -44,7 +44,7 @@ content:
     type: collection
     path: content/news
     view:
-      fields: [image, title, year]
+      fields: [image, title, year, location, city, eventType]
     fields:
       - { name: title, label: Title, type: string, required: true }
       - { name: year, label: Year, type: string }
