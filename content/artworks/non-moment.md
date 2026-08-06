@@ -1,13 +1,11 @@
 ---
 title: Non-moment
 year: "2025"
-premiereCity: Taiwan
 tagline: Video
-image: /assets/NM1.jpg
-gallery:
-  - /assets/NM2.jpg
-  - /assets/NM3.jpg
-  - /assets/NM4.jpg
+showMedium: false
+featured: false
+premiereCity: Taiwan
+exhibitions: Silent Interference / Turtle Chamber Projects (Taiwan), 2025
 artistStatement: "“Several decades from now before I go, I want my eyes to
   flash: mom and the pillowfort she made to nest her playful toddler one yellow
   afternoon, dad's laugh at his own joke, the thick Manila rain that preceded
@@ -20,5 +18,10 @@ artistStatement: "“Several decades from now before I go, I want my eyes to
   deluge of non-moments staring at our thumbs fixed on the non-places of our
   phone screens. This work is a sort of eulogy to the memories we won't make.” —
   JJ"
-exhibitions: Silent Interference / Turtle Chamber Projects (Taiwan), 2025
+image: /assets/NM4.jpg
+gallery:
+  - /assets/NM1.jpg
+  - /assets/NM2.jpg
+  - /assets/NM3.jpg
+  - /assets/NM4.jpg
 ---
