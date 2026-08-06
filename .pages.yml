@@ -2,8 +2,6 @@ media:
   input: public/assets
   output: /assets
   categories: ["image"]
-  view:
-      fields: [image, title, year, featureOrder, medium, premiereCity]
 
 content:
   - name: about
@@ -22,7 +20,7 @@ content:
     type: collection
     path: content/artworks
     view:
-      fields: [image, title, year]
+      fields: [image, title, year, featureOrder, medium]
     fields:
       - { name: title, label: Title, type: string, required: true }
       - { name: year, label: Year, type: string }
