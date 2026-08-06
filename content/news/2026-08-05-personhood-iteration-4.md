@@ -3,7 +3,7 @@ title: "Personhood: Iteration 4"
 year: April - May 2026
 location: MVR Gallery
 city: Ithaca, NY
-eventType: Solo Exhibition
+eventType: Solo exhibition
 statement: >-
   Personhood (Iteration 4) relies on state-based branching animation trees
   formed via AI animations that interpolate strategically between pivotal
