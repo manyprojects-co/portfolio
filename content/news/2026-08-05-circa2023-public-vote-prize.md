@@ -2,8 +2,9 @@
 title: "CIRCA2023: Public Vote Prize"
 isDateRange: false
 date: 2023-10-10
+endDate: 2026-08-06
 location: Piccadilly Lights
-city: London
+city: London, UK
 eventType: Award
 statement: Powered by Piccadilly Lights, ++**[JJ Agcaoili & Xin
   Wen](https://circa.art/circa-prize-2023/jj-agcaoili-xin-wen/)**++ received the
