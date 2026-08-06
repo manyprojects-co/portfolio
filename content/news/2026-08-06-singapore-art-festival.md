@@ -1,6 +1,8 @@
 ---
 title: Singapore Art Festival
-year: January 2023
+isDateRange: true
+date: 2023-01-12
+endDate: 2023-01-15
 location: Ten Square
 city: Singapore
 eventType: Group exhibition
