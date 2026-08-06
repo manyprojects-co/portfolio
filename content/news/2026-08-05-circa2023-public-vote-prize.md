@@ -2,7 +2,6 @@
 title: "CIRCA2023: Public Vote Prize"
 isDateRange: false
 date: 2023-10-10
-endDate: 2026-08-06
 location: Piccadilly Lights
 city: London, UK
 eventType: Award
