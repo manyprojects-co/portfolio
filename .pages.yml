@@ -31,10 +31,10 @@ content:
       - { name: featureOrder, label: Feature Order, type: number }
       - { name: premiereCity, label: Premiere City, type: string }
       - { name: exhibitions, label: Exhibitions, type: rich-text }
-      - { name: artistStatement, label: Artist Statement, type: rich-text }
-      - { name: acknowledgements, label: Acknowledgements, type: rich-text }
       
       # Art Gallery
+      - { name: artistStatement, label: Artist Statement, type: rich-text }
+      - { name: acknowledgements, label: Acknowledgements, type: rich-text }
       - { name: landingImage, label: Landing Photo, type: image }
       - { name: tabArtImage, label: Tab-Art Photo, type: image }
       - { name: cardCoverImage, label: Card Cover Photo, type: image }
