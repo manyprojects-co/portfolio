@@ -20,7 +20,7 @@ content:
     type: collection
     path: content/artworks
     view:
-      fields: [landingImage, tabArtImage, cardCoverImage, title, year, tagline, medium, premiereCity, featureOrder]
+      fields: [title, year, tagline, medium, premiereCity, featureOrder, landingImage, tabArtImage, cardCoverImage]
     fields:
       - { name: title, label: Title, type: string, required: true }
       - { name: year, label: Year, type: number }
@@ -35,9 +35,9 @@ content:
       # Art Gallery
       - { name: artistStatement, label: Artist Statement, type: rich-text }
       - { name: acknowledgements, label: Acknowledgements, type: rich-text }
-      - { name: landingImage, label: Landing Photo (Rectangle any ratio), type: image }
-      - { name: tabArtImage, label: Tab-Art Photo (Site-specific crop), type: image }
-      - { name: cardCoverImage, label: Card Cover Photo (16:9 or narrower), type: image }
+      - { name: landingImage, label: Landing (Rectangle), type: image }
+      - { name: tabArtImage, label: Tab-Art (Site-specific), type: image }
+      - { name: cardCoverImage, label: Card-Cover (16:9/narrow), type: image }
       - name: cardGallery
         label: Card Gallery
         type: image
