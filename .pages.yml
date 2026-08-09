@@ -20,7 +20,7 @@ content:
     type: collection
     path: content/artworks
     view:
-      fields: [cardCoverImage, title, year, tagline, premiereCity, featureOrder]
+      fields: [landingImage, tabArtImage, cardCoverImage, title, year, tagline, medium, premiereCity, featureOrder]
     fields:
       - { name: title, label: Title, type: string, required: true }
       - { name: year, label: Year, type: number }
