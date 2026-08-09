@@ -20,7 +20,7 @@ content:
     type: collection
     path: content/artworks
     view:
-      fields: [image, title, year, tagline, premiereCity, featureOrder]
+      fields: [cardCoverImage, title, year, tagline, premiereCity, featureOrder]
     fields:
       - { name: title, label: Title, type: string, required: true }
       - { name: year, label: Year, type: number }
@@ -33,11 +33,22 @@ content:
       - { name: exhibitions, label: Exhibitions, type: rich-text }
       - { name: artistStatement, label: Artist Statement, type: rich-text }
       - { name: acknowledgements, label: Acknowledgements, type: rich-text }
-      - { name: image, label: Main Image, type: image }
-      - name: gallery
-        label: Image Gallery
+      
+      # Single Images
+      - { name: landingImage, label: Landing Photo, type: image }
+      - { name: tabArtImage, label: Tab-Art Photo, type: image }
+      - { name: cardCoverImage, label: Card Cover Photo, type: image }
+      
+      # Galleries & Rich Text
+      - name: cardGallery
+        label: Card Gallery
         type: image
         list: true
+      - name: technicalGallery
+        label: Technical Gallery
+        type: image
+        list: true
+      - { name: galleryText, label: Gallery Text, type: rich-text }
 
   - name: news
     label: News
