@@ -38,17 +38,17 @@ content:
       - { name: landingImage, label: Landing Photo, type: image }
       - { name: tabArtImage, label: Tab-Art Photo, type: image }
       - { name: cardCoverImage, label: Card Cover Photo, type: image }
-      
-      # Galleries & Rich Text
       - name: cardGallery
         label: Card Gallery
         type: image
         list: true
+      
+      # Galleries & Rich Text
+      - { name: galleryText, label: Gallery Text, type: rich-text }
       - name: technicalGallery
         label: Technical Gallery
         type: image
         list: true
-      - { name: galleryText, label: Gallery Text, type: rich-text }
 
   - name: news
     label: News
