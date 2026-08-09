@@ -35,9 +35,9 @@ content:
       # Art Gallery
       - { name: artistStatement, label: Artist Statement, type: rich-text }
       - { name: acknowledgements, label: Acknowledgements, type: rich-text }
-      - { name: landingImage, label: Landing Photo, type: image }
-      - { name: tabArtImage, label: Tab-Art Photo, type: image }
-      - { name: cardCoverImage, label: Card Cover Photo, type: image }
+      - { name: landingImage, label: Landing Photo (Rectangle any ratio), type: image }
+      - { name: tabArtImage, label: Tab-Art Photo (Site-specific crop), type: image }
+      - { name: cardCoverImage, label: Card Cover Photo (16:9 or narrower), type: image }
       - name: cardGallery
         label: Card Gallery
         type: image
