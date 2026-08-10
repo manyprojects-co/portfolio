@@ -11,10 +11,10 @@ featured: true
 featureOrder: 2
 premiereCity: San Francisco
 exhibitions: |-
-  Iteration 1 / Asian Art Museum (San Francisco), 2024  
-  Iteration 2 / Speculum Artium (Trbovlje, Slovenia), 2025  
-  Iteration 3 / Helix Art Space (Stockholm), 2026  
-  Iteration 4 / MVR Gallery (Ithaca, New York), 2026
+  Multi-Channel / Asian Art Museum (San Francisco), 2024  
+  Video Art / Speculum Artium (Trbovlje, Slovenia), 2025  
+  Video Art / Helix Art Space (Stockholm), 2026  
+  Single-Channel / MVR Gallery (Ithaca, New York), 2026
 artistStatement: >-
   We furnished the cave. Two thousand years after Plato imagined us chained to
   the rocks, we renovated the lights, decoupled the shadows from the reality
@@ -23,17 +23,24 @@ artistStatement: >-
   flirt sometimes. That makes them safe and easy to be around. They’re becoming
   our therapists, mentors, and friends. Our creations now live among us, but
   there are people who believe that an internet teeming lush with life—non-human
-  life—is a dead one.
+  life—is a dead one.  
 
-  Proof of Personhood (2024) is an interactive projection-mapped installation
-  that represents the growing prevalence of AI through the shadows of absent
-  people cast across an empty room by a lone spotlight. They stroll about in
-  silence, punctuated only by the sounds of their footsteps. And a human guest
-  passing by might sometimes pique their interest. Titled after the digital
-  verification mechanisms designed to confirm humanness online, this immersive
-  experience asks what it means to coexist with the artificial traces of us.
+  Personhood (2024) is an interactive projection-mapped installation that
+  represents the growing prevalence of AI through the shadows of absent people
+  cast across an empty room by a lone spotlight. They stroll about in silence,
+  punctuated only by the sounds of their footsteps. And a human guest passing by
+  might sometimes pique their interest. Titled after the digital verification
+  mechanisms designed to confirm humanness online, this immersive experience
+  asks what it means to coexist with the artificial traces of us.
 acknowledgements: Proof of Personhood was first curated by Cheng Xu for the
   Research and Development (RAD) space of Asian Art Museum in San Francisco.
   Since then, alternative iterations have been developed for various spaces
   around the world.
+technicalTagline: "[Personhood Technical Tagline Placeholder]"
+technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+  eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
+  veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
+  commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit
+  esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat
+  non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
 ---
