@@ -20,4 +20,5 @@ artistStatement: "“Several decades from now before I go, I want my eyes to
   deluge of non-moments staring at our thumbs fixed on the non-places of our
   phone screens. This work is a sort of eulogy to the memories we won't make.” —
   JJ"
+technicalTagline: "[Non-moment Technical Tagline Placeholder]"
 ---
