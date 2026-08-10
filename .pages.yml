@@ -25,7 +25,6 @@ content:
       - { name: title, label: Title, type: string, required: true }
       - { name: year, label: Year, type: number }
       - { name: tagline, label: Tagline, type: string }
-      - { name: showMedium, label: Show Medium?, type: boolean, default: false }
       - { name: medium, label: Medium, type: string }
       - { name: featured, label: Featured on Front Page?, type: boolean }
       - { name: featureOrder, label: Feature Order, type: number }
