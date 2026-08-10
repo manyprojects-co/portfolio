@@ -19,7 +19,7 @@ content:
 
 ########################  CONTACT  ########################
 
-- name: contact
+  - name: contact
     label: Contact
     type: file
     path: content/contact.md
