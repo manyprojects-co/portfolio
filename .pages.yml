@@ -3,7 +3,7 @@ media:
   output: /assets
   categories: ["image"]
   
-######################## ABOUT SECTION ########################
+########################  ABOUT  ########################
 
 content:
   - name: about
@@ -17,8 +17,10 @@ content:
       - { name: pressMentions, label: Press & Mentions, type: rich-text }
       - { name: image, label: Profile Image, type: image }
 
+########################  CONTACT  ########################
 
-######################## ARTWORK SECTION ########################
+
+########################  ARTWORK  ########################
 
   - name: artworks
     label: Artworks
@@ -118,7 +120,7 @@ content:
           - { name: videoUrl, label: Video File or URL, type: string }
           - { name: caption, label: Caption, type: string }
 
-######################## NEWS SECTION ########################
+########################  NEWS  ########################
 
   - name: news
     label: News
