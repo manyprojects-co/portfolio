@@ -1,10 +1,11 @@
 ---
 title: Box Body
 productionDate: 2023-01-01
-tagline: Site-specific installation
-medium: Single-channel 4K video projection
-size: 14.4 x 21.2m (Site-specific to Ten Square, Singapore)
-duration: 2 min.
+tagline: Site-specific video
+medium: Site-specific anamorphic 3D video installation on outdoor LED display at
+  Ten Square, Singapore
+size: 14.4 × 21.2 m (47.2 × 69.5 ft)
+duration: 02 min. 00 sec. loop
 featured: false
 premiereCity: Singapore
 exhibitions: |-
