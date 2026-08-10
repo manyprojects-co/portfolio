@@ -129,7 +129,7 @@ content:
     type: collection
     path: content/news
     view:
-      fields: [image, title, location, city, date, endDate, eventType]
+      fields: [title, date, location, city, eventType]
     fields:
       - { name: title, label: Title, type: string, required: true }
       - { name: subheading, label: Subheading, type: string }
@@ -144,8 +144,31 @@ content:
         options:
           values: [Award, Screening, Solo exhibition, Group exhibition, Artist Talk, Press]
       - { name: statement, label: Statement, type: rich-text }
-      - { name: image, label: Main Image, type: image }
+
+      # Main News Visual (100% Cloudflare Hosted)
+      - name: mainVisual
+        label: Main Cover Visual
+        type: object
+        fields:
+          - name: mediaType
+            label: Media Type
+            type: select
+            options:
+              values: [image, video]
+          - { name: imageUrl, label: Cloudflare Image URL, type: string }
+          - { name: videoUrl, label: Cloudflare Video URL, type: string }
+
+      # News Gallery (100% Cloudflare Hosted)
       - name: gallery
-        label: Image Gallery
-        type: image
+        label: News Gallery
+        type: object
         list: true
+        fields:
+          - name: mediaType
+            label: Media Type
+            type: select
+            options:
+              values: [image, video]
+          - { name: imageUrl, label: Cloudflare Image URL, type: string }
+          - { name: videoUrl, label: Cloudflare Video URL, type: string }
+          - { name: caption, label: Caption, type: string }
