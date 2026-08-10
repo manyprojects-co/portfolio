@@ -9,7 +9,7 @@ duration: 00 min. 09 sec. loop
 featured: true
 featureOrder: 5
 premiereCity: Stockholm
-exhibitions: Helix Art Space (Stockholm), 2026
+exhibitions: Self—ish, Helix Art Space (Stockholm), 2026
 artistStatement: "In this age of surveillance capitalism, user data is fracked
   by platforms through every swipe and scroll, processed into behavioral models,
   and sold. The buyers: advertisers, data brokers, and demagogues—individuals
