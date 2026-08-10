@@ -10,7 +10,7 @@ exhibitionsAppearances: |-
   2026 - Solo exhibition, MVR Gallery (Ithaca, New York)  
   2026 - Solo exhibition, Helix Art Space (Stockholm)  
   2026 - Artist Talk, Helix Art Space (Stockholm)  
-  2025 - Silent Interference, Turtle Chamber (Taoyuan City, Taiwan)  
+  2025 - Silent Interference, Turtle Chamber Projects (Taoyuan City, Taiwan)  
   2025 - Alternative Roots, Hoxton Hall (London)  
   2025 - Speculum Artium Festival (Trbovlje, Slovenia)  
   2025 - Artist Talk, Cornell University (Ithaca, New York)  
