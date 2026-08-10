@@ -29,7 +29,7 @@ content:
 
 ########################  ARTWORK  ########################
 
- - name: artworks
+   - name: artworks
     label: Artworks
     type: collection
     path: content/artworks
