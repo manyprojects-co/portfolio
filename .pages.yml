@@ -42,13 +42,44 @@ content:
       - { name: artistStatement, label: Artist Statement, type: rich-text }
       - { name: acknowledgements, label: Acknowledgements, type: rich-text }
 
-      # Single Key Visuals
-      - { name: landingImage, label: Landing Photo (Rectangle), type: image }
-      - { name: landingVideo, label: Landing Video (Cloudflare URL), type: string }
-      - { name: tabArtImage, label: Tab-Art (Site-specific), type: image }
-      - { name: cardCoverImage, label: Card-Cover (16:9/narrow), type: image }
+      # Single Key Visuals (Image or Video)
+      - name: landingVisual
+        label: Landing Visual (Rectangle)
+        type: object
+        fields:
+          - name: mediaType
+            label: Media Type
+            type: select
+            options:
+              values: [image, video]
+          - { name: image, label: Image File, type: image }
+          - { name: videoUrl, label: Video File or URL, type: string }
 
-      # 10. Art Gallery (Flexible: Images & Videos)
+      - name: tabArtVisual
+        label: Tab-Art Visual (Site-specific)
+        type: object
+        fields:
+          - name: mediaType
+            label: Media Type
+            type: select
+            options:
+              values: [image, video]
+          - { name: image, label: Image File, type: image }
+          - { name: videoUrl, label: Video File or URL, type: string }
+
+      - name: cardCoverVisual
+        label: Card-Cover Visual (16:9/narrow)
+        type: object
+        fields:
+          - name: mediaType
+            label: Media Type
+            type: select
+            options:
+              values: [image, video]
+          - { name: image, label: Image File, type: image }
+          - { name: videoUrl, label: Video File or URL, type: string }
+
+      # Art Gallery (Flexible: Images & Videos)
       - name: cardGallery
         label: Art Gallery
         type: object
