@@ -1,6 +1,6 @@
 ---
 title: Metadata
-productionDate: 2026-08-10
+productionDate: 2026-03-01
 tagline: Projection-mapped installation
 medium: Single-channel digital video projection (color, silent) and hanging
   linen curtain
