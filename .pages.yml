@@ -29,14 +29,14 @@ content:
 
 ########################  ARTWORK  ########################
 
-  - name: artworks
+ - name: artworks
     label: Artworks
     type: collection
     path: content/artworks
     view:
-      fields: [title, year, tagline, featureOrder]
+      fields: [title, productionDate, tagline, premiereCity, featureOrder]
     fields:
-      # Title, Year, Art Tagline
+      # Title, Date, Art Tagline
       - { name: title, label: Title, type: string, required: true }
       - { name: productionDate, label: Production Year/Month, type: date }
       - { name: tagline, label: Art Tagline, type: string }
@@ -112,7 +112,7 @@ content:
       - { name: technicalTagline, label: Technical Tagline, type: string }
       - { name: technicalText, label: Technical Text, type: rich-text }
 
-      # 13. Technical Gallery (Flexible: Images & Videos)
+      # Technical Gallery (Flexible: Images & Videos)
       - name: technicalGallery
         label: Technical Gallery
         type: object
