@@ -17,4 +17,11 @@ artistStatement: "In this age of surveillance capitalism, user data is fracked
   embodies this voyeuristic act of character-profiling into a swirl of floating
   data points forming a dissected nervous skeletal figure caught in the mundane
   act of phone-scrolling on the loo."
+technicalTagline: "[Metadata Technical Tagline Placeholder]"
+technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+  eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
+  veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
+  commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit
+  esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat
+  non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
 ---
