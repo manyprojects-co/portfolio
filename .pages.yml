@@ -38,7 +38,7 @@ content:
     fields:
       # Title, Year, Art Tagline
       - { name: title, label: Title, type: string, required: true }
-      - { name: date, label: Production Year/Month, type: date }
+      - { name: productionDate, label: Production Year/Month, type: date }
       - { name: tagline, label: Art Tagline, type: string }
 
       # Medium, Size, Duration
