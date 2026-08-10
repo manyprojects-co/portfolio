@@ -19,6 +19,13 @@ content:
 
 ########################  CONTACT  ########################
 
+- name: contact
+    label: Contact
+    type: file
+    path: content/contact.md
+    fields:
+      - { name: email, label: Email Address, type: string }
+      - { name: instagram, label: Instagram Link (URL), type: string }
 
 ########################  ARTWORK  ########################
 
