@@ -23,9 +23,7 @@ artistStatement: >-
   filmed imagery from a built scaled model of the screens. It has the potential
   for instant real-time interaction with site-specific 3D visuals, with no need
   for CGI.
-acknowledgements: >-
-  **In collaboration with:** Ahad Mahmood (DP) and Erving Tan (Videographer)  
-
-  **Special thanks to:** Gary Hong (Ten Square Singapore), Ina Conradi (NTU’s
-  School of Art Design and Media). image: /assets/BB1-1.jpg
+acknowledgements: In collaboration with Ahad Mahmood (DP) and Erving Tan
+  (Videographer). Special thanks to Gary Hong (Ten Square Singapore) and Ina
+  Conradi (NTU’s School of Art Design and Media).
 ---
