@@ -1,10 +1,14 @@
 ---
 title: EMERGE:NCY
-year: "2023"
+productionDate: 2023-07-01
+tagline: Site-specific video
+medium: Site-specific anamorphic 3D video installation on outdoor LED display at
+  Piccadilly Lights, London
+size: 17.56 × 44.62 m (57.6 × 146.4 ft)
+duration: 02 min. 30 sec.
 featured: true
 featureOrder: 3
 premiereCity: London
-tagline: Site-specific video art
 exhibitions: "CIRCA2023 / London, Milan, and Berlin  "
 artistStatement: >-
   EMERGE:NCY is an embodied reaction to the encroaching structural determinism
@@ -18,12 +22,12 @@ artistStatement: >-
 
 
   EMERGE:NCY is the recipient of the CIRCA 2023 Public Vote Prize.
-acknowledgements: "In collaboration with: Ruishuke Chen (DP) and Luling Wang (Music)"
-image: /assets/EM1.jpg
-gallery:
-  - /assets/EM2.jpg
-  - /assets/EM3.jpg
-  - /assets/EM4.jpg
-  - /assets/EM5.jpg
-  - /assets/EM6-1.jpg
+acknowledgements: In collaboration with Ruishuke Chen (DP) and Luling Wang (Music).
+technicalTagline: "[EMERGENCY Technical Tagline Placeholder]"
+technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+  eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
+  veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
+  commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit
+  esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat
+  non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 ---
