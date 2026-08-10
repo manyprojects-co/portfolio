@@ -2,6 +2,8 @@ media:
   input: public/assets
   output: /assets
   categories: ["image"]
+  
+######################## ABOUT SECTION ########################
 
 content:
   - name: about
@@ -14,6 +16,9 @@ content:
       - { name: awardsCommissions, label: Awards & Commissions, type: rich-text }
       - { name: pressMentions, label: Press & Mentions, type: rich-text }
       - { name: image, label: Profile Image, type: image }
+
+
+######################## ARTWORK SECTION ########################
 
   - name: artworks
     label: Artworks
@@ -112,6 +117,8 @@ content:
           - { name: image, label: Image File, type: image }
           - { name: videoUrl, label: Video File or URL, type: string }
           - { name: caption, label: Caption, type: string }
+
+######################## NEWS SECTION ########################
 
   - name: news
     label: News
