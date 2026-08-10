@@ -34,11 +34,11 @@ content:
     type: collection
     path: content/artworks
     view:
-      fields: [title, productionDate, tagline, premiereCity, featureOrder]
+      fields: [featureOrder, title, productionDate, tagline, medium, size, duration, premiereCity, exhibitions, artistStatement, acknowledgements]
     fields:
       # Title, Date, Art Tagline
       - { name: title, label: Title, type: string, required: true }
-      - { name: productionDate, label: Production Year/Month, type: date }
+      - { name: productionDate, label: Production Date, type: date }
       - { name: tagline, label: Art Tagline, type: string }
 
       # Medium, Size, Duration
