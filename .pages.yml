@@ -129,7 +129,7 @@ content:
     type: collection
     path: content/news
     view:
-      fields: [title, date, location, city, eventType]
+      fields: [title, date, endDate, location, city, eventType]
     fields:
       - { name: title, label: Title, type: string, required: true }
       - { name: subheading, label: Subheading, type: string }
