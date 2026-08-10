@@ -1,8 +1,9 @@
 ---
 title: Personhood
-year: "2024"
+productionDate: 2024-10-01
 tagline: Interactive projection-mapped installation
-showMedium: false
+medium: Multi-channel video projection, Unity engine, MadMapper, Luxonis OAK-D
+  depth sensor, VCV Rack custom audio synthesis, and physical spotlight lamp
 featured: true
 featureOrder: 2
 premiereCity: San Francisco
@@ -32,11 +33,4 @@ acknowledgements: Proof of Personhood was first curated by Cheng Xu for the
   Research and Development (RAD) space of Asian Art Museum in San Francisco.
   Since then, alternative iterations have been developed for various spaces
   around the world.
-image: /assets/PSH1.jpg
-gallery:
-  - /assets/PSH2.jpg
-  - /assets/PSH3.jpg
-  - /assets/PSH5.jpg
-  - /assets/PSH4.jpg
-  - /assets/PSH7.jpg
 ---
