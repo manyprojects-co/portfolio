@@ -20,18 +20,25 @@ content:
     type: collection
     path: content/artworks
     view:
-      fields: [cardCoverImage, title, year, tagline, medium, premiereCity, featureOrder]
+      fields: [cardCoverImage, title, year, tagline, premiereCity, featureOrder]
     fields:
+      # Title, Year, Art Tagline
       - { name: title, label: Title, type: string, required: true }
       - { name: year, label: Year, type: number }
-      - { name: tagline, label: Tagline, type: string }
+      - { name: tagline, label: Art Tagline, type: string }
+
+      # Medium, Size, Duration
       - { name: medium, label: Medium, type: string }
+      - { name: size, label: Size, type: string }
+      - { name: duration, label: Duration, type: string }
+
+      # Operational / Display Settings
       - { name: featured, label: Featured on Front Page?, type: boolean }
       - { name: featureOrder, label: Feature Order, type: number }
+
+      # Premiere City, Exhibitions, Artist Statement, Acknowledgements
       - { name: premiereCity, label: Premiere City, type: string }
       - { name: exhibitions, label: Exhibitions, type: rich-text }
-
-      # Art & Statements
       - { name: artistStatement, label: Artist Statement, type: rich-text }
       - { name: acknowledgements, label: Acknowledgements, type: rich-text }
 
@@ -41,9 +48,9 @@ content:
       - { name: tabArtImage, label: Tab-Art (Site-specific), type: image }
       - { name: cardCoverImage, label: Card-Cover (16:9/narrow), type: image }
 
-      # Flexible Card Gallery (Supports Images & Videos)
+      # 10. Art Gallery (Flexible: Images & Videos)
       - name: cardGallery
-        label: Card Gallery
+        label: Art Gallery
         type: object
         list: true
         fields:
@@ -56,10 +63,11 @@ content:
           - { name: videoUrl, label: Video File or URL, type: string }
           - { name: caption, label: Caption, type: string }
 
-      # Technical Section
+      # 11–12. Technical Tagline & Technical Text
+      - { name: technicalTagline, label: Technical Tagline, type: string }
       - { name: technicalText, label: Technical Text, type: rich-text }
 
-      # Flexible Technical Gallery (Supports Images & Videos)
+      # 13. Technical Gallery (Flexible: Images & Videos)
       - name: technicalGallery
         label: Technical Gallery
         type: object
