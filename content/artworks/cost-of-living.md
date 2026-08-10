@@ -1,7 +1,12 @@
 ---
 title: Cost of Living
-year: "2024"
-tagline: Site-specific video art
+productionDate: 2024-07-01
+tagline: Site-specific video
+medium: Site-specific anamorphic 3D video designed for the outdoor LED display
+  at Piccadilly Lights, London
+size: 17.56 × 44.62 m (57.6 × 146.4 ft)
+duration: 02 min. 30 sec.
+featured: false
 artistStatement: >-
   Cost of Living is a site-specific new media film made for the Piccadilly
   Lights screen. It depicts a home in cycles of order and increasingly violent
@@ -14,8 +19,11 @@ artistStatement: >-
   reimagination and a departure from the status quo. The film presents cycles of
   disorder that eventually culminate in the dismantling of the boundaries that
   confined the ‘home,’ embracing the void and endless possibilities it holds.
-image: /assets/COL1.jpg
-gallery:
-  - /assets/COL2.jpg
-  - /assets/COL3.jpg
+technicalTagline: "[COL Technical Tagline Placeholder]"
+technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+  eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
+  veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
+  commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit
+  esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat
+  non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
 ---
