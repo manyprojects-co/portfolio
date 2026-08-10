@@ -1,10 +1,14 @@
 ---
 title: Screentime
-year: "2024"
-tagline: Multichannel video art
-showMedium: false
+productionDate: 2024-05-01
+tagline: Multichannel installation
+medium: 4-channel synchronized video (color, silent), phone frames, phone glass
+  screens, and MacBook glass screens
+size: Four displays, each 68.5 × 121.5 cm (27.0 × 47.8 in.)
+duration: 03 min. 00 sec. loop
 featured: false
 premiereCity: Stockholm
+exhibitions: Self—ish, Helix Art Space (Stockholm), 2026
 artistStatement: >-
   Screentime jabs at several poignant aspects of our digital lives: we are all
   constantly surveilled, we are all now more alone, and we are all made more
@@ -13,10 +17,4 @@ artistStatement: >-
 
   The work places the viewer in a liminal space behind screens, offering an
   intimate peek into the digital lives of strangers.
-image: /assets/S1.jpg
-gallery:
-  - /assets/S2.jpg
-  - /assets/S3.jpg
-  - /assets/S4-1.jpg
-  - /assets/S5.jpg
 ---
