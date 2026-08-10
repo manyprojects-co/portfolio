@@ -4,6 +4,8 @@ productionDate: 2024-10-01
 tagline: Interactive projection-mapped installation
 medium: Multi-channel video projection, Unity engine, MadMapper, Luxonis OAK-D
   depth sensor, VCV Rack custom audio synthesis, and physical spotlight lamp
+size: "Installation footprint variable. Reference: 370 × 868 × 585 cm (12.1 ×
+  28.5 × 19.2 ft)"
 featured: true
 featureOrder: 2
 premiereCity: San Francisco
