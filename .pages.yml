@@ -51,7 +51,7 @@ content:
       - { name: artistStatement, label: Artist Statement, type: rich-text }
       - { name: acknowledgements, label: Acknowledgements, type: rich-text }
 
-      # Single Key Visuals (Image or Video)
+  # Single Key Visuals (100% Cloudflare Hosted)
       - name: landingVisual
         label: Landing Visual (Rectangle)
         type: object
@@ -61,8 +61,8 @@ content:
             type: select
             options:
               values: [image, video]
-          - { name: image, label: Image File, type: image }
-          - { name: videoUrl, label: Video File or URL, type: string }
+          - { name: imageUrl, label: Cloudflare Image URL, type: string }
+          - { name: videoUrl, label: Cloudflare Video URL, type: string }
 
       - name: tabArtVisual
         label: Tab-Art Visual (Site-specific)
@@ -73,8 +73,8 @@ content:
             type: select
             options:
               values: [image, video]
-          - { name: image, label: Image File, type: image }
-          - { name: videoUrl, label: Video File or URL, type: string }
+          - { name: imageUrl, label: Cloudflare Image URL, type: string }
+          - { name: videoUrl, label: Cloudflare Video URL, type: string }
 
       - name: cardCoverVisual
         label: Card-Cover Visual (16:9/narrow)
@@ -85,10 +85,10 @@ content:
             type: select
             options:
               values: [image, video]
-          - { name: image, label: Image File, type: image }
-          - { name: videoUrl, label: Video File or URL, type: string }
+          - { name: imageUrl, label: Cloudflare Image URL, type: string }
+          - { name: videoUrl, label: Cloudflare Video URL, type: string }
 
-      # Art Gallery (Flexible: Images & Videos)
+      # Art Gallery (100% Cloudflare Hosted)
       - name: cardGallery
         label: Art Gallery
         type: object
@@ -99,15 +99,15 @@ content:
             type: select
             options:
               values: [image, video]
-          - { name: image, label: Image File, type: image }
-          - { name: videoUrl, label: Video File or URL, type: string }
+          - { name: imageUrl, label: Cloudflare Image URL, type: string }
+          - { name: videoUrl, label: Cloudflare Video URL, type: string }
           - { name: caption, label: Caption, type: string }
 
-      # Technical Tagline & Technical Text
+      # Technical Tagline & Text
       - { name: technicalTagline, label: Technical Tagline, type: string }
       - { name: technicalText, label: Technical Text, type: rich-text }
 
-      # Technical Gallery (Flexible: Images & Videos)
+      # Technical Gallery (100% Cloudflare Hosted)
       - name: technicalGallery
         label: Technical Gallery
         type: object
@@ -118,8 +118,8 @@ content:
             type: select
             options:
               values: [image, video]
-          - { name: image, label: Image File, type: image }
-          - { name: videoUrl, label: Video File or URL, type: string }
+          - { name: imageUrl, label: Cloudflare Image URL, type: string }
+          - { name: videoUrl, label: Cloudflare Video URL, type: string }
           - { name: caption, label: Caption, type: string }
 
 ########################  NEWS  ########################
