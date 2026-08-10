@@ -1,10 +1,14 @@
 ---
 title: Metadata
-year: "2026"
+productionDate: 2026-08-10
+tagline: Projection-mapped installation
+medium: Single-channel digital video projection (color, silent) and hanging
+  linen curtain
+size: 110 x 80 cm (43.3 x 31.5 in.) [Projection scale]
+duration: 00 min. 09 sec. loop
 featured: true
 featureOrder: 5
 premiereCity: Stockholm
-tagline: Projection-mapped installation
 exhibitions: Helix Art Space (Stockholm), 2026
 artistStatement: "In this age of surveillance capitalism, user data is fracked
   by platforms through every swipe and scroll, processed into behavioral models,
@@ -13,9 +17,4 @@ artistStatement: "In this age of surveillance capitalism, user data is fracked
   embodies this voyeuristic act of character-profiling into a swirl of floating
   data points forming a dissected nervous skeletal figure caught in the mundane
   act of phone-scrolling on the loo."
-image: /assets/M1.jpg
-gallery:
-  - /assets/M2.jpg
-  - /assets/M3.jpg
-  - /assets/M4.jpg
 ---
