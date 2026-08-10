@@ -20,6 +20,7 @@ artistStatement: What contemporary boxes have we trapped ourselves in? Box Body
 acknowledgements: In collaboration with Ahad Mahmood (DP) and Erving Tan
   (Videographer). Special thanks to Gary Hong (Ten Square Singapore) and Ina
   Conradi (NTU’s School of Art Design and Media).
+technicalTagline: "[Box-body technical tagline placeholder]"
 technicalText: Through Box Body, we developed a production work flow that
   involves remapping filmed imagery from a built scaled model of the screens. It
   has the potential for instant real-time interaction with site-specific 3D
