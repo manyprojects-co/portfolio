@@ -32,10 +32,10 @@ artistStatement: >-
   might sometimes pique their interest. Titled after the digital verification
   mechanisms designed to confirm humanness online, this immersive experience
   asks what it means to coexist with the artificial traces of us.
-acknowledgements: Proof of Personhood was first curated by Cheng Xu for the
-  Research and Development (RAD) space of Asian Art Museum in San Francisco.
-  Since then, alternative iterations have been developed for various spaces
-  around the world.
+acknowledgements: Personhood (originally "Proof of Personhood") was first
+  curated by Cheng Xu for the Research and Development (RAD) space of Asian Art
+  Museum in San Francisco. Since then, alternative iterations have been
+  developed for various spaces around the world.
 technicalTagline: "[Personhood Technical Tagline Placeholder]"
 technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
   eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
