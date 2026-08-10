@@ -44,7 +44,7 @@ content:
 
       # Single Key Visuals
       - { name: landingImage, label: Landing Photo (Rectangle), type: image }
-      - { name: landingVideo, label: Landing Video (Cloudflare URL or File), type: string }
+      - { name: landingVideo, label: Landing Video (Cloudflare URL), type: string }
       - { name: tabArtImage, label: Tab-Art (Site-specific), type: image }
       - { name: cardCoverImage, label: Card-Cover (16:9/narrow), type: image }
 
