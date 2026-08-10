@@ -11,10 +11,10 @@ featured: true
 featureOrder: 2
 premiereCity: San Francisco
 exhibitions: |-
-  Multi-Channel / Asian Art Museum (San Francisco), 2024  
-  Video Art / Speculum Artium (Trbovlje, Slovenia), 2025  
-  Video Art / Helix Art Space (Stockholm), 2026  
-  Single-Channel / MVR Gallery (Ithaca, New York), 2026
+  Asian Art Museum (San Francisco), 2024  
+  Speculum Artium (Trbovlje, Slovenia), 2025  
+  Helix Art Space (Stockholm), 2026  
+  MVR Gallery (Ithaca, New York), 2026
 artistStatement: >-
   We furnished the cave. Two thousand years after Plato imagined us chained to
   the rocks, we renovated the lights, decoupled the shadows from the reality
