@@ -1,7 +1,8 @@
 ---
-title: "CIRCA2023: Public Vote Prize"
+title: CIRCA2023 / Public Vote Prize
 isDateRange: false
 date: 2023-10-10
+endDate: 2026-08-12
 location: Piccadilly Lights
 city: London, UK
 eventType: Award
@@ -13,5 +14,4 @@ statement: Powered by Piccadilly Lights, ++**[JJ Agcaoili & Xin
   the iconic London landmark. The recent graduates from **The Royal College of
   Art** Global Innovation Design (MA/MSc) course received an additional £10,000
   to support their joint artistic practice.
-image: /assets/EM6-1.jpg
 ---
