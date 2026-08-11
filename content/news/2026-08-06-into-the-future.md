@@ -1,5 +1,5 @@
 ---
-title: You.zip / Into the Future
+title: Into the Future
 isDateRange: true
 date: 2024-09-27
 endDate: 2024-09-29
@@ -35,10 +35,9 @@ statement: >-
 
 
   -- Xin, 2024
-image: /assets/Youzip1.jpg
 gallery:
-  - /assets/Youzip2.jpg
-  - /assets/Youzip3.jpg
-  - /assets/Youzip4.jpg
-  - /assets/Youzip5.jpg
+  - {}
+  - {}
+  - {}
+  - {}
 ---
