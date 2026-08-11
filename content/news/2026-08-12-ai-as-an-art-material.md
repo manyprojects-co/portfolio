@@ -1,8 +1,9 @@
 ---
-title: AI as an Art Material
+title: "Talk: AI as an Art Material"
 subheading: Creative Breakfast at Helix Art Space
 isDateRange: false
 date: 2025-11-14
+endDate: 2026-08-12
 location: Helix Art Space
 city: Stockholm, Sweden
 eventType: Artist Talk
