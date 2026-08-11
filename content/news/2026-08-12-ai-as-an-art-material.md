@@ -1,5 +1,5 @@
 ---
-title: "Talk: AI as an Art Material"
+title: AI as an Art Material
 subheading: Creative Breakfast at Helix Art Space
 isDateRange: false
 date: 2025-11-14
