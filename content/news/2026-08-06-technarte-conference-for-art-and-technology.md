@@ -1,7 +1,8 @@
 ---
-title: Technarte Conference for Art and Technology
+title: Technarte Conference
 isDateRange: false
 date: 2024-05-17
+endDate: 2026-08-12
 location: Palacio Euskalduna
 city: Bilbao, Spain
 eventType: Artist Talk
@@ -32,9 +33,8 @@ statement: >-
 
   A huge thank you to Nacho Martínez for bringing this incredible community
   together, and to everyone who made Technarte possible.
-image: /assets/Technarte-1.jpg
 gallery:
-  - /assets/Technarte-2.jpg
-  - /assets/Technarte-3.jpg
-  - /assets/Technarte-5.jpg
+  - {}
+  - {}
+  - {}
 ---
