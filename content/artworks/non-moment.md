@@ -1,6 +1,6 @@
 ---
 title: Non-moment
-productionDate: 2024-11-01
+productionDate: 2024-08-01
 tagline: Video
 medium: Single-channel video (color, silent)
 size: Dimensions variable (4:3 aspect ratio)
