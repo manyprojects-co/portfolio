@@ -10,7 +10,7 @@ content:
       - { name: exhibitionsAppearances, label: Exhibitions & Appearances, type: rich-text }
       - { name: awardsCommissions, label: Awards & Commissions, type: rich-text }
       - { name: pressMentions, label: Press & Mentions, type: rich-text }
-      - { name: image, label: Profile Image, type: image }
+      - { name: imageUrl, label: Profile Picture (Cloudflare URL), type: string }
 
 ########################  CONTACT  ########################
 
