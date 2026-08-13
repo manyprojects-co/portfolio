@@ -1,0 +1,74 @@
+/**
+ * content-report.mjs — one screen of "what is actually in the CMS right now".
+ *
+ *   npm run data:report
+ *
+ * Two jobs. First, TRACK THE IMAGE MIGRATION: every visual field is empty today, and this
+ * is how we watch them fill in without re-auditing by hand (v4-cms-audit.md took a session
+ * and was obsolete in four days). Second, FLAG DATA-QUALITY ISSUES worth one message to Xin.
+ */
+import { readFileSync, readdirSync } from "node:fs";
+import path from "node:path";
+import * as yaml from "js-yaml";
+
+const fm = (p) => { const t = readFileSync(p, "utf8");
+  return t.startsWith("---") ? yaml.load(t.split(/^---$/m)[1]) ?? {} : {}; };
+const dir = (d) => readdirSync(d).filter((f) => f.endsWith(".md"))
+  .map((f) => ({ slug: f.replace(/\.md$/, ""), d: fm(path.join(d, f)) }));
+
+const arts = dir("content/artworks"), news = dir("content/news");
+const has = (v) => v !== undefined && v !== null && v !== "" &&
+  !(Array.isArray(v) && !v.length) && !(typeof v === "object" && !Array.isArray(v) && !Object.keys(v).length);
+const count = (rows, f) => rows.filter((r) => has(r.d[f])).length;
+const bar = (n, t) => "█".repeat(Math.round((n / t) * 20)).padEnd(20, "·");
+const row = (label, n, t) => console.log(`  ${label.padEnd(22)} ${bar(n, t)} ${String(n).padStart(2)}/${t}`);
+
+console.log("\n═══ ARTWORKS (%d) ═══════════════════════════════════════", arts.length);
+for (const f of ["title", "productionDate", "tagline", "medium", "size", "duration",
+                 "premiereCity", "exhibitions", "artistStatement", "acknowledgements",
+                 "featureOrder", "technicalTagline", "technicalText"])
+  row(f, count(arts, f), arts.length);
+console.log("  ── visuals ──");
+for (const f of ["landingVisual", "tabArtVisual", "cardCoverVisual", "cardGallery", "technicalGallery"])
+  row(f, count(arts, f), arts.length);
+
+console.log("\n═══ NEWS (%d) ═══════════════════════════════════════════", news.length);
+for (const f of ["title", "date", "eventType", "city", "location", "statement", "subheading"])
+  row(f, count(news, f), news.length);
+console.log("  ── visuals ──");
+row("mainVisual (new)", count(news, "mainVisual"), news.length);
+const legacyImg = news.filter((n) => typeof n.d.image === "string").length;
+const galObj = news.filter((n) => (n.d.gallery ?? []).some((g) => typeof g === "object")).length;
+const galStr = news.filter((n) => (n.d.gallery ?? []).some((g) => typeof g === "string")).length;
+row("image (LEGACY)", legacyImg, news.length);
+row("gallery new-shape", galObj, news.length);
+row("gallery LEGACY str", galStr, news.length);
+
+console.log("\n═══ ⚠︎  FLAGS ═══════════════════════════════════════════");
+const flags = [];
+const totalVisuals = ["landingVisual", "tabArtVisual", "cardCoverVisual"]
+  .reduce((a, f) => a + count(arts, f), 0);
+if (!totalVisuals) flags.push(
+  `NO ARTWORK HAS ANY VISUAL. All ${arts.length} works, all 3 slots, empty. The repo holds\n` +
+  `     zero image files since 087aee8 (2026-08-10) and the CMS has no media picker, so every\n` +
+  `     image is a hand-pasted Cloudflare URL. This is the blocker for the whole visual layer.`);
+if (legacyImg) flags.push(
+  `${legacyImg} news items still use the flat \`image:\` field pointing at /assets/… — an origin\n` +
+  `     DELETED on 2026-08-10. These resolve to nothing today.`);
+if (galObj) flags.push(
+  `${galObj} news items have new-shape gallery rows that are EMPTY objects — slots created in\n` +
+  `     the CMS UI but no URL pasted yet. Migration in progress, not finished.`);
+for (const n of news) {
+  if (n.d.isDateRange === false && n.d.endDate)
+    flags.push(`news/${n.slug}: isDateRange is false but endDate is set (${String(n.d.endDate).slice(0, 10)}).`);
+  if (n.d.year) flags.push(`news/${n.slug}: stray \`year: ${n.d.year}\` — not in the schema, pre-date model leftover.`);
+}
+for (const a of arts) if (!has(a.d.premiereCity)) flags.push(`artworks/${a.slug}: no premiereCity — grid caption will be bare.`);
+flags.push(
+  `artworks/personhood: productionDate is month-precision (2024-10-01) but v6 displays\n` +
+  `     "2024 - 2026". A \`date\` CANNOT express a range — either the prototype drifted or the\n` +
+  `     schema can't say what the work needs. Open since 2026-08-10.`);
+if (!has(fm("content/about.md").imageUrl))
+  flags.push("about.imageUrl is empty — no profile picture renders anywhere.");
+flags.forEach((f, i) => console.log(`  ${String(i + 1).padStart(2)}. ${f}`));
+console.log("");

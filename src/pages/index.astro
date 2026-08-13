@@ -1,0 +1,77 @@
+---
+/**
+ * P1 PROOF PAGE — deliberately not the design.
+ *
+ * This exists to prove the collections parse, the mapper runs, and `astro build` goes green
+ * against real CMS content. The real landing arrives at P3 when the v6 shell is ported.
+ * DELETE THIS FILE at P3; it is scaffolding, not a surface.
+ */
+import { getCollection } from "astro:content";
+import { mapWork, mapNews, featuredWorks, newsNewestFirst } from "../lib/map";
+
+const works = (await getCollection("artworks")).map(mapWork);
+const news = newsNewestFirst((await getCollection("news")).map(mapNews));
+const featured = featuredWorks(works);
+
+const withVisual = works.filter((w) => w.visuals.landing || w.visuals.tabArt || w.visuals.cardCover);
+const newsWithImage = news.filter((n) => n.image);
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>P1 data proof — Many Projects</title>
+    <style>
+      body { font: 14px/1.5 ui-monospace, monospace; background: #E7E7E7; color: #111;
+             margin: 0; padding: 60px; }
+      h1 { font-size: 14px; margin: 0 0 24px; }
+      h2 { font-size: 14px; margin: 32px 0 8px; }
+      table { border-collapse: collapse; font-size: 12px; }
+      td, th { text-align: left; padding: 2px 16px 2px 0; vertical-align: top; }
+      .warn { color: #a00; }
+      .ok { color: #060; }
+    </style>
+  </head>
+  <body>
+    <h1>P1 data proof — {works.length} artworks, {news.length} news, built from content/</h1>
+
+    <h2>Landing carousel ({featured.length} featured, by featureOrder)</h2>
+    <table>
+      {featured.map((w) => (
+        <tr>
+          <td>{w.order}</td><td>{w.title}</td><td>{w.year}</td><td>{w.city}</td>
+          <td class={w.visuals.landing ? "ok" : "warn"}>
+            {w.visuals.landing ? w.visuals.landing.src : "no landingVisual"}
+          </td>
+        </tr>
+      ))}
+    </table>
+
+    <h2>Spec fields — grey text under the title (JJ, 2026-08-13)</h2>
+    <table>
+      {works.map((w) => (
+        <tr><td>{w.title}</td><td>{w.medium}</td><td>{w.size}</td><td>{w.duration}</td></tr>
+      ))}
+    </table>
+
+    <h2>News (reverse-chronological)</h2>
+    <table>
+      {news.map((n) => (
+        <tr>
+          <td>{n.date?.toISOString().slice(0, 10)}</td><td>{n.eventType}</td>
+          <td>{n.title}</td><td>{n.city}</td>
+          <td>{n.statement.length} para</td>
+          <td class={n.image ? "ok" : "warn"}>{n.image ? n.image.src : "no image"}</td>
+        </tr>
+      ))}
+    </table>
+
+    <h2 class="warn">The image gap</h2>
+    <p>
+      {withVisual.length} of {works.length} artworks have any visual at all.<br />
+      {newsWithImage.length} of {news.length} news items have an image, and every one of those
+      is a legacy <code>/assets/…</code> path whose origin was deleted on 2026-08-10.
+    </p>
+  </body>
+</html>
