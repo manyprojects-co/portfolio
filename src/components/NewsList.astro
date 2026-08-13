@@ -1,0 +1,35 @@
+---
+/**
+ * NEWS panel — reverse-chronological (DECIDED 2026-08-06; no CMS field for order).
+ * `timeElapsed` is baked for first paint and refreshed by site.js — see format.ts.
+ */
+import Media from "./Media.astro";
+import { titleCase, typeLabel, timeElapsed } from "../lib/format";
+interface Props { news: any[]; specialTypes?: string[] }
+const { news, specialTypes = ["Award", "Press"] } = Astro.props;
+---
+<div class="sub" id="news">
+  <div class="news-list" id="newsList">
+    {news.map((item) => (
+      <article class={"news-item" + (specialTypes.includes(item.eventType) ? " special" : "")}>
+        <div class="ni-inner" data-slug={item.slug} data-kind="news">
+          <Media media={item.image} alt={item.title} class="ni-img"
+                 widths={[200, 400, 600]} sizes="200px" ratio={[1, 1]} />
+          <div class="ni-text">
+            <div class="ni-meta">
+              <span>{typeLabel(item.eventType)}</span>
+              <span class="ni-sep">·</span>
+              <span data-elapsed={item.date?.toISOString().slice(0, 10)}>
+                {item.date ? timeElapsed(item.date) : ""}
+              </span>
+            </div>
+            <p class="ni-heading">
+              <span class="ni-title">{titleCase(item.title)}</span>
+              {item.subheading && <>: <span class="ni-sub">{item.subheading}</span></>}
+            </p>
+          </div>
+        </div>
+      </article>
+    ))}
+  </div>
+</div>

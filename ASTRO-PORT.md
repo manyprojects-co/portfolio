@@ -61,3 +61,75 @@ now 11/11. These become the grey spec line under the artwork title (P5).
   differential test reads `prototype-v6.html`. It moves into `src/lib/` at P3 — **one copy,
   not two**; duplicating it is the drift risk P0 exists to prevent.
 - `_posts/2026-08-04-hello.md` is scaffolding junk from whatever created the repo.
+
+---
+
+# P3 — the shell, ported
+
+The v6 landing is now an Astro app rendering real CMS content. `npm run dev` and it runs.
+
+| | |
+|---|---|
+| `src/styles/global.css` | v6's entire style layer, **extracted not retyped**. All 35 `[TUNE]` tokens keep their names. Port additions are below a marked line at the end. |
+| `src/layouts/Site.astro` | the shell — `#detail` / `#stage` / `#world`. The nesting is load-bearing. |
+| `src/components/` | Carousel · Nav · ArtGrid · NewsList · Bio · **Media** |
+| `src/scripts/site.js` | the motion layer. Geometry, tweens, transitions, wheel/touch, contact, detail. |
+| `src/lib/gesture-arbiter.mjs` | P0's module. **One copy.** Do not duplicate it back into a prototype. |
+
+## What changed from v6, and nothing else did
+
+**The panels are pre-rendered.** ~290 lines of v6 that built the carousel, grid, news list
+and bio in the browser are gone; Astro renders them from content collections. The click
+wiring is now one delegated listener instead of per-card handlers.
+
+**`--ease` is read.** v6 declared it `[TUNE]`, documented it, and hardcoded
+`cubic-bezier(0.5,0,0,1)` in every tween — the 2026-08-09 health check called it "a lie"
+and the one cleanup worth doing unprompted. `tween()` parses the token now, with the old
+literal as fallback.
+
+**`TECH` is deleted.** `technicalTagline` / `technicalText` are 11/11 in the CMS, so the
+technical section reads real fields. (The *text* is still lorem — content, not code.)
+
+**News `statement` renders.** 13/15 populated, and v6 fell back to `subheading` (2/15).
+`v4-cms-audit.md` called this the largest content-to-site gap; it is closed.
+
+**The spec line exists.** `medium` / `size` / `duration` as grey text under the artwork
+title, per JJ 2026-08-13. New `--spec-gap` token. Expect one round of review on the treatment.
+
+## ⚠︎ The bug this port already caught
+
+v6 wrote the arbiter's internals **from three places outside the wheel path** —
+`openDetail()` claimed `gRegion` directly, the horizontal deck-browse read it, and
+`touchstart` minted a gesture by hand (`gestureId++; spentOn = -1; gRegion = …`).
+
+P0's extraction missed all three, **and the differential test passed anyway, because it
+only exercised wheel events.** The ported page threw `gRegion is not defined` on first load.
+
+Fixed by surfacing them as named operations — `claimRegion()`, `region()`,
+`beginGesture()` — with six tests each pinning behaviour, including that `beginGesture`
+deliberately does **not** reset `peak`/`prevDir` the way `newGesture()` does. The
+differential streams now interleave touch begins and region claims too. **54 tests green.**
+
+## The empty media state is the default case
+
+Every visual field is empty in all 26 content files, so `.media-empty` is what the site
+renders today — 24 placeholders on the landing alone. It carries an explicit aspect ratio
+because v6's images sized their own boxes from intrinsic dimensions; an empty `<div>`
+collapsed the carousel to **zero scroll width**. Real images take over as they land.
+
+## Verified in a real browser
+
+Built output, Chromium, 1440×900:
+
+- 5 featured / 11 grid / 15 news / 3 bio sections / 24 bio rows — all correct
+- landing → tab → card rises → close, full chain, **no console errors**
+- `--detail-bleed` resolves as a **formula**, not a magic number
+- ⭐ `#bio` padding-top `0px`, `.about` padding-top `134px`, and bio columns land at
+  **identical** offsets — v6's one-bug fix carried, not silently reintroduced
+
+## Still to do (P4)
+
+The detail card is built from an embedded JSON payload — marked `P4 SEAM` in
+`index.astro` and `site.js`. P4 replaces it with `/[type]/[slug]` routes pre-rendering the
+card open, `_content` partials fetched on click, and the `buildSheet`-adopts-pre-rendered-DOM
+hinge that makes the no-JS and SEO paths work.
