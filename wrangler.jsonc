@@ -1,0 +1,25 @@
+{
+  // Cloudflare Workers Static Assets — NOT classic Pages, which has been in maintenance
+  // mode since Apr 2025. Most tutorials still say "Pages"; translate accordingly.
+  //
+  // ⚠︎ `name` MUST match the Worker's name in the Cloudflare dashboard, or Workers Builds
+  // will not connect to it.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "agawen",
+  "compatibility_date": "2026-08-13",
+
+  // Assets-only: no `main`, so no Worker script at all. Cloudflare serves dist/ directly
+  // and returns the 404 page for anything unmatched. If edge logic is ever needed
+  // (redirects, password-gating an unreleased show), adding `main` is the whole change —
+  // which is the reason Workers was chosen over Pages in the first place.
+  "assets": {
+    "directory": "./dist",
+    // Astro builds /art/<slug>/index.html and `trailingSlash: "never"` links to /art/<slug>.
+    // auto-trailing-slash (the default) resolves that pairing.
+    "html_handling": "auto-trailing-slash",
+    // NOT "single-page-application" — this is a pre-rendered static site, and returning
+    // index.html with a 200 for every unknown URL would make every typo look like the
+    // landing page and poison indexing.
+    "not_found_handling": "404-page"
+  }
+}

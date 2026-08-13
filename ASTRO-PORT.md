@@ -55,8 +55,9 @@ now 11/11. These become the grey spec line under the artwork title (P5).
 
 ## Known gaps, carried forward
 
-- ⚠︎ **`personhood` cannot express its own date.** `productionDate` is a month-precision
-  `date`; v6 shows "2024 - 2026". Needs Xin, or a schema change.
+- ✅ **`personhood`'s date is RESOLVED** (JJ, 2026-08-13): it should not show a range.
+  The CMS has always said `2024-10-01` and that is correct; v6's "2024 - 2026" was
+  prototype drift. The port renders "2024". No schema change needed, flag removed.
 - The gesture arbiter (P0) lives in the **design workspace**, not here, because its
   differential test reads `prototype-v6.html`. It moves into `src/lib/` at P3 — **one copy,
   not two**; duplicating it is the drift risk P0 exists to prevent.
@@ -194,6 +195,6 @@ Gesture close: rewinds the URL to `/`, and re-opening afterwards still works.
 
 - **`/art`, `/news`, `/bio` panel routes.** hooks says the nesting extends naturally
   (`/news` = News panel open). Not built — the three panels are reachable but have no URLs.
-- **`personhood` cannot express its own date** — `productionDate` is month-precision and v6
-  showed "2024 - 2026". Needs Xin or a schema change.
+- ~~`personhood`'s date~~ — **resolved** (JJ, 2026-08-13): no range intended, the CMS is
+  correct, v6 had drifted. The port already renders "2024".
 - **Every image is still a placeholder.** Nothing here is blocked on that.

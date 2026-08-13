@@ -8,7 +8,9 @@
     "preview": "astro preview",
     "check": "astro check",
     "data:diff": "node scripts/diff-v6.mjs",
-    "data:report": "node scripts/content-report.mjs"
+    "data:report": "node scripts/content-report.mjs",
+    "deploy": "astro build && wrangler deploy",
+    "preview:remote": "astro build && wrangler versions upload"
   },
   "dependencies": {
     "astro": "^7.2.1",

@@ -64,10 +64,9 @@ for (const n of news) {
   if (n.d.year) flags.push(`news/${n.slug}: stray \`year: ${n.d.year}\` — not in the schema, pre-date model leftover.`);
 }
 for (const a of arts) if (!has(a.d.premiereCity)) flags.push(`artworks/${a.slug}: no premiereCity — grid caption will be bare.`);
-flags.push(
-  `artworks/personhood: productionDate is month-precision (2024-10-01) but v6 displays\n` +
-  `     "2024 - 2026". A \`date\` CANNOT express a range — either the prototype drifted or the\n` +
-  `     schema can't say what the work needs. Open since 2026-08-10.`);
+// ✅ RESOLVED 2026-08-13 (JJ): personhood should NOT show a range. v6 displayed
+// "2024 - 2026"; the CMS has always said 2024-10-01 and that is correct. This was
+// prototype drift, not a schema gap — the port already renders "2024". No flag.
 if (!has(fm("content/about.md").imageUrl))
   flags.push("about.imageUrl is empty — no profile picture renders anywhere.");
 flags.forEach((f, i) => console.log(`  ${String(i + 1).padStart(2)}. ${f}`));
