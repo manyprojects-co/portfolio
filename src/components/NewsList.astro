@@ -12,7 +12,7 @@ const { news, specialTypes = ["Award", "Press"] } = Astro.props;
   <div class="news-list" id="newsList">
     {news.map((item) => (
       <article class={"news-item" + (specialTypes.includes(item.eventType) ? " special" : "")}>
-        <div class="ni-inner" data-slug={item.slug} data-kind="news">
+        <a class="ni-inner" href={`/news/${item.slug}`} data-detail={`news/${item.slug}`}>
           <Media media={item.image} alt={item.title} class="ni-img"
                  widths={[200, 400, 600]} sizes="200px" ratio={[1, 1]} />
           <div class="ni-text">
@@ -28,7 +28,7 @@ const { news, specialTypes = ["Award", "Press"] } = Astro.props;
               {item.subheading && <>: <span class="ni-sub">{item.subheading}</span></>}
             </p>
           </div>
-        </div>
+        </a>
       </article>
     ))}
   </div>

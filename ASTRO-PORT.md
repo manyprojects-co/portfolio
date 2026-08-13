@@ -133,3 +133,67 @@ The detail card is built from an embedded JSON payload — marked `P4 SEAM` in
 `index.astro` and `site.js`. P4 replaces it with `/[type]/[slug]` routes pre-rendering the
 card open, `_content` partials fetched on click, and the `buildSheet`-adopts-pre-rendered-DOM
 hinge that makes the no-JS and SEO paths work.
+
+---
+
+# P4 — detail routes, partials, and the adopt hinge
+
+The locked architecture from `hooks.md § Detail-route architecture`, implemented. **53 pages
+build**: the landing, 11 artworks, 15 news items, and a bare partial for each.
+
+```
+/                          the landing
+/art/<slug>                the landing with the sheet PRE-RENDERED OPEN
+/art/<slug>/content        the bare sheet content (partial: true)
+/news/<slug>               ditto
+/news/<slug>/content
+```
+
+## One renderer, not two
+
+`Work.astro` and `NewsItem.astro` are each rendered by **both** their route and their
+partial. That is what makes hooks' requirement — *"the fetched markup is identical to what
+the route inlines"* — true by construction rather than by discipline. **Verified: the
+partial and the inlined markup are byte-identical** (2,336 bytes each for `2025pcm`).
+
+v6's JavaScript detail-markup generator is **deleted**, and so is P3's intermediate
+embedded-JSON payload. There is now exactly one description of what a work's sheet looks like.
+
+## The hinge
+
+`buildSheet` had to learn to *adopt* as well as build:
+
+| arriving by | what happens |
+|---|---|
+| **in-site click** | fetch `/type/slug/content`, inject, run the rise, `pushState` |
+| **cold URL load** | the route already inlined it — `adoptSheet()` presents it **at rest, no rise** |
+| **no JavaScript** | the `<a href>` loads the route; the sheet is already up |
+| **back button** | `popstate` closes it; a gesture-close calls `history.back()` itself |
+
+A rise is the response to a click, and arriving by URL is not a click — so the cold path
+measures and presents rather than animating. Cards are now real `<a href>` elements, and the
+click handler only intercepts a plain left-click, so cmd-click and "open in new tab" work.
+
+## ⚠︎ `_content` had to become `content`
+
+`hooks.md` specifies `_content.astro`. **Astro excludes any file or directory under
+`src/pages` whose name begins with `_` from routing entirely** — so with the underscore, the
+build succeeds, the route silently does not exist, the fetch 404s, and every click falls
+back to a full page load. Cosmetic rename; same architecture. Worth correcting in hooks.
+
+## Verified in a browser — 18 checks, 0 failures
+
+Cold load: sheet renders (2,341 bytes), presents at rest (**one** distinct stage transform
+across 8 frames — it does not animate), clears `.cold`, seeds history state.
+Click: exactly one partial fetch, no full-page navigation, URL pushed, rise runs.
+Back: URL returns to `/` and the sheet closes.
+No-JS: card is a real link, navigates, content is in the HTML, sheet marked open.
+Gesture close: rewinds the URL to `/`, and re-opening afterwards still works.
+
+## Still open
+
+- **`/art`, `/news`, `/bio` panel routes.** hooks says the nesting extends naturally
+  (`/news` = News panel open). Not built — the three panels are reachable but have no URLs.
+- **`personhood` cannot express its own date** — `productionDate` is month-precision and v6
+  showed "2024 - 2026". Needs Xin or a schema change.
+- **Every image is still a placeholder.** Nothing here is blocked on that.

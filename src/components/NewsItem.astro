@@ -1,0 +1,34 @@
+---
+/**
+ * NewsItem.astro — the news sheet's inner content. Same two consumers as Work.astro.
+ * News never ends in the black technical section, so it never sets `.tech-tail`.
+ *
+ * ✅ `statement` renders here (13/15 populated). v6 fell back to `subheading`, which is
+ * populated 2/15 — v4-cms-audit.md called that the largest content-to-site gap.
+ */
+import Media from "./Media.astro";
+import { titleCase, typeLabel, timeElapsed } from "../lib/format";
+interface Props { item: any }
+const { item } = Astro.props;
+const figs = item.gallery?.length ? item.gallery : item.image ? [item.image] : [];
+---
+<div class="detail-body">
+  <div class="detail-col detail-news">
+    <div class="dn-meta">
+      <span>{typeLabel(item.eventType)}</span>
+      <span class="ni-sep">·</span>
+      <span>{item.city}</span>
+      <span class="ni-sep">·</span>
+      <span data-elapsed={item.date?.toISOString?.().slice(0, 10) ?? item.date}>
+        {item.date ? timeElapsed(new Date(item.date)) : ""}
+      </span>
+    </div>
+    <p class="dn-title">{titleCase(item.title)}</p>
+    {item.statement?.length > 0
+      ? item.statement.map((p: string) => <p class="dn-body">{p}</p>)
+      : item.subheading && <p class="dn-body">{item.subheading}</p>}
+  </div>
+  <div class="detail-figs">
+    {figs.map((g: any) => <Media media={g} alt={item.title} widths={[900, 1400, 1920]} />)}
+  </div>
+</div>

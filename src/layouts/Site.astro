@@ -8,8 +8,19 @@
  * and every geometry measurement in site.js reads from this exact tree.
  */
 import "../styles/global.css";
-interface Props { title?: string; description?: string }
-const { title = "Many Projects", description = "Xin Wen & JJ Agcaoili — XJ" } = Astro.props;
+interface Props {
+  title?: string;
+  description?: string;
+  /** Set on a detail route. Tells site.js to ADOPT the pre-rendered sheet rather than
+   *  build one — and to present it AT REST, with no rise. A rise is the response to a
+   *  click; arriving by URL is not a click. (hooks.md § Detail-route architecture) */
+  coldOpen?: { type: "art" | "news"; slug: string } | null;
+}
+const {
+  title = "Many Projects",
+  description = "Xin Wen & JJ Agcaoili — XJ",
+  coldOpen = null,
+} = Astro.props;
 ---
 <!doctype html>
 <html lang="en">
@@ -27,8 +38,13 @@ const { title = "Many Projects", description = "Xin Wen & JJ Agcaoili — XJ" } 
   </head>
   <body>
     <!-- BELOW: the detail card. Rises over the site; #detail owns the grey->black ground. -->
-    <div id="detail" aria-label="Artwork or news detail">
-      <div id="detailScroll"><div id="detailContent"></div></div>
+    <div
+      id="detail"
+      aria-label="Artwork or news detail"
+      class:list={[coldOpen && "open", coldOpen && "cold"]}
+      data-cold-open={coldOpen ? `${coldOpen.type}/${coldOpen.slug}` : undefined}
+    >
+      <div id="detailScroll"><div id="detailContent"><slot name="detail" /></div></div>
     </div>
 
     <!-- ABOVE: the site. #stage owns the detail offset, #world the landing<->tab offset. -->

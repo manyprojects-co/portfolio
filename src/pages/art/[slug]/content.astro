@@ -1,0 +1,23 @@
+---
+/**
+ * The bare sheet content, fetched on an in-site click. `partial: true` strips the document
+ * wrapper, so the response is exactly what goes into #detailContent — byte-identical to
+ * what /art/[slug] inlines, because both render the same <Work> component.
+ *
+ * ⚠︎ NAMED `content`, NOT `_content`. hooks.md § Detail-route architecture specifies
+ * `_content.astro`, but that spec predates Astro being wired up: Astro treats any file or
+ * directory under src/pages whose name starts with `_` as PRIVATE and excludes it from
+ * routing entirely. Named with the underscore, this route silently does not exist — the
+ * build succeeds, the partial 404s, and every click falls back to a full page load.
+ * The URL is therefore /art/<slug>/content. Cosmetic deviation; same architecture.
+ */
+export const partial = true;
+import Work from "../../../components/Work.astro";
+
+export async function getStaticPaths() {
+  const { allWorks } = await import("../../../lib/content");
+  return (await allWorks()).map((work) => ({ params: { slug: work.slug }, props: { work } }));
+}
+const { work } = Astro.props;
+---
+<Work work={work} />

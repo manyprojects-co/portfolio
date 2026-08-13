@@ -10,10 +10,9 @@
  *   · `--ease` IS NOW READ. In v6 the token was declared, documented [TUNE], and ignored:
  *     every tween hardcoded cubic-bezier(0.5,0,0,1). The 2026-08-09 health check called it
  *     "a lie" and the one cleanup worth doing unprompted. tween() parses it now.
- *   · Detail-card content is built from an embedded JSON payload keyed by slug.
- *     ⚠︎ THIS IS THE P4 SEAM. The locked architecture says fetch a `_content` partial on
- *     click rather than embedding everything; the embed is the intermediate step while the
- *     routes don't exist yet. When P4 lands, replace `DATA` with the fetch and delete this note.
+ *   · Detail content is FETCHED from a `_content` partial, or ADOPTED from pre-rendered
+ *     DOM on a cold /type/slug load. v6 built that markup in JS; that generator is gone,
+ *     and so is the intermediate embedded-JSON payload P3 used. One renderer: <Work>.
  *
  * INVARIANTS CARRIED (each cost a round — see hooks.md):
  *   · one gesture = one lerp; the deck asks a different question from transitions
@@ -23,11 +22,9 @@
 import { createArbiter } from "../lib/gesture-arbiter.mjs";
 import { titleCase, typeLabel, timeElapsed } from "../lib/format";
 
-const DATA = JSON.parse(document.getElementById("site-data")?.textContent || '{"works":[],"news":[]}');
-const WORKS = new Map(DATA.works.map((w) => [w.slug, w]));
-const NEWS = new Map(DATA.news.map((n) => [n.slug, n]));
 
 {
+  // ============================================================================
   // MOTION PRIMITIVES — ported from prototype-tabsnap.html
   // ============================================================================
   const root = document.documentElement;
@@ -323,6 +320,7 @@ const NEWS = new Map(DATA.news.map((n) => [n.slug, n]));
 
   function closeDetail() {
     if (!detailOpen) return;
+    closeViaHistory();   // keep the URL in step with a gesture-driven close
     detailOpen = false;
     arb.consume();   // spend the gesture HERE, not when the lerp lands: detailOpen flips
                  // immediately, so the next event of this same flick would otherwise fall
@@ -607,126 +605,123 @@ const NEWS = new Map(DATA.news.map((n) => [n.slug, n]));
 
   // ============================================================================
   // ============================================================================
-  // ART-NEWS DETAIL CONTENT
-  // ⚠︎ P4 SEAM: built from the embedded payload. Becomes a fetch of
-  // /[type]/[slug]/_content, and buildSheet must additionally ADOPT pre-rendered DOM
-  // on a cold /type/slug load. That adoption is what makes the no-JS and SEO paths work.
+  // DETAIL ROUTES — fetch, adopt, and the URL
+  //
+  // ⭐ THE PORTING HINGE (hooks.md § Detail-route architecture — LOCKED). The sheet has
+  // to work two ways from ONE code path:
+  //   · IN-SITE CLICK  -> fetch /type/slug/content, inject, run the rise, pushState
+  //   · COLD URL LOAD  -> the route already inlined the content; ADOPT it and present
+  //                       AT REST, with no rise. A rise is the response to a click, and
+  //                       arriving by URL is not a click.
+  // No JS at all -> the <a href> loads the pre-rendered route and the sheet is already up.
+  //
+  // ⚠︎ The partial is `/content`, NOT `/_content` as hooks.md specifies: Astro excludes any
+  // src/pages path starting with `_` from routing, so the underscore name builds clean and
+  // then 404s at runtime. Same architecture, routable name.
+  //
+  // ⚠︎ The two markups CANNOT diverge, because the route and the partial render the SAME
+  // <Work>/<NewsItem> component — one renderer, not two. v6 built this markup in
+  // JavaScript; that generator is deleted, along with the embedded JSON payload it fed on.
   // ============================================================================
-  const liDot = (t) => `<div>·&nbsp;${t}</div>`;
-  const esc = (s) => String(s ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
+  const partialCache = new Map();
 
-  /** Render one media object the way <Media> does, including the empty state. */
-  function mediaTag(m, alt, cls = "") {
-    if (!m || !m.src) return `<div class="media-empty ${cls}" role="img" aria-label="${esc(alt)}"></div>`;
-    const src = import.meta.env.PROD ? `/cdn-cgi/image/width=1280,format=auto/${m.src}` : m.src;
-    return m.kind === "video"
-      ? `<video class="${cls}" src="${esc(src)}" muted loop playsinline autoplay></video>`
-      : `<img class="${cls}" src="${esc(src)}" alt="${esc(alt)}">`;
+  async function loadPartial(path) {
+    if (partialCache.has(path)) return partialCache.get(path);
+    const res = await fetch(`/${path}/content`, { headers: { Accept: "text/html" } });
+    if (!res.ok) throw new Error(`partial ${path}: ${res.status}`);
+    const html = await res.text();
+    partialCache.set(path, html);   // one fetch per item, cached after
+    return html;
   }
 
-  function openWork(wk) {
-    if (detailOpen) return;
-    const ty = `<span class="title">${esc(wk.title)}</span><span class="year">(${esc(wk.year)})</span>`;
-    // ⭐ THE SPEC LINE (JJ, 2026-08-13): medium / size / duration as grey text under the
-    // title. 11/11 populated in the CMS and never rendered before now. Expect one round
-    // of in-browser review on the treatment.
-    const spec = [wk.medium, wk.size, wk.duration].filter(Boolean)
-      .map((s) => `<div>${esc(s)}</div>`).join("");
-    const statementHtml = (wk.statement || []).map((p) => `<p style="margin:0 0 1em">${esc(p)}</p>`).join("");
-    const tech = techMarkup(wk);
-    const figs = (wk.gallery || []).map((g) => mediaTag(g, wk.title)).join("");
+  /** The card's bottom ground follows whatever section actually ends the card. */
+  const syncTechTail = () =>
+    detailEl.classList.toggle("tech-tail", !!detailContent.querySelector(".tech"));
 
-    detailContent.innerHTML =
-      `<div class="art-ground${tech ? " has-tech" : ""}">` +
-      `<div class="detail-body">` +
-        mediaTag(wk.visuals.cardCover || wk.visuals.landing, wk.title, "detail-hero") +
-        `<div class="art-info">` +
-          `<div class="art-col">` +
-            `<p class="detail-heading">${ty}</p>` +
-            (spec ? `<div class="detail-spec">${spec}</div>` : "") +
-            (wk.exhibitions?.length ? `<div class="detail-block detail-exh">${wk.exhibitions.map((x) => liDot(esc(x))).join("")}</div>` : "") +
-            (wk.acknowledgements?.length ? `<div class="detail-block detail-ack">${wk.acknowledgements.map((x) => liDot(esc(x))).join("")}</div>` : "") +
-          `</div>` +
-          (statementHtml ? `<div class="art-col"><div class="detail-block">${statementHtml}</div></div>` : "") +
-        `</div>` +
-        (figs ? `<div class="detail-figs">${figs}</div>` : "") +
-      `</div></div>` + tech;
-    detailEl.classList.toggle("tech-tail", tech !== "");
+  /** In-site open: fetch, inject, rise, push the URL. */
+  async function openPath(path, { push = true } = {}) {
+    if (detailOpen) return;
+    let html;
+    try {
+      html = await loadPartial(path);
+    } catch {
+      window.location.href = `/${path}`;   // fall back to a full navigation
+      return;
+    }
+    detailContent.innerHTML = html;
+    syncTechTail();
+    refreshElapsed(detailContent);
+    if (push) history.pushState({ detail: path }, "", `/${path}`);
     openDetail();
   }
 
   /**
-   * TECHNICAL section — emitted as a SIBLING of .detail-body so its negative inline
-   * margin can break out of #detailScroll's padding and reach the card edge.
-   * ✅ v5's standalone `TECH` placeholder map is DELETED: technicalTagline and
-   * technicalText are 11/11 in the CMS now, so this reads the real fields.
-   * (The text itself is still lorem in the CMS — a content problem, not a code one.)
+   * COLD LOAD: the server already rendered the sheet into #detailContent and marked
+   * #detail `.open .cold`. Present it at its resting position with NO animation, and leave
+   * the world at the landing — which is where a close lerps down to.
    */
-  function techMarkup(wk) {
-    const t = wk.technical || {};
-    const body = (t.text || []).map((p) => `<p style="margin:0 0 1em">${esc(p)}</p>`).join("");
-    const figs = (t.gallery || []).map((g) =>
-      `<figure>${mediaTag(g, wk.title)}` +
-      (g.caption ? `<figcaption>${esc(g.caption)}</figcaption>` : "") + `</figure>`).join("");
-    if (!t.tagline && !body && !figs) return "";
-    return `<section class="tech"><div class="tech-inner">` +
-      ((t.tagline || body)
-        ? `<div class="art-info">` +
-            (t.tagline ? `<div class="art-col"><p class="tech-tagline">${esc(t.tagline)}</p></div>` : "") +
-            (body ? `<div class="art-col"><div class="detail-block">${body}</div></div>` : "") +
-          `</div>` : "") +
-      (figs ? `<div class="tech-figs">${figs}</div>` : "") +
-      `</div></section>`;
+  function adoptSheet() {
+    detailOpen = true;
+    detailEl.classList.remove("cold");
+    detailScroll.scrollTop = 0;
+    detailScroll.style.overflowY = "auto";
+    syncTechTail();
+    arb.claimRegion("detail");
+    applyStage(stageOpenY());     // measured and presented, NOT tweened
   }
 
-  function openNews(item) {
-    if (detailOpen) return;
-    detailEl.classList.remove("tech-tail");        // news never ends in the black section
-    // ✅ `statement` is 13/15 populated and now RENDERS — v6 fell back to `subheading`,
-    // which is only 2/15. v4-cms-audit called this the largest content-to-site gap.
-    const body = (item.statement || []).map((p) => `<p class="dn-body">${esc(p)}</p>`).join("")
-              || (item.subheading ? `<p class="dn-body">${esc(item.subheading)}</p>` : "");
-    const gal = (item.gallery || []).length ? item.gallery : [item.image];
-    const figs = gal.map((g) => mediaTag(g, item.title)).join("");
-    detailContent.innerHTML =
-      `<div class="detail-body">` +
-      `<div class="detail-col detail-news">` +
-        `<div class="dn-meta">` +
-          `<span>${esc(typeLabel(item.eventType))}</span><span class="ni-sep">·</span>` +
-          `<span>${esc(item.city || "")}</span><span class="ni-sep">·</span>` +
-          `<span>${esc(item.date ? timeElapsed(new Date(item.date)) : "")}</span>` +
-        `</div>` +
-        `<p class="dn-title">${esc(titleCase(item.title))}</p>` + body +
-      `</div>` +
-      `<div class="detail-figs">${figs}</div>` +
-      `</div>`;
-    openDetail();
-  }
-
-  // ---- click wiring. The panels are pre-rendered, so this delegates rather than
-  // attaching per card at build time. One listener, survives any re-render.
+  // ---- click wiring. Cards are real links; intercept only the plain left-click, so
+  // cmd/ctrl-click, middle-click and "open in new tab" all keep working.
   document.addEventListener("click", (e) => {
-    const hit = e.target.closest?.("[data-slug][data-kind]");
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    const hit = e.target.closest?.("[data-detail]");
     if (!hit) return;
+    e.preventDefault();
     e.stopPropagation();
-    const { slug, kind } = hit.dataset;
-    if (kind === "work" && WORKS.has(slug)) openWork(WORKS.get(slug));
-    else if (kind === "news" && NEWS.has(slug)) openNews(NEWS.get(slug));
+    openPath(hit.dataset.detail);
   });
 
-  // ---- `timeElapsed` is relative to now and was baked at build time. Refresh it, so a
-  // page built in August doesn't still read "3d" in December. See lib/format.ts.
-  for (const el of document.querySelectorAll("[data-elapsed]")) {
-    const d = el.getAttribute("data-elapsed");
-    if (d) el.textContent = timeElapsed(d);
+  // ---- the URL is the source of truth for which sheet is open. closeDetail() calls
+  // history.back() so a GESTURE close updates the URL too; the popstate that produces must
+  // not then close it a second time, hence the guard.
+  let navLock = false;
+  function closeViaHistory() {
+    if (navLock) return;
+    if (history.state && history.state.detail) { navLock = true; history.back(); }
   }
+
+  window.addEventListener("popstate", () => {
+    const path = location.pathname.replace(/^\/+|\/+$/g, "");
+    const wantsDetail = /^(art|news)\/.+/.test(path);
+    if (wantsDetail && !detailOpen) openPath(path, { push: false });
+    else if (!wantsDetail && detailOpen) { navLock = true; closeDetail(); navLock = false; }
+    else navLock = false;
+  });
+
+  // ---- `timeElapsed` is relative to now and was baked at build time. Refresh it so a page
+  // built in August doesn't still read "3d" in December. See lib/format.ts.
+  function refreshElapsed(scope) {
+    for (const el of (scope || document).querySelectorAll("[data-elapsed]")) {
+      const d = el.getAttribute("data-elapsed");
+      if (d) el.textContent = timeElapsed(d);
+    }
+  }
+  refreshElapsed();
+
+  // ============================================================================
   // INIT + RESIZE
   // ============================================================================
   function init() {
     pinContact();                       // BEFORE measureGeom: pinning sets the nav's
     measureGeom();                      // final line width, and navH feeds BAND
+    // ⭐ the ADOPT half of the hinge — a detail route rendered the sheet server-side
+    const cold = detailEl.dataset.coldOpen;
+    if (cold) {
+      history.replaceState({ detail: cold }, "", location.pathname);
+      adoptSheet();
+    }
     applyWorld(view === "tab" ? -LANDING_H : 0);
-    applyStage(detailOpen ? stageOpenY() : 0);
+    if (!detailOpen) applyStage(0);   // adoptSheet already positioned it
     applyView();
     scrollToTab(order.indexOf(current), false);
     paintNav();
@@ -749,4 +744,5 @@ const NEWS = new Map(DATA.news.map((n) => [n.slug, n]));
     applyWorld(view === "tab" ? -LANDING_H : 0);
     applyStage(detailOpen ? stageOpenY() : 0);
     scrollToTab(order.indexOf(current), false);   // px snap offset changes with width
-  });}
+  });
+}

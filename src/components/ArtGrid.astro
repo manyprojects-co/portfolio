@@ -7,14 +7,14 @@ const { works } = Astro.props;
 <div class="sub" id="art">
   <div class="grid" id="grid">
     {works.map((wk) => (
-      <figure class="gcard" data-slug={wk.slug} data-kind="work">
+      <a class="gcard" href={`/art/${wk.slug}`} data-detail={`art/${wk.slug}`}>
         <Media media={wk.visuals.tabArt ?? wk.visuals.cardCover ?? wk.visuals.landing}
                alt={wk.title} widths={[400, 800, 1200]} ratio={[4, 3]} sizes="(max-width: 900px) 45vw, 30vw" />
-        <figcaption class="gcap">
+        <span class="gcap">
           <div><span class="title">{wk.title}</span><span class="year">({wk.year})</span></div>
           {wk.city && <div class="cities">{wk.city}</div>}
-        </figcaption>
-      </figure>
+        </span>
+      </a>
     ))}
   </div>
 </div>

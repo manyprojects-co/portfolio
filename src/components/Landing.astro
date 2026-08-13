@@ -1,0 +1,29 @@
+---
+/**
+ * Landing.astro — the site behind the card. Identical on `/` and on every detail route,
+ * which is what lets a detail route be "the landing with the sheet already open".
+ */
+import Carousel from "./Carousel.astro";
+import Nav from "./Nav.astro";
+import ArtGrid from "./ArtGrid.astro";
+import NewsList from "./NewsList.astro";
+import Bio from "./Bio.astro";
+import { allWorks, allNews, aboutData, contactData, featured, gridOrder } from "../lib/content";
+
+const works = await allWorks();
+const news = await allNews();
+const about = await aboutData();
+const contact = await contactData();
+---
+<div class="hero">
+  <Carousel works={featured(works)} />
+</div>
+
+<div class="section">
+  <Nav contact={contact} />
+  <div class="track" id="track">
+    <ArtGrid works={gridOrder(works)} />
+    <NewsList news={news} />
+    <Bio about={about} />
+  </div>
+</div>

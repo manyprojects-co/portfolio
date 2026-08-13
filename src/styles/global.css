@@ -767,3 +767,13 @@
   line-height: 1.5;
   margin: -32px 0 var(--spec-gap);  /* pull up under the title; 48 - 32 = 16px gap */
 }
+
+/* ---- 3. CARDS ARE LINKS ---------------------------------------------------------
+   Every card is now an <a href="/art/slug">, so with JavaScript off the browser loads
+   the pre-rendered detail route and the sheet is already up. With JS on, site.js
+   intercepts the click, fetches the partial and runs the rise instead.
+   These rules only neutralise the anchor's default look — layout is unchanged. */
+a.card, a.gcard, a.ni-inner { color: inherit; text-decoration: none; }
+a.card:focus-visible, a.gcard:focus-visible, a.ni-inner:focus-visible {
+  outline: 1px solid currentColor; outline-offset: 4px;
+}
