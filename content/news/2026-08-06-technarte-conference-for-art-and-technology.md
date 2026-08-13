@@ -2,7 +2,6 @@
 title: Technarte Conference
 isDateRange: false
 date: 2024-05-17
-endDate: 2026-08-12
 location: Palacio Euskalduna
 city: Bilbao, Spain
 eventType: Artist Talk
