@@ -23,6 +23,9 @@ acknowledgements: In collaboration with Ahad Mahmood (DP) and Erving Tan
 landingVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/artworks/box-body/bb-ld.jpg
+tabArtVisual:
+  mediaType: image
+  imageUrl: https://media.agawen.com/artworks/box-body/bb-tab.png
 technicalTagline: "[Box-body technical tagline placeholder]"
 technicalText: Through Box Body, we developed a production work flow that
   involves remapping filmed imagery from a built scaled model of the screens. It
