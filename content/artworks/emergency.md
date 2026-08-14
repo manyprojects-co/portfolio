@@ -26,6 +26,11 @@ acknowledgements: In collaboration with Ruishuke Chen (DP) and Luling Wang (Musi
 landingVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/artworks/emergency/emgc-ld.jpg
+tabArtVisual:
+  mediaType: image
+  imageUrl: https://media.agawen.com/artworks/emergency/emgc-tab.png
+cardCoverVisual:
+  mediaType: image
 technicalTagline: "[EMERGENCY Technical Tagline Placeholder]"
 technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
   eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
