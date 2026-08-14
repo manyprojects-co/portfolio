@@ -21,6 +21,12 @@ artistStatement: >-
   In the language of technology, the contemporary human is reduced to the label
   of “user”. The sculpture User began as a cast hand which was then broken,
   rigged, and made to doom-scroll.
+landingVisual:
+  mediaType: image
+  imageUrl: https://media.agawen.com/artworks/user/user-ld.jpg
+tabArtVisual:
+  mediaType: image
+  imageUrl: https://media.agawen.com/artworks/user/user-tab.png
 technicalTagline: Broken and made to scroll
 technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
   eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
