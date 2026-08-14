@@ -19,6 +19,12 @@ artistStatement: >-
   reimagination and a departure from the status quo. The film presents cycles of
   disorder that eventually culminate in the dismantling of the boundaries that
   confined the ‘home,’ embracing the void and endless possibilities it holds.
+landingVisual:
+  mediaType: image
+  imageUrl: https://media.agawen.com/artworks/cost-of-living/col-ld.jpg
+tabArtVisual:
+  mediaType: image
+  imageUrl: https://media.agawen.com/artworks/cost-of-living/col-tab.png
 technicalTagline: "[COL Technical Tagline Placeholder]"
 technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
   eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
