@@ -24,7 +24,23 @@ interface Props {
   alt?: string;
   widths?: number[];
   sizes?: string;
-  /** explicit aspect for a fixed-aspect surface — avoids needing intrinsic dimensions */
+  /**
+   * ⚠︎ THE SHAPE OF THE EMPTY PLACEHOLDER ONLY. It never crops or constrains a real image.
+   *
+   * A real image's box is driven by its OWN intrinsic dimensions, because that variation is
+   * the design: `.artwork { height: var(--card-h); width: auto }` gives every carousel card
+   * a different width, and `.detail-hero { width: 100%; height: auto }` is commented in the
+   * CSS as "height always proportional". An empty <div> has no intrinsic size, so the
+   * placeholder needs a shape or the carousel collapses to zero scroll width — but that
+   * shape must not leak onto the real thing.
+   *
+   * Regression this prevents (JJ, 2026-08-14): "images on the carousel are all uniformly
+   * scaled, when in actuality their container dimensions should match those of the image."
+   * The first version of this component passed `ratio` into BOTH the transform
+   * (`height=..,fit=cover`, a server-side crop) AND an inline `aspect-ratio` on the <img>.
+   * Every card came out the same shape. Cropping is CSS's job where it is wanted at all —
+   * `.ni-img` does it with `aspect-ratio` + `object-fit: cover`.
+   */
   ratio?: [number, number];
   class?: string;
   loading?: "lazy" | "eager";
@@ -34,12 +50,15 @@ const {
   ratio, class: cls = "", loading = "lazy",
 } = Astro.props;
 
-/** Build one transform URL. Height is only requested when a fixed aspect was asked for. */
+/**
+ * Build one transform URL. WIDTH ONLY — Cloudflare preserves the source aspect when no
+ * height is given, so the image keeps its own proportions and the browser derives the box
+ * from them. Never add `height`/`fit=cover` here: that is a server-side crop, and it made
+ * every carousel card identical.
+ */
 function tx(src: string, w: number) {
   if (!import.meta.env.PROD || !transformable) return src;
-  const opts = [`width=${w}`, "format=auto"];
-  if (ratio) opts.push(`height=${Math.round((w * ratio[1]) / ratio[0])}`, "fit=cover");
-  return `/cdn-cgi/image/${opts.join(",")}/${src}`;
+  return `/cdn-cgi/image/width=${w},format=auto/${src}`;
 }
 
 /**
@@ -55,19 +74,19 @@ const transformable = verdict.ok;
 if (!verdict.ok && verdict.url && import.meta.env.DEV) {
   console.warn(`[Media] ${verdict.reason}\n         ${verdict.url}`);
 }
-const style = ratio ? `aspect-ratio:${ratio[0]}/${ratio[1]}` : undefined;
+// applied to the placeholder ONLY — see the note on `ratio`
+const emptyStyle = ratio ? `aspect-ratio:${ratio[0]}/${ratio[1]}` : undefined;
 ---
 
 {
   !ok ? (
     /* No source. Renders the same box the real media will occupy, so layout is honest. */
-    <div class={`media-empty ${cls}`} style={style} role="img" aria-label={alt || "Image pending"} />
+    <div class={`media-empty ${cls}`} style={emptyStyle} role="img" aria-label={alt || "Image pending"} />
   ) : media!.kind === "video" ? (
-    <video class={cls} style={style} src={src} muted loop playsinline autoplay preload="metadata" />
+    <video class={cls} src={src} muted loop playsinline autoplay preload="metadata" />
   ) : (
     <img
       class={cls}
-      style={style}
       src={tx(src, widths[Math.floor(widths.length / 2)])}
       srcset={widths.map((w) => `${tx(src, w)} ${w}w`).join(", ")}
       sizes={sizes}
