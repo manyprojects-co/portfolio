@@ -659,7 +659,7 @@ import { parseCssTime } from "../lib/css-time";
     detailContent.innerHTML = html;
     syncTechTail();
     refreshElapsed(detailContent);
-    if (push) history.pushState({ detail: path }, "", `/${path}`);
+    if (push) { history.pushState({ detail: path }, "", `/${path}`); pushedByUs = true; }
     openDetail();
   }
 
@@ -689,18 +689,38 @@ import { parseCssTime } from "../lib/css-time";
     openPath(hit.dataset.detail);
   });
 
-  // ---- the URL is the source of truth for which sheet is open. closeDetail() calls
-  // history.back() so a GESTURE close updates the URL too; the popstate that produces must
-  // not then close it a second time, hence the guard.
+  // ---- the URL is the source of truth for which sheet is open. closeDetail() unwinds it so
+  // a GESTURE close updates the URL too; the popstate that produces must not then close it a
+  // second time, hence navLock.
+  //
+  // ⚠️ history.back() IS ONLY SAFE ON AN ENTRY WE PUSHED OURSELVES. Found live on Safari and
+  // Chrome alike, 2026-08-14 (JJ): cold-loading /art/<slug> and then swiping out CUT straight
+  // to the landing with no lerp. It was never an animation failure — it was a full page
+  // navigation. On a cold load the current history entry was created by loading the DOCUMENT,
+  // so back() is a cross-document navigation: the browser destroys the page mid-close and
+  // reloads / from scratch. Nothing animates because the animating document is gone.
+  // Measured: click-in close = 6 distinct transforms, 0 document loads. Cold-URL close = 3
+  // transforms, 1 DOCUMENT LOAD. From a fresh tab it navigated off the site entirely.
+  //
+  // So: back() only when we know we pushed the entry; otherwise rewrite the URL in place and
+  // let the tween run. `pushedByUs` deliberately resets to false after any popstate — when in
+  // doubt take the branch that CANNOT navigate. Being wrong that way costs one stale history
+  // entry; being wrong the other way destroys the document mid-animation.
   let navLock = false;
+  let pushedByUs = false;
   function closeViaHistory() {
     if (navLock) return;
-    if (history.state && history.state.detail) { navLock = true; history.back(); }
+    if (!history.state || !history.state.detail) return;   // nothing to unwind
+    if (pushedByUs) { navLock = true; history.back(); return; }
+    history.replaceState({}, "", "/");                     // same document, no navigation
   }
 
   window.addEventListener("popstate", () => {
     const path = location.pathname.replace(/^\/+|\/+$/g, "");
     const wantsDetail = /^(art|news)\/.+/.test(path);
+    // after a pop we are on an entry that existed before this handler ran, and we cannot know
+    // whether it is same-document. Assume not — see the note on closeViaHistory.
+    pushedByUs = false;
     if (wantsDetail && !detailOpen) openPath(path, { push: false });
     else if (!wantsDetail && detailOpen) { navLock = true; closeDetail(); navLock = false; }
     else navLock = false;
@@ -726,6 +746,7 @@ import { parseCssTime } from "../lib/css-time";
     const cold = detailEl.dataset.coldOpen;
     if (cold) {
       history.replaceState({ detail: cold }, "", location.pathname);
+      pushedByUs = false;          // came from a document load — back() would leave the page
       adoptSheet();
     }
     applyWorld(view === "tab" ? -LANDING_H : 0);
