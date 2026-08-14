@@ -44,8 +44,34 @@ row("image (LEGACY)", legacyImg, news.length);
 row("gallery new-shape", galObj, news.length);
 row("gallery LEGACY str", galStr, news.length);
 
+// ── every pasted URL, checked against the media origin ─────────────────────────────
+// The CMS has no picker, so a typo or an r2.dev URL is a live possibility on every field.
+const MEDIA_ORIGIN = "media.agawen.com";   // R2 bucket `agawen-media`
+const badUrls = [];
+function checkUrl(where, raw) {
+  const v = String(raw ?? "").trim();
+  if (!v) return;
+  if (v.startsWith("/assets/")) return;                       // legacy, already flagged
+  if (v.includes(".r2.dev"))
+    badUrls.push(`${where}: r2.dev URL — CANNOT be transformed. Use ${MEDIA_ORIGIN}.`);
+  else if (v.startsWith("http") && !v.includes(MEDIA_ORIGIN) && !v.includes("agawen.com"))
+    badUrls.push(`${where}: off-origin host — transforms will be rejected. ${v.slice(0, 60)}`);
+}
+function walkVisuals(rows, kind) {
+  for (const r of rows) {
+    for (const [k, val] of Object.entries(r.d)) {
+      if (val && typeof val === "object" && !Array.isArray(val))
+        checkUrl(`${kind}/${r.slug} ${k}`, val.imageUrl || val.videoUrl);
+      if (Array.isArray(val))
+        val.forEach((row, i) => { if (row && typeof row === "object")
+          checkUrl(`${kind}/${r.slug} ${k}[${i}]`, row.imageUrl || row.videoUrl); });
+    }
+  }
+}
+walkVisuals(arts, "artworks"); walkVisuals(news, "news");
+
 console.log("\n═══ ⚠︎  FLAGS ═══════════════════════════════════════════");
-const flags = [];
+const flags = [...badUrls];
 const totalVisuals = ["landingVisual", "tabArtVisual", "cardCoverVisual"]
   .reduce((a, f) => a + count(arts, f), 0);
 if (!totalVisuals) flags.push(

@@ -17,6 +17,8 @@
  * requires `*.agawen.com` under Images -> Transformations -> Sources; a root domain does
  * NOT cover its subdomains. And `r2.dev` can never work here — it is outside the zone.
  */
+import { normaliseMediaUrl } from "../lib/media-origin";
+
 interface Props {
   media?: { kind: "image" | "video"; src: string; caption?: string } | null;
   alt?: string;
@@ -34,14 +36,25 @@ const {
 
 /** Build one transform URL. Height is only requested when a fixed aspect was asked for. */
 function tx(src: string, w: number) {
-  if (!import.meta.env.PROD) return src;
+  if (!import.meta.env.PROD || !transformable) return src;
   const opts = [`width=${w}`, "format=auto"];
   if (ratio) opts.push(`height=${Math.round((w * ratio[1]) / ratio[0])}`, "fit=cover");
   return `/cdn-cgi/image/${opts.join(",")}/${src}`;
 }
 
-const src = media?.src?.trim() ?? "";
+/**
+ * ⚠︎ URLs are hand-pasted with no picker, so validate rather than trust. An off-origin or
+ * r2.dev URL still RENDERS (a broken page helps nobody) but is never sent through the
+ * transform — a transform on a disallowed source is rejected outright — and it shouts in
+ * dev. `npm run data:report` counts these across the whole CMS.
+ */
+const verdict = normaliseMediaUrl(media?.src);
+const src = verdict.ok ? verdict.url : (media?.src?.trim() ?? "");
 const ok = src.length > 0;
+const transformable = verdict.ok;
+if (!verdict.ok && verdict.url && import.meta.env.DEV) {
+  console.warn(`[Media] ${verdict.reason}\n         ${verdict.url}`);
+}
 const style = ratio ? `aspect-ratio:${ratio[0]}/${ratio[1]}` : undefined;
 ---
 

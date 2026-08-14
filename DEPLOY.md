@@ -14,14 +14,18 @@ This is what turns the grey placeholder boxes into real pictures. Nothing else i
 
 ### 1a. Create the R2 bucket and give it a custom domain
 
-**R2 → Create bucket** (`mp-media` unless you prefer another name) **→ Settings → Custom
-Domains → Connect Domain → `media.agawen.com`.**
+✅ **DONE 2026-08-13.** Bucket `agawen-media`, served at `media.agawen.com`, which resolves
+to a Cloudflare IP — confirmed live and proxied.
+
+**R2 → Create bucket → Settings → Custom Domains → Connect Domain.**
 
 ⚠︎ **Do not use the `r2.dev` URL Cloudflare offers you.** It is documented as
 rate-limited and non-production, it sits outside your zone, and image transformations
 cannot read from it. It looks like it works right up until it matters.
 
 ### 1b. Turn transformations ON for the zone
+
+✅ **DONE 2026-08-13.** `*.agawen.com` is listed as a source in the `agawen.com` zone.
 
 **Images → Transformations →** select **`agawen.com`** → enable.
 
@@ -54,10 +58,20 @@ reject `media.agawen.com`. Miss this and every transform is rejected with no obv
 anywhere on the internet, so anyone could burn your transformation quota on their own
 images. Switching to it also **clears your sources list**, so switching back means retyping.
 
-### 1d. Then the images themselves
+### 1d. Then the images themselves — IN PROGRESS
 
-Paste the `media.agawen.com/...` URLs into the CMS fields. `npm run data:report` shows the
-progress — the visuals bars go from empty to full.
+Paste the `https://media.agawen.com/...` URLs into the CMS fields. `npm run data:report`
+shows progress: the visuals bars go from empty to full.
+
+⚠︎ **One paste mistake looks completely fine and isn't.** The R2 UI offers an
+`https://pub-xxxx.r2.dev/...` URL. It serves images, so it will seem to work — but it is
+outside the zone and **can never be transformed**, so those images ship unoptimised at full
+size forever. Always use the `media.agawen.com` form.
+
+`data:report` now checks every pasted URL and flags r2.dev and any off-origin host by field
+name, so a mistake surfaces on the next run instead of at launch. `<Media>` also refuses to
+send a bad URL through the transform (it still renders — a broken page helps nobody) and
+warns in `astro dev`.
 
 ---
 
@@ -150,15 +164,30 @@ under Workers Static Assets.** Cloudflare's docs describe `/cdn-cgi/` as edge-ha
 reserved, and every reason says it should be fine — but "should be fine" is what the note
 warned against, and Cloudflare's own docs don't state the Workers interaction anywhere.
 
-Cheapest possible test, once one image is up:
+⭐ **You can run this NOW, before the site is deployed.** `agawen.com` has no DNS record
+yet (nothing is deployed on it), but `media.agawen.com` is in the same zone and is live — and
+transformations work on any hostname in the zone. So the moment the first image is uploaded:
 
-```
-https://agawen.com/cdn-cgi/image/width=400,format=auto/https://media.agawen.com/<file>.jpg
+```bash
+# replace <file> with any real object in the bucket
+curl -sI "https://media.agawen.com/cdn-cgi/image/width=400,format=auto/https://media.agawen.com/<file>.jpg" \
+  | grep -i "^HTTP\|content-type\|content-length\|cf-resized"
 ```
 
-If that returns a 400px image, the whole delivery path is proven. If it returns the original
-untouched, transformations aren't enabled (1b). If it 404s or errors, the source origin
-isn't allowed (1c). **Do this before pasting fifty URLs into the CMS**, not after.
+Compare `content-length` against the untransformed original — a 400px version should be
+dramatically smaller. Re-run against `https://agawen.com/...` once the site is deployed, to
+confirm the same works under Workers Static Assets.
+
+**Reading the result:**
+
+| you get | meaning |
+|---|---|
+| a much smaller image, `cf-resized` header present | ✅ the whole delivery path is proven |
+| the original, untouched, same size | transformations aren't enabled on the zone (1b) |
+| `404` / `9401` / `9422` error | the source origin isn't allowed (1c), or the file path is wrong |
+
+**Do this before pasting fifty URLs into the CMS**, not after — it distinguishes all three
+failure modes in a single request.
 
 ---
 
