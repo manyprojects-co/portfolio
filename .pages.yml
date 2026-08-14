@@ -61,8 +61,7 @@ content:
             type: select
             options:
               values: [image, video]
-          - { name: imageUrl, label: Cloudflare Image URL, type: string }
-          - { name: videoUrl, label: Cloudflare Video URL, type: string }
+          - { name: imageUrl, label: Cloudflare URL, type: string }
 
       - name: tabArtVisual
         label: Tab-Art Visual (Site-specific)
@@ -73,8 +72,7 @@ content:
             type: select
             options:
               values: [image, video]
-          - { name: imageUrl, label: Cloudflare Image URL, type: string }
-          - { name: videoUrl, label: Cloudflare Video URL, type: string }
+          - { name: imageUrl, label: Cloudflare URL, type: string }
 
       - name: cardCoverVisual
         label: Card-Cover Visual (16:9/narrow)
@@ -85,8 +83,7 @@ content:
             type: select
             options:
               values: [image, video]
-          - { name: imageUrl, label: Cloudflare Image URL, type: string }
-          - { name: videoUrl, label: Cloudflare Video URL, type: string }
+          - { name: imageUrl, label: Cloudflare URL, type: string }
 
       # Art Gallery (100% Cloudflare Hosted)
       - name: cardGallery
@@ -99,8 +96,7 @@ content:
             type: select
             options:
               values: [image, video]
-          - { name: imageUrl, label: Cloudflare Image URL, type: string }
-          - { name: videoUrl, label: Cloudflare Video URL, type: string }
+          - { name: imageUrl, label: Cloudflare URL, type: string }
           - { name: caption, label: Caption, type: string }
 
       # Technical Tagline & Text
@@ -118,8 +114,7 @@ content:
             type: select
             options:
               values: [image, video]
-          - { name: imageUrl, label: Cloudflare Image URL, type: string }
-          - { name: videoUrl, label: Cloudflare Video URL, type: string }
+          - { name: imageUrl, label: Cloudflare URL, type: string }
           - { name: caption, label: Caption, type: string }
 
 ########################  NEWS  ########################
@@ -155,8 +150,7 @@ content:
             type: select
             options:
               values: [image, video]
-          - { name: imageUrl, label: Cloudflare Image URL, type: string }
-          - { name: videoUrl, label: Cloudflare Video URL, type: string }
+          - { name: imageUrl, label: Cloudflare URL, type: string }
 
       # News Gallery (100% Cloudflare Hosted)
       - name: gallery
@@ -169,6 +163,5 @@ content:
             type: select
             options:
               values: [image, video]
-          - { name: imageUrl, label: Cloudflare Image URL, type: string }
-          - { name: videoUrl, label: Cloudflare Video URL, type: string }
+          - { name: imageUrl, label: Cloudflare URL, type: string }
           - { name: caption, label: Caption, type: string }
