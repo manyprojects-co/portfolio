@@ -21,23 +21,38 @@ Domains → Connect Domain → `media.agawen.com`.**
 rate-limited and non-production, it sits outside your zone, and image transformations
 cannot read from it. It looks like it works right up until it matters.
 
-### 1b. Allow that subdomain as a transformation source
+### 1b. Turn transformations ON for the zone
 
-**Images → Transformations → Sources → Add origin → `*.agawen.com`.**
+**Images → Transformations →** select **`agawen.com`** → enable.
 
-⚠︎ The easiest step to skip and the hardest to diagnose. Transformations only accept source
-images from the zone they are served on, and **a root domain does not cover its subdomains** —
-`agawen.com` on its own will not accept `media.agawen.com`. Without this, every transform is
-rejected and images silently fail. The wildcard covers you for any future subdomain too.
+⚠︎ **This must come first.** The Sources list in 1c does not exist until transformations
+are enabled on the zone — it is a documented prerequisite. Doing these the other way round
+just means hunting for a section that isn't there yet.
 
-### 1c. Confirm transformations are on for the zone
+Free plan is enough: 5,000 unique transformations a month, then $0.50/1,000. A "unique
+transformation" is one image at one size, counted **once per month** and cached after — not
+once per visitor. Roughly: number of images × number of widths. At ~50 images × 3 widths
+you're at ~150, nowhere near the cap, and a traffic spike doesn't move it.
 
-**Images → Transformations** — check `agawen.com` is enabled.
+### 1c. Allow `media.agawen.com` as a source
 
-Free plan is enough: 5,000 unique transformations a month, then $0.50/1,000. A
-"unique transformation" is one image at one size, counted **once per month** and cached
-after — not once per visitor. Roughly: number of images × number of sizes. At ~50 images
-× 3 widths you are at ~150, nowhere near the cap, and a traffic spike does not move it.
+Still under **Images → Transformations**, with **`agawen.com`** selected, find the
+**Sources** section:
+
+1. **Add origin**
+2. **Domain:** `*.agawen.com` — the `*` wildcard goes at the *start of the root domain*, and
+   covers the root plus every subdomain, so this handles `media.` today and anything later
+3. **Path:** leave empty (accepts any path)
+4. **Add**, then **Save** — it applies immediately
+
+⚠︎ **Why this is needed at all:** transformations accept source images only from the zone
+they are served on. You serve from `agawen.com`, the images live on `media.agawen.com`, and
+**a root domain does not cover its subdomains** — adding `agawen.com` alone would still
+reject `media.agawen.com`. Miss this and every transform is rejected with no obvious cause.
+
+⚠︎ There is also an **any origin** setting. Don't use it: it accepts source images from
+anywhere on the internet, so anyone could burn your transformation quota on their own
+images. Switching to it also **clears your sources list**, so switching back means retyping.
 
 ### 1d. Then the images themselves
 
@@ -142,8 +157,8 @@ https://agawen.com/cdn-cgi/image/width=400,format=auto/https://media.agawen.com/
 ```
 
 If that returns a 400px image, the whole delivery path is proven. If it returns the original
-untouched, transformations aren't enabled (1c). If it 404s or errors, the source origin
-isn't allowed (1b). **Do this before pasting fifty URLs into the CMS**, not after.
+untouched, transformations aren't enabled (1b). If it 404s or errors, the source origin
+isn't allowed (1c). **Do this before pasting fifty URLs into the CMS**, not after.
 
 ---
 
