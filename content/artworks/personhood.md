@@ -39,6 +39,9 @@ acknowledgements: Personhood (originally "Proof of Personhood") was first
 landingVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/artworks/personhood/psh-ld.jpg
+tabArtVisual:
+  mediaType: image
+  imageUrl: https://media.agawen.com/artworks/personhood/psh-tab.png
 technicalTagline: "[Personhood Technical Tagline Placeholder]"
 technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
   eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
