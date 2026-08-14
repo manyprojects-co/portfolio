@@ -17,6 +17,12 @@ artistStatement: >-
 
   The work places the viewer in a liminal space behind screens, offering an
   intimate peek into the digital lives of strangers.
+landingVisual:
+  mediaType: image
+  imageUrl: https://media.agawen.com/artworks/screentime/sct-ld.jpg
+tabArtVisual:
+  mediaType: image
+  imageUrl: https://media.agawen.com/artworks/screentime/sct-tab.png
 technicalTagline: "[Screentime Technical Tagline Placeholder]"
 technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
   eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
