@@ -26,6 +26,9 @@ landingVisual:
 tabArtVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/artworks/box-body/bb-tab.png
+cardCoverVisual:
+  mediaType: image
+  imageUrl: https://media.agawen.com/artworks/box-body/bb-card.jpg
 technicalTagline: "[Box-body technical tagline placeholder]"
 technicalText: Through Box Body, we developed a production work flow that
   involves remapping filmed imagery from a built scaled model of the screens. It
