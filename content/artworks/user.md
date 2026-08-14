@@ -27,6 +27,9 @@ landingVisual:
 tabArtVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/artworks/user/user-tab.png
+cardCoverVisual:
+  mediaType: image
+  imageUrl: https://media.agawen.com/artworks/user/user-card.jpg
 technicalTagline: Broken and made to scroll
 technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
   eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
