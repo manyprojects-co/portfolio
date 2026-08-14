@@ -20,6 +20,12 @@ artistStatement: "“Several decades from now before I go, I want my eyes to
   deluge of non-moments staring at our thumbs fixed on the non-places of our
   phone screens. This work is a sort of eulogy to the memories we won't make.” —
   JJ"
+landingVisual:
+  mediaType: image
+  imageUrl: https://media.agawen.com/artworks/non-moment/nmm-ld.jpg
+tabArtVisual:
+  mediaType: image
+  imageUrl: https://media.agawen.com/artworks/non-moment/nmm-ld.jpg
 technicalTagline: "[Non-moment Technical Tagline Placeholder]"
 technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
   eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
