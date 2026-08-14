@@ -17,6 +17,12 @@ artistStatement: "In this age of surveillance capitalism, user data is fracked
   embodies this voyeuristic act of character-profiling into a swirl of floating
   data points forming a dissected nervous skeletal figure caught in the mundane
   act of phone-scrolling on the loo."
+landingVisual:
+  mediaType: image
+  imageUrl: https://media.agawen.com/artworks/metadata/mtdt-ld.jpg
+tabArtVisual:
+  mediaType: image
+  imageUrl: https://media.agawen.com/artworks/metadata/mtdt-tab.png
 technicalTagline: "[Metadata Technical Tagline Placeholder]"
 technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
   eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
