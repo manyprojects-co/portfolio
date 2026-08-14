@@ -26,6 +26,9 @@ landingVisual:
 tabArtVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/artworks/non-moment/nmm-ld.jpg
+cardCoverVisual:
+  mediaType: image
+  imageUrl: https://media.agawen.com/artworks/non-moment/nmm-card.jpg
 technicalTagline: "[Non-moment Technical Tagline Placeholder]"
 technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
   eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
