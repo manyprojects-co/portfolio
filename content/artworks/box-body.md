@@ -6,7 +6,8 @@ medium: Site-specific anamorphic 3D video installation on outdoor LED display at
   Ten Square, Singapore
 size: 14.4 × 21.2 m (47.2 × 69.5 ft)
 duration: 02 min. 00 sec. loop
-featured: false
+featured: true
+featureOrder: 6
 premiereCity: Singapore
 exhibitions: |-
   ART-ACT Festival, Singapore Art Week / Singapore, 2023  
