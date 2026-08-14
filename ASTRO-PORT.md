@@ -198,3 +198,48 @@ Gesture close: rewinds the URL to `/`, and re-opening afterwards still works.
 - ~~`personhood`'s date~~ — **resolved** (JJ, 2026-08-13): no range intended, the CMS is
   correct, v6 had drifted. The port already renders "2024".
 - **Every image is still a placeholder.** Nothing here is blocked on that.
+
+
+---
+
+# 🐞 The minifier bug (found live, 2026-08-13)
+
+**Symptom (JJ, on agawen.com):** "card lerps don't play, we just cut from one scene to
+another." Reproduced immediately in a production build — and it was never a deploy problem.
+
+**Cause.** v6 read every time token with a bare
+`parseFloat(getComputedStyle(root).getPropertyValue(name))`, which throws the unit away.
+That was safe for two years because nothing ever rewrote the CSS: the prototypes are single
+files opened from disk, so `500ms` reached the browser as the literal string `500ms`.
+
+The port introduced a production CSS minifier, and a minifier may rewrite any value to a
+shorter equivalent. `500ms` and `.5s` are the same duration; `.5s` is four bytes smaller.
+So the built CSS says `.5s`, `parseFloat` returns **0.5**, and every duration in the site
+became **half a millisecond**.
+
+**What it actually broke — the visible symptom was the least of it:**
+
+| token | authored | built | naive parse | effect |
+|---|---|---|---|---|
+| `--dur` | `500ms` | `.5s` | 0.5 | every lerp is a cut ← what JJ saw |
+| `--tab-dur` | `500ms` | `.5s` | 0.5 | tab snapping instant |
+| `--contact-copied-ms` | `1200ms` | `1.2s` | 1.2 | "Copied!" visible for 1.2ms |
+| **`--gesture-gap`** | **`100ms`** | **`.1s`** | **0.1** | ⭐ **the arbiter's silence threshold** |
+
+That last row is the dangerous one. At 0.1ms **every** wheel event satisfies `dt > gap`, so
+every event mints a fresh gesture with a fresh budget. "One gesture = one lerp" is gone, and
+the card→landing double-hop that took eight rounds to kill is live again — intermittently,
+looking like a gesture-tuning regression rather than a build problem.
+
+**Fix.** `src/lib/css-time.ts`: a unit-aware `parseCssTime`, pinned by 7 tests
+(`npm test`) covering both the authored and the minified form of every token the site reads,
+plus the ordering trap that `500ms` ends in **both** `ms` and `s`.
+
+**The lesson, stated once:** a CSS value that is *correct* can still be a different *string*
+than the one you wrote. Never parse a CSS value by assuming its unit.
+
+**Why the existing tests missed it.** The arbiter suite is DOM-free and takes its config as
+plain numbers, so it never sees a token. The browser checks asserted **end states after a
+wait**, which a cut satisfies perfectly. Neither was wrong; neither could have caught this.
+Frame sampling during a transition is what catches it, and that is now how it is verified:
+before the fix, 2 distinct transforms across 76 frames; after, 10.

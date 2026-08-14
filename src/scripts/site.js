@@ -21,6 +21,7 @@
  */
 import { createArbiter } from "../lib/gesture-arbiter.mjs";
 import { titleCase, typeLabel, timeElapsed } from "../lib/format";
+import { parseCssTime } from "../lib/css-time";
 
 
 {
@@ -65,8 +66,15 @@ import { titleCase, typeLabel, timeElapsed } from "../lib/format";
   }
   const ease = easeFromToken();
 
+  /**
+   * ⚠︎ UNIT-AWARE, and it must stay that way. v6 used a bare parseFloat here, which is
+   * correct only while nothing rewrites the CSS. Astro's production minifier rewrites
+   * `500ms` to `.5s` — same duration, different string — and a bare parseFloat then
+   * returns 0.5, turning every lerp into a cut and the gesture-gap into 0.1ms.
+   * Full write-up in src/lib/css-time.ts.
+   */
   const cssMs = (name, fallback) =>
-    parseFloat(getComputedStyle(root).getPropertyValue(name)) || fallback;
+    parseCssTime(getComputedStyle(root).getPropertyValue(name), fallback);
   const DUR = cssMs("--dur", 500);
 
   const cssNum = (name, fallback) => {
@@ -496,7 +504,7 @@ import { titleCase, typeLabel, timeElapsed } from "../lib/format";
   const cxMailWrap = document.getElementById("cxMailWrap");
   const cxCopied = document.getElementById("cxCopied");
   const cxClose = document.getElementById("cxClose");
-  const CX_COPIED_MS = parseFloat(getComputedStyle(root).getPropertyValue("--contact-copied-ms")) || 1200;
+  const CX_COPIED_MS = cssMs("--contact-copied-ms", 1200);   // unit-aware — see css-time.ts
 
   const CONTACT = { email: cxMail.dataset.email || "", instagram: cxIg.href || "" };
   cxMail.title = CONTACT.email;
