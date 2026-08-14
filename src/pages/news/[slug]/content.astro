@@ -1,0 +1,11 @@
+---
+export const partial = true;
+import NewsItem from "../../../components/NewsItem.astro";
+
+export async function getStaticPaths() {
+  const { allNews } = await import("../../../lib/content");
+  return (await allNews()).map((item) => ({ params: { slug: item.slug }, props: { item } }));
+}
+const { item } = Astro.props;
+---
+<NewsItem item={item} />

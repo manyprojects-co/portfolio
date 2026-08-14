@@ -1,0 +1,79 @@
+---
+/**
+ * Media.astro — P2's `<Img>` wrapper, and the ENTIRE image surface area of the site.
+ * Every image and video goes through this. Origin changes are a one-line swap here.
+ *
+ * DELIVERY (research-notes §5, LOCKED; amended 2026-08-13 for R2):
+ *   prod -> /cdn-cgi/image/width=W,format=auto/<src>   transformed at Cloudflare's edge
+ *   dev  -> <src> raw                                  /cdn-cgi/image only exists on CF
+ *
+ * ⚠︎ THE EMPTY STATE IS THE DEFAULT CASE, NOT THE EDGE CASE. Every visual field is
+ * empty in all 26 content files as of 2026-08-13 — the repo's images were deleted on
+ * 2026-08-10 and the CMS has no media picker, so URLs are hand-pasted and most are not
+ * pasted yet. A missing, blank, or malformed src must render a placeholder, never a
+ * broken <img>. This is what lets P3/P4 be reviewed before a single image exists.
+ *
+ * ⚠︎ Sources must be on an ALLOWED ORIGIN or the transform is rejected. `media.agawen.com`
+ * requires `*.agawen.com` under Images -> Transformations -> Sources; a root domain does
+ * NOT cover its subdomains. And `r2.dev` can never work here — it is outside the zone.
+ */
+import { normaliseMediaUrl } from "../lib/media-origin";
+
+interface Props {
+  media?: { kind: "image" | "video"; src: string; caption?: string } | null;
+  alt?: string;
+  widths?: number[];
+  sizes?: string;
+  /** explicit aspect for a fixed-aspect surface — avoids needing intrinsic dimensions */
+  ratio?: [number, number];
+  class?: string;
+  loading?: "lazy" | "eager";
+}
+const {
+  media = null, alt = "", widths = [640, 1280, 1920], sizes = "100vw",
+  ratio, class: cls = "", loading = "lazy",
+} = Astro.props;
+
+/** Build one transform URL. Height is only requested when a fixed aspect was asked for. */
+function tx(src: string, w: number) {
+  if (!import.meta.env.PROD || !transformable) return src;
+  const opts = [`width=${w}`, "format=auto"];
+  if (ratio) opts.push(`height=${Math.round((w * ratio[1]) / ratio[0])}`, "fit=cover");
+  return `/cdn-cgi/image/${opts.join(",")}/${src}`;
+}
+
+/**
+ * ⚠︎ URLs are hand-pasted with no picker, so validate rather than trust. An off-origin or
+ * r2.dev URL still RENDERS (a broken page helps nobody) but is never sent through the
+ * transform — a transform on a disallowed source is rejected outright — and it shouts in
+ * dev. `npm run data:report` counts these across the whole CMS.
+ */
+const verdict = normaliseMediaUrl(media?.src);
+const src = verdict.ok ? verdict.url : (media?.src?.trim() ?? "");
+const ok = src.length > 0;
+const transformable = verdict.ok;
+if (!verdict.ok && verdict.url && import.meta.env.DEV) {
+  console.warn(`[Media] ${verdict.reason}\n         ${verdict.url}`);
+}
+const style = ratio ? `aspect-ratio:${ratio[0]}/${ratio[1]}` : undefined;
+---
+
+{
+  !ok ? (
+    /* No source. Renders the same box the real media will occupy, so layout is honest. */
+    <div class={`media-empty ${cls}`} style={style} role="img" aria-label={alt || "Image pending"} />
+  ) : media!.kind === "video" ? (
+    <video class={cls} style={style} src={src} muted loop playsinline autoplay preload="metadata" />
+  ) : (
+    <img
+      class={cls}
+      style={style}
+      src={tx(src, widths[Math.floor(widths.length / 2)])}
+      srcset={widths.map((w) => `${tx(src, w)} ${w}w`).join(", ")}
+      sizes={sizes}
+      alt={alt}
+      loading={loading}
+      decoding="async"
+    />
+  )
+}

@@ -1,0 +1,27 @@
+---
+/**
+ * Nav + the contact slide (v4 rev 6, the keeper).
+ * Tapping Contact translates the WHOLE track left; Instagram/Mail/✕ are parked one
+ * --frame-margin past the track's right edge and slide in to rest 60 from the right.
+ * Geometry is measured by site.js (`pinContact`) — do not encode offsets here.
+ */
+interface Props { contact: { email?: string; instagram?: string } }
+const { contact } = Astro.props;
+---
+<nav class="nav" id="nav">
+  <div class="nav-track" id="navTrack">
+    <div class="nav-left">
+      <a data-section="art">Art</a>
+      <a data-section="news">News</a>
+      <a data-section="bio">Bio</a>
+    </div>
+    <a class="cx-toggle" id="cxToggle" role="button" aria-expanded="false">Contact</a>
+    <div class="cx-extras" id="cxExtras">
+      <a id="cxIg" href={contact.instagram} target="_blank" rel="noopener noreferrer">Instagram</a>
+      <span class="cx-mail-wrap" id="cxMailWrap"
+        ><a id="cxMail" data-email={contact.email}>Mail</a><span
+          class="cx-copied" id="cxCopied" aria-live="polite">Copied!</span></span>
+      <a id="cxClose" role="button" aria-label="Close contact">✕</a>
+    </div>
+  </div>
+</nav>

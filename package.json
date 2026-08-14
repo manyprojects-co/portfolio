@@ -1,0 +1,19 @@
+{
+  "name": "manyprojects-portfolio",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "data:diff": "node scripts/diff-v6.mjs",
+    "data:report": "node scripts/content-report.mjs",
+    "deploy": "astro build && wrangler deploy",
+    "preview:remote": "astro build && wrangler versions upload"
+  },
+  "dependencies": {
+    "astro": "^7.2.1",
+    "js-yaml": "^5.2.3"
+  }
+}

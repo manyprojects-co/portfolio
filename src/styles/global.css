@@ -1,0 +1,779 @@
+/* ============================================================================
+   global.css — the entire style layer of prototype-v6.html, VERBATIM.
+
+   Extracted, not retyped. Every [TUNE] token keeps its name so the tuning notes
+   throughout hooks.md stay executable, and there is now exactly ONE copy of this
+   (v6's `works`/`news` arrays were byte-identical across four files — the 2026-08-09
+   health check called that out as the real duplication in the project).
+
+   ⚠︎ FOUR INVARIANTS THAT EACH COST A ROUND TO LEARN. Do not "tidy" any of them:
+
+   1. NOTHING IN THE DETAIL CARD MAY BE TRANSPARENT. #detail carries a hard-stop
+      grey->black gradient and a card background does not scroll with its content.
+      Every full-bleed section paints its own ground (.art-ground, .tech) or the
+      card goes half black.
+   2. EVERY HORIZONTAL INSET IS MEASURED FROM THE VIEWPORT EDGE, never the card
+      edge. The card is deliberately wider than the viewport (--detail-bleed) so
+      the mid-reveal scale-down still covers it. Use --detail-pad-x.
+   3. --detail-bleed STAYS A FORMULA off --card-zoom-min (B >= vw(1-z)/2z), so
+      retuning the zoom cannot silently re-expose the card edges.
+   4. overscroll-behavior AS A SHORTHAND KILLS THE TAB SWIPE. Set the axis you mean.
+
+   ⚠︎ AND THE BIO PAIR (v6's one-bug fork): `#bio { padding-top: 0 }` and
+   `.about { padding-top: var(--band) }` are a PAIR. A sticky offset is measured
+   from where the content begins, not from the scroll container's padding-box edge,
+   so a scroller with padding-top: X and a sticky child with top: X applies X twice.
+   Do NOT move the band back onto #bio. See hooks.md § v6 fork.
+   ============================================================================ */
+
+  /* ---- design tokens ---- */
+  :root {
+    --card-h: 400px;         /* landing artwork height */
+    --frame-margin: 60px;    /* padding / nav inset */
+    --card-gap: 32px;        /* between carousel cards */
+    --caption-gap: 12px;     /* image ↔ caption */
+    --title-year-gap: 6px;
+    --footer-gap: 40px;      /* between nav links */
+    --type-size: 14px;       /* [TUNE] base type. was 12 */
+
+    /* ---- contact expander (v4) ---- */
+    --contact-gap: 60px;     /* [TUNE] uniform gap: Contact ↔ Instagram ↔ Mail ↔ ✕, and the
+                                park offset. At 60 it equals --frame-margin, which is what
+                                puts the parked group exactly on the viewport's right edge. */
+    --contact-copied-ms: 1200ms;  /* [TUNE] how long Mail reads "Copied" (JS reads once at init) */
+    --cx-dim: 0.2;           /* [TUNE] Art/News/Bio/Contact opacity while contact is open */
+    --cx-copied-in: 0.25s;   /* [TUNE] the "Copied!" fade/rise */
+    --cx-copied-op: 0.8;     /* [TUNE] ...to this opacity, deliberately not full */
+    --cx-copied-rise: 4px;   /* [TUNE] ...from this far below its resting line */
+
+    /* grid (ART) */
+    --square: 400px;
+    --grid-col-gap: 100px;
+    --row-gap: 32px;
+    --cap-size: 14px;        /* [TUNE] ART grid captions. was 10, and NOT grey — see TUNING note */
+
+    /* motion */
+    --dur: 500ms;            /* landing↔tab lerp, detail open/close */
+    --tab-dur: 500ms;        /* nav-driven tab slide ONLY; manual swipe is native */
+    --ease: cubic-bezier(0.5, 0, 0, 1);
+
+    --bg: #E7E7E7;
+    --detail-bg: #EFEFEF;    /* art/news cards sit a step lighter than the site */
+    /* the site's bottom edge casting onto the card beneath it. Two layers: a tight
+       contact shade, then a very wide low-alpha penumbra that does the diffusion. */
+    --card-shadow: 0 2px 20px rgba(0, 0, 0, 0.045), 0 20px 100px rgba(0, 0, 0, 0.09);
+
+    /* ---- v3 reveal dynamics (JS reads these once at init; tune here) ---- */
+    --site-zoom-max: 1.1;    /* [TUNE] the departing site enlarges to this, anchored bottom-centre */
+    --site-blur-max: 50px;   /* [TUNE] ...and blurs to this over the same lerp */
+    --card-zoom-min: 0.95;   /* [TUNE] the card zooms from this up to 1 as it is revealed */
+    --fade-floor: 0.2;       /* [TUNE] tab contents hit opacity 0 at this reveal (0.2 = 80% home) */
+    --blur-floor: 0.4;       /* [TUNE] site blur hits 0 at this reveal (0.4 = 60% through the exit) */
+
+    /* ---- gesture sensitivity: how much intent a transition demands ----
+       FORWARD = going deeper (landing -> tab). BACK = coming up (tab -> landing,
+       closing a card); deliberately stiffer so you only lerp back up on purpose. */
+    --commit-dist: 120px;       /* [TUNE] accumulated px to commit forward */
+    --commit-vel: 1.2;          /* [TUNE] px/ms flick to commit forward */
+    --commit-dist-back: 200px;  /* [TUNE] accumulated px to commit back/up */
+    --commit-vel-back: 1.8;     /* [TUNE] px/ms flick to commit back/up */
+    /* ONE GESTURE = ONE LERP. Not a time window — gestures are segmented from the wheel
+       stream itself, so momentum can never carry into a second transition however long it
+       runs, and a genuinely new scroll responds on its first event. */
+    --gesture-gap: 100ms;    /* [TUNE] silence that ends a gesture. The classic macOS
+                                inertial heuristic puts this at 50-100ms; 120 was our own
+                                guess and may have been rejecting real second swipes. */
+    /* A reversal counts only if it is DECISIVE — at least this fraction of the amplitude
+       the current gesture actually reached. Expressed as a fraction, not pixels, so it
+       means the same thing for a gentle scroll and a hard flick, and so near-zero jitter
+       (which is where every previous heuristic here died) can never trip it. */
+    --gesture-reverse: 0.25; /* [TUNE] fraction of the gesture's own peak */
+    /* The deck is driven only by a gesture that BEGAN inside its bounds (`gRegion` /
+       `ownsCarousel`) — that ownership, not any threshold, is what stops a closing card's
+       momentum spinning it. Ownership alone left the deck dead for a whole coast though, so
+       it RE-CLAIMS on a rise above the coast's trough, and only once no tween is in flight.
+       ⚠︎ DECK ONLY. Applying this same test to TRANSITIONS was tried on 2026-08-09 and put
+       both momentum failures straight back; transitions keep the strict one-lerp counter.
+       KILL SWITCH: --claim-floor: 1 disables re-claim (peak includes the current event, so
+       mag > peak*1 is never true) → pure ownership, deck blocked for the whole gesture. */
+    /* RE-PUSH (TRANSITIONS ONLY) — "the delta is at least as high as the previous one",
+       corrected for a modern Chrome stream. Chrome quantizes deltas to integers, so a decaying
+       tail PLATEAUS (1,1,1,...) and the literal `>=` form is satisfied forever: measured 100%
+       false-fire on a pure coast even at +-5% jitter. Fixed by strict `>`, a floor relative to
+       the gesture's own peak, and requiring N CONSECUTIVE rises (0% / 0.1% false-fire at
+       +-10% / +-25%, still 96%+ on a genuine second flick).
+       The grant is SCOPED: it clears the transition budget only and never re-claims a region,
+       so however wrong it is, it can never hand the deck a coast. Costs at most one transition.
+       --repush-run: 0 disables it (back to silence + reversal only). Raise to 4 to be shyer,
+       drop to 2 if a real second swipe is being refused. */
+    --repush-run: 3;         /* [TUNE] consecutive rising events that count as a human */
+    --repush-floor: 0.2;     /* [TUNE] each rise must also clear this fraction of the peak */
+    --repush-arm: 0.25;      /* [TUNE] the coast must first DECAY below this fraction of the
+                                gesture's own peak before a re-push can be recognised at all.
+                                This is what separates "began a second swipe" from "still
+                                performing one long slow swipe": momentum always decays that
+                                far, an actively-driven gesture does not. Measured on a
+                                modelled drawn-out gesture: 95% false grant -> 0%, with a
+                                genuine second flick still detected 100%. RAISE it if a
+                                card->tab->landing hop still slips through on a slow gesture;
+                                LOWER it if a gentle second swipe is being ignored. */
+    --claim-rise: 1.5;       /* [TUNE] rise over the coast trough that hands the deck back */
+    --claim-floor: 0.2;      /* [TUNE] ...AND at least this fraction of the gesture's peak */
+    --gesture-debug: 0;      /* [TUNE] 1 = console.log every gesture boundary, reason + claim */
+    --fg: #000000;
+    --muted: #949494;        /* lighter-but-legible grey — date, type, subheading */
+
+    /* ---- v2 geometry (JS writes --band and --landing-h on load + resize) ---- */
+    --band: 132px;           /* 60 + navH + 60 — the top of the tab frame */
+    --landing-h: calc(100vh - 132px);
+    --detail-top: 120px;     /* art-news view starts here; the sliver above is the site */
+    --detail-img-max: 900px; /* [TUNE] card content column: image cap AND the info block's left edge */
+
+    /* ⚠︎ DERIVED, not a free knob. The card scales from --card-zoom-min up to 1 about
+       50% 100%, so mid-reveal it is NARROWER than the viewport and its left/right edges
+       pull inward — harmless while the card was grey on grey, glaring once the technical
+       section made those edges black. So the card is built WIDER than the viewport by
+       exactly enough that the scaled-down box still covers it:
+         scaled width  z(vw + 2B) >= vw   =>   B >= vw(1 - z) / 2z
+       At z = 0.95 that is 2.63vw. Kept as a formula off --card-zoom-min so retuning the
+       zoom cannot silently re-expose the edges; +2px absorbs subpixel rounding.
+       The bottom edge needs no bleed — the transform origin pins it — and the top is
+       already covered by the rising site edge (see the reveal notes). */
+    --detail-bleed: calc(100vw * (1 - var(--card-zoom-min)) / (2 * var(--card-zoom-min)) + 2px);
+    /* every horizontal inset inside the card is measured from the VIEWPORT edge, so the
+       bleed rides along with the 60px frame margin */
+    --detail-pad-x: calc(var(--frame-margin) + var(--detail-bleed));
+    --art-col-w: 400px;      /* [TUNE] each art info column */
+    --art-col-gap: 32px;     /* [TUNE] between the two art info columns */
+
+    /* ---- technical section (v5): the inverse of the site ---- */
+    --tech-bg: #000000;      /* [TUNE] */
+    --tech-fg: var(--bg);    /* the site's own grey, inverted onto black */
+    --tech-muted: #949494;   /* [TUNE] gallery captions on black */
+    --tech-top: 60px;        /* [TUNE] gap between the gallery above and the black */
+    --tech-pad: 60px;        /* [TUNE] inner inset — matches the frame margin */
+    --bio-pin-top: var(--band);  /* [TUNE] where bio column 1 pins. = exactly where it loads,
+                                    but ONLY because #bio's scroller has no top padding —
+                                    see the .about-bio rule before changing either. */
+
+    /* news panel */
+    --news-h: 180px;
+    --news-h-special: 200px;
+    --news-gap: 32px;
+    --news-img-w: 220px;
+    --news-img-gap: 16px;
+    --news-text-w: 400px;
+    --news-row-w: calc(var(--news-img-w) + var(--news-img-gap) + var(--news-text-w));  /* 636 */
+    --news-el-gap: 12px;
+    --news-special-inset: 16px;
+    --card-fill: #FBFBFB;
+  }
+
+  * { box-sizing: border-box; }
+
+  /* NO WINDOW SCROLL. Every scroll in this document belongs to a named container:
+     .carousel (x), .track (x), .sub (y), #detailScroll (y). The landing↔tab and
+     detail transitions are transforms, not scroll. */
+  html, body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "Inter", system-ui, sans-serif;
+  }
+
+  /* ===================== STAGE: owns the DETAIL offset ===================== */
+  /* Clips to the viewport. Translating it up by (100vh - 120) leaves its bottom
+     120px on screen at the top — the sliver of landing/tab you tap to come back. */
+  #stage {
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    overflow: hidden;
+    background: var(--bg);
+    will-change: transform;
+    /* Scale about the bottom edge, middle. Scaling around that point cannot move it, so
+       the 120px gap the translate establishes is preserved BY CONSTRUCTION at any zoom. */
+    transform-origin: 50% 100%;
+    /* Cast onto the card revealed underneath. `overflow:hidden` clips the stage's
+       CHILDREN, never its own box-shadow, so this spills past the bottom edge as
+       intended. It needs no JS and no open/close state: at rest the stage fills the
+       viewport, so the whole shadow sits outside it and is invisible — it only comes
+       into view as the stage rises, growing with the reveal. */
+    box-shadow: var(--card-shadow);
+  }
+
+  /* ===================== WORLD: owns the LANDING↔TAB offset ===================== */
+  /* The blur lives HERE, not on #stage: a filter is not clipped by the element's own
+     overflow, so blurring the stage would soften its bottom edge and its drop shadow.
+     On the world it is clipped crisply by the stage, keeping the 120px edge hard. */
+  #world {
+    position: absolute;
+    left: 0; right: 0; top: 0;
+    will-change: transform;   /* NOT filter: promoting this permanently costs a full-size
+                                 layer for all tab content. The blur is applied dynamically,
+                                 so let the browser promote only while it's actually on. */
+  }
+
+  /* ---- hero / landing carousel: 100vh minus the band ---- */
+  .hero {
+    height: var(--landing-h);
+    display: flex;
+    align-items: center;
+  }
+  .carousel {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: var(--card-gap);
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;   /* a horizontal fling stays here; no history nav */
+    scrollbar-width: none;
+  }
+  .carousel::-webkit-scrollbar { display: none; }
+
+  .card { flex: 0 0 auto; margin: 0; padding: 0; display: flex; flex-direction: column; cursor: pointer; }
+  .card:first-child { margin-left: var(--frame-margin); }
+  .card:last-child  { margin-right: var(--frame-margin); }
+
+  .artwork { height: var(--card-h); max-height: calc(var(--landing-h) - 80px); width: auto; display: block; }
+
+  .caption {
+    position: sticky;
+    left: var(--frame-margin);
+    margin-top: var(--caption-gap);
+    font-size: var(--type-size);
+    line-height: 1;
+    white-space: nowrap;
+    width: max-content;
+  }
+  .caption .title { font-style: italic; }
+  .caption .year  { margin-left: var(--title-year-gap); }
+
+  /* ===================== TAB FRAME ===================== */
+  /* Full viewport height, sitting directly below the hero in world coordinates.
+     At landing only its top BAND shows (nav + its two 60px gaps); at tab state
+     the world has moved up by LANDING_H and this frame fills the screen. */
+  .section {
+    position: relative;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* nav floats over the tabs; content scrolls UNDER it */
+  /* v4: the bar SPANS the frame (left+right 60). A full-width bar at z-index 3 would
+     swallow clicks across the top of the tab frame, so the bar is pointer-events:none
+     and only its groups take input. Height is unchanged — one line, same font — which
+     matters because BAND = 60 + navH + 60. */
+  .nav {
+    position: absolute;
+    top: var(--frame-margin);
+    left: var(--frame-margin);
+    right: var(--frame-margin);
+    z-index: 3;
+    font-size: var(--type-size);
+    line-height: 1;
+    pointer-events: none;
+  }
+  .nav a { color: var(--fg); text-decoration: none; cursor: pointer; pointer-events: auto; }
+
+  /* ================= CONTACT — ONE TRACK, ONE TRANSFORM (v4 rev 3, JJ) =============
+     Everything in the nav rides a single track that SLIDES LEFT as a unit. Instagram /
+     Mail / ✕ live out of flow, parked one --frame-margin past the track's right edge —
+     i.e. exactly at the viewport's right edge, so at rest they sit just outside the
+     margin, fully off-screen. Opening translates the track by (extras width + 60),
+     which lands the extras' right edge exactly 60 from the viewport right while
+     Art/News/Bio slide off the left.
+
+     This retired three separate problems in one move, all of which came from the old
+     grow-a-clipped-box model: the items no longer enter through a clip (nothing was
+     ever clipped, so nothing can look cropped), Instagram's descender is safe (no
+     overflow:hidden anywhere), and the gradient mask that used to soften the edge is
+     gone entirely. Do NOT reintroduce a width animation here.
+
+     Height is untouched: .cx-extras is position:absolute, so it contributes no height
+     to the track and navH — hence BAND and LANDING_H — cannot move.
+     Overflow: the extras are parked past the viewport edge but .section is
+     overflow:hidden, so they are clipped there. No page overflow, no scrollbar. */
+  .nav-track {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;          /* one line of identical type; center == baseline here */
+    transform: translateX(0);
+    transition: transform var(--dur) var(--ease);
+    will-change: transform;
+  }
+  /* pointer-events:auto on the GROUP, not just its anchors — the group box is
+     max-content wide, so it still absorbs a click in the 40px gaps between links
+     exactly as the old max-content nav did. Only the empty middle of the bar is
+     click-through. */
+  .nav-left { display: flex; gap: var(--footer-gap); pointer-events: auto; }
+  .cx-toggle { pointer-events: auto; white-space: nowrap; }
+
+  /* Parked one --contact-gap past the track's right edge. That single offset is also
+     the Contact→Instagram gap, and because both ride the one track it holds constant
+     through the whole slide — so a uniform --contact-gap gives a uniform rhythm across
+     Contact · Instagram · Mail · ✕ with no separate knob.
+     At 60 the offset equals --frame-margin, so the parked group starts exactly on the
+     viewport's right edge: fully off-screen, no fade needed to hide it, and clipped by
+     .section's overflow:hidden. No opacity staging here — the items simply slide in. */
+  .cx-extras {
+    position: absolute;
+    top: 0;
+    left: calc(100% + var(--contact-gap));
+    display: flex;
+    gap: var(--contact-gap);
+    white-space: nowrap;
+    pointer-events: none;                     /* off-screen at rest; armed on open */
+  }
+  .nav.cx-open .cx-extras { pointer-events: auto; }
+
+  /* Art/News/Bio AND Contact all dim on the same lerp as the slide. Opacity, not
+     colour: paintNav owns `color` and rewrites it inline every scroll frame, so the
+     two never contend for the same property and paintNav stays identical to v3. */
+  .nav-left a, .cx-toggle { transition: opacity var(--dur) var(--ease); }
+  .nav.cx-open .nav-left a,
+  .nav.cx-open .cx-toggle { opacity: var(--cx-dim); }
+
+  /* "Copied!" is an OVERLAY, not a label swap. It sits absolutely inside a wrapper the
+     size of "Mail", so the confirmation cannot change the extras' width — which is what
+     retired the old pinned width on Mail. That pin was padding Mail's box out to
+     "Copied"'s width, which is why the gaps either side of it did not read as an even
+     32; with the pin gone every gap in .cx-extras is exactly --contact-gap.
+     Centred on Mail via left:50% + translateX(-50%); the rise composes into the same
+     transform, so one property animates both. */
+  .cx-mail-wrap { position: relative; display: inline-block; }
+  #cxMail { transition: opacity var(--cx-copied-in) var(--ease); }
+  .cx-mail-wrap.copied #cxMail { opacity: 0; }
+
+  .cx-copied {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, var(--cx-copied-rise));
+    transition: opacity var(--cx-copied-in) var(--ease),
+                transform var(--cx-copied-in) var(--ease);
+  }
+  .cx-mail-wrap.copied .cx-copied {
+    opacity: var(--cx-copied-op);
+    transform: translate(-50%, 0);
+  }
+
+  /* ---- horizontal native scroll-snap: the browser owns the swipe ----
+     No custom wheel/touch/momentum code for the tab swap. JS only READS
+     scrollLeft to report the active tab, and issues a lerp for nav clicks. */
+  .track {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;                /* the track is horizontal only; each tab scrolls itself */
+    scroll-snap-type: x mandatory;     /* always resolve onto a tab, never rest between two */
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    will-change: opacity;              /* JS fades the whole deck out on the way home */
+  }
+  .track::-webkit-scrollbar { display: none; }
+
+  .sub {
+    flex: 0 0 100%;                    /* one full-vw container per nav item */
+    min-width: 0;                      /* without this a 400px child floors the panel at ~520
+                                          and one tab's overflow leaks into the next */
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: hidden;                /* LOCKED at landing; JS sets 'auto' in tab view */
+    /* Y only — NEVER the shorthand. Once JS unlocks overflow-y the sub becomes a real
+       scroll container, and overscroll-behavior-x:contain would tell the browser not to
+       chain horizontally out of it, so a sideways swipe would die here instead of
+       reaching the track. X must stay `auto` for the tab deck to be swipeable at all. */
+    overscroll-behavior-y: contain;
+    overscroll-behavior-x: auto;
+    scrollbar-width: none;
+    /* top padding = the band, so content begins 60px below the nav at 0% and
+       passes under it as the tab scrolls */
+    padding: var(--band) var(--frame-margin) var(--frame-margin);
+    scroll-snap-align: start;
+    scroll-snap-stop: always;          /* a hard fling lands on the NEXT tab — the overshoot fix */
+  }
+  .sub::-webkit-scrollbar { display: none; }
+
+  /* ---- ART grid: centred, static 100px column gap ---- */
+  .grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    column-gap: var(--grid-col-gap);
+    row-gap: var(--row-gap);
+  }
+  .gcard {
+    width: min(var(--square), 100%);
+    min-width: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+  }
+  .gcard img { max-width: 100%; max-height: var(--square); height: auto; display: block; }
+
+  .gcap {
+    margin-top: var(--caption-gap);
+    text-align: center;
+    font-size: var(--cap-size);
+    line-height: 1;
+  }
+  .gcap .title { font-style: italic; }
+  .gcap .year  { margin-left: var(--title-year-gap); }
+  .gcap .cities { margin-top: 6px; }
+
+  /* ===================== NEWS panel ===================== */
+  .news-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--news-gap);
+  }
+  .news-item { position: relative; width: min(var(--news-row-w), 100%); }
+  .ni-inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--news-img-gap);
+    width: 100%;
+    cursor: pointer;
+  }
+  .ni-img {
+    flex: 220 1 0;
+    min-width: 0;
+    aspect-ratio: 1 / 1;
+    height: auto;
+    object-fit: cover;
+    display: block;
+  }
+  .ni-text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--news-el-gap);
+    flex: 400 1 0;
+    min-width: 0;
+  }
+  .ni-meta { font-size: var(--type-size); line-height: 1; color: var(--muted); }
+  .ni-sep  { margin: 0 6px; }
+  .ni-heading { margin: 0; font-size: var(--type-size); line-height: 1.4; }
+  .ni-title   { font-weight: 400; color: var(--fg); }
+  .ni-sub     { color: var(--muted); }
+
+  /* installations / exhibitions — DISABLED (SPECIAL_TYPES empty); CSS retained */
+  .news-item.special .ni-inner { height: var(--news-h-special); }
+  .news-item.special .ni-text  { font-weight: 700; }
+  .news-item.special .ni-title { font-weight: 700; }
+  .news-item.special::before {
+    content: "";
+    position: absolute;
+    inset: calc(-1 * var(--news-special-inset));
+    background: var(--card-fill);
+    z-index: 0;
+  }
+
+  /* ===================== ART-NEWS DETAIL VIEW =====================
+     Sits BENEATH the stage, already in place. No chrome: no rounding, no
+     hairline, no blur, no scrim, no pull tab — the site sliding up is the
+     entire reveal. Contents sit within a 60px margin and scroll beneath the
+     persistent 120px top margin. */
+  #detail {
+    position: fixed;
+    /* wider than the viewport on both sides — see --detail-bleed. html/body are
+       overflow:hidden, so the overhang can't produce a scrollbar. */
+    left: calc(-1 * var(--detail-bleed));
+    right: calc(-1 * var(--detail-bleed));
+    top: var(--detail-top);
+    bottom: 0;
+    z-index: 1;
+    display: none;                 /* inert until opened */
+    background: var(--detail-bg);  /* the card reads lighter than the site above it */
+    font-size: var(--type-size);
+    /* Same bottom-centre anchor as the site. The card is revealed bottom-up, so anchoring
+       here keeps its bottom edge pinned to the viewport floor at every zoom — a centred
+       anchor would expose a sliver of body background along the bottom mid-reveal. */
+    transform-origin: 50% 100%;
+    will-change: transform;
+  }
+  #detail.open { display: block; }
+
+  /* ⚠︎ OVERSCROLL GROUND. #detailScroll paints no background of its own, so an elastic
+     bounce past either end of the card reveals #detail's background underneath. On a
+     card that ends in the technical section that has to be BLACK at the bottom, or the
+     black block appears to sit on a grey shelf when you rubber-band past it.
+     A scroll container's background covers its whole padding box and does NOT move with
+     the content, so this cannot be solved on the scroller — it has to be the card.
+     Hence a hard-stop gradient: grey for the top half, black for the bottom. Neither
+     half is ever visible at rest (the content covers the card edge to edge); each is
+     only exposed by a bounce at its own end, so the 50% seam is unreachable as long as
+     the rubber-band stays under half the card height.
+     Applied ONLY via .tech-tail — news cards and works with no technical content keep a
+     plain grey card at both ends. */
+  #detail.tech-tail {
+    background: linear-gradient(to bottom,
+                var(--detail-bg) 0, var(--detail-bg) 50%,
+                var(--tech-bg) 50%, var(--tech-bg) 100%);
+  }
+
+  /* ⚠︎ THE GREY GROUND IS WHAT MAKES THAT GRADIENT SAFE. #detail's background is fixed
+     to the card box (one screenful) — it does NOT scroll — so the moment the card has a
+     gradient, any TRANSPARENT content sitting in the lower half of the screen shows
+     black through it. The artwork section had no background of its own, so the card
+     read as half black at every scroll position. The fix is to give the artwork its own
+     full-bleed grey ground, exactly mirroring .tech's black one: now the content paints
+     the card edge to edge at all times and the gradient is only ever exposed by a
+     bounce past one of the two ends, which is all it was ever meant to do.
+     Same negative-margin trick as .tech, and -60 on the TOP as well so the grey starts
+     at the card's top edge rather than 60 below it. */
+  .art-ground {
+    margin-inline: calc(-1 * var(--detail-pad-x));
+    margin-top: calc(-1 * var(--frame-margin));
+    padding: var(--frame-margin) var(--detail-pad-x) 0;
+    background: var(--detail-bg);
+  }
+  /* the 60 gap before the black belongs to the GREY, not to .tech's margin — a margin
+     there would leave a transparent 60px strip showing the gradient through. Applied
+     only when a technical section actually follows (class set in openWork), so works
+     without one keep the scroller's own 60 bottom padding and are unchanged. */
+  .art-ground.has-tech { padding-bottom: var(--tech-top); }
+
+  #detailScroll {
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    /* the bleed is absorbed as PADDING, so the content box stays exactly (vw - 120)
+       and nothing inside the card had to learn about the overhang */
+    padding: var(--frame-margin) var(--detail-pad-x);
+  }
+  #detailScroll::-webkit-scrollbar { display: none; }
+
+  /* ---- one column, shared by both detail types ----
+     Art now follows news: full-bleed imagery at the frame margins, and a text
+     column capped at 400px. ART order = header image → text → gallery.
+     NEWS order = text → images (unchanged). */
+
+  /* ONE shared content column for the whole card. Everything inside is left-aligned to
+     its edge, which is what makes the art info block line up with the image at every
+     width — including once the columns collapse. Caps at 900 then shrinks with the
+     60px frame margins, so the frame is never encroached. */
+  .detail-body {
+    width: min(var(--detail-img-max), 100%);
+    margin-inline: auto;
+  }
+
+  /* imagery fills that column; height always proportional (width-driven, height:auto) */
+  .detail-hero,
+  .detail-figs img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* ART info: two columns while they fit, collapsing to one stacked column below.
+     flex-wrap does the breakpoint arithmetic itself — two 400s + a 32 gap need 832,
+     so they wrap exactly when the content column can no longer hold them. No media
+     query to keep in sync with the token values. Left-aligned, never centred. */
+  .art-info {
+    margin-top: 48px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--art-col-gap);
+  }
+  .art-col { width: min(var(--art-col-w), 100%); }
+
+  /* the text column: 400px until the 60px margins start cutting into it, then it
+     shrinks with them (min() against the already-padded content box) */
+  .detail-col {
+    width: min(400px, 100%);
+    margin-inline: auto;
+  }
+
+  .detail-heading { line-height: 1; margin: 0 0 48px; }
+  .detail-heading .title { font-style: italic; font-weight: 700; }
+  .detail-heading .year  { margin-left: var(--title-year-gap); font-weight: 400; }
+  .detail-block { line-height: 1.5; }
+  .detail-exh { margin-bottom: 12px; }
+  .detail-ack { margin-bottom: 0; }         /* the statement is its own column now; gap handles it */
+
+  .detail-news .dn-meta { font-size: var(--type-size); line-height: 1; color: var(--muted); margin-bottom: 12px; }
+  .detail-news .dn-title { font-size: 16px; line-height: 1.2; margin: 0 0 12px; }
+  .detail-news .dn-body { line-height: 1.5; margin: 0; }
+
+  /* the gallery: single column, stacked, scrolls with the card (sizing above) */
+  .detail-figs { margin-top: 48px; display: flex; flex-direction: column; gap: var(--card-gap); }
+
+  /* ===================== TECHNICAL section (v5) =====================
+     The inverse of the site: black ground, site-grey text, same 60px margins and the
+     same type/column system as the card above it.
+
+     ⚠︎ FULL-BLEED: #detailScroll carries the 60px frame padding, so the black has to
+     break OUT of it with a negative inline margin. That only reaches the card edge if
+     this section is a SIBLING of .detail-body — inside it, the negative margin would
+     stop at the 900px content column. Hence the markup order:
+        #detailContent > .detail-body (artwork) + .tech (this)
+     The negative bottom margin eats the scroller's bottom padding too, so the black
+     runs to the card's bottom edge; --tech-pad puts the 60 inset back on the inside. */
+  .tech {
+    margin-inline: calc(-1 * var(--detail-pad-x));
+    margin-bottom: calc(-1 * var(--frame-margin));
+    padding: var(--tech-pad) calc(var(--tech-pad) + var(--detail-bleed));
+    background: var(--tech-bg);
+    color: var(--tech-fg);
+  }
+  /* the same content column the artwork above uses, so the two align exactly */
+  .tech-inner { width: min(var(--detail-img-max), 100%); margin-inline: auto; }
+  /* .art-info and .tech-figs both carry a 48px top margin for their rhythm INSIDE the
+     card; the first one in here would stack that on top of --tech-pad and make the
+     inset 108 instead of 60. Zeroed generically so it holds whichever part comes
+     first (a work may have a gallery and no tagline). */
+  .tech-inner > :first-child { margin-top: 0; }
+
+  /* tagline in column 1, text in column 2 — the same split as heading/lists vs
+     statement above. Re-uses .art-info, so the wrap breakpoint stays in one place. */
+  .tech-tagline { line-height: 1.2; font-weight: 700; margin: 0; }
+
+  .tech-figs { margin-top: 48px; display: flex; flex-direction: column; gap: var(--card-gap); }
+  .tech-figs figure { margin: 0; }
+  .tech-figs img { width: 100%; height: auto; display: block; }
+  /* first captions anywhere on the site — the schema's technicalGallery[].caption */
+  .tech-figs figcaption {
+    margin-top: var(--caption-gap);
+    line-height: 1.4;
+    color: var(--tech-muted);
+  }
+
+  /* ===================== ABOUT panel ===================== */
+  :root {
+    --about-col-bio: 350px;
+    --about-col: 400px;
+    --about-col-gap: 32px;
+    --about-sec-gap: 32px;     /* [TUNE] between the bio sections. was 24 */
+    --about-head-gap: 12px;
+    --about-item-gap: 6px;
+    --about-year: #b3b3b3;
+  }
+  .about {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: var(--about-col-gap);
+    font-size: var(--type-size);
+    line-height: 1.5;
+  }
+  .about-bio,
+  .about-col2 { flex: 0 0 auto; min-width: 0; }
+  /* ⚠︎ THE BAND LIVES ON .about, NOT ON #bio's SCROLLER — and that is the whole fix.
+     A sticky offset is NOT measured from the scroll container's padding-box edge; it is
+     measured from where the content begins, i.e. the padding is already counted. So
+     while #bio carried `padding-top: --band` AND column 1 carried `top: --band`, the
+     band was applied TWICE: column 1 loaded at 268 while column 2 sat at 134, a 134px
+     misalignment that never resolved at any scroll depth. Measured in Chrome, and the
+     offset-at-rest tracked `top` exactly across a padding × offset sweep.
+     Zeroing the scroller's padding-top makes its padding box and content box coincide,
+     so both readings of the sticky spec agree and `top: --band` finally means what it
+     says: pin at 134, which is exactly where the column loads. Scroll extent is
+     unchanged (scrollHeight and maxScroll both identical), and column 2 does not move.
+     Scoped to #bio only — ART and NEWS keep the shared .sub padding untouched.
+     ⛔ Do NOT "simplify" this by putting the band back on #bio and dropping it from
+     .about; that is the bug. */
+  #bio { padding-top: 0; }
+  .about { padding-top: var(--band); }
+
+  /* column 1 pins where it loads and stays put while column 2 scrolls past it. */
+  .about-bio  {
+    width: min(var(--about-col-bio), 100%);
+    margin: 0;
+    position: sticky;
+    top: var(--bio-pin-top);
+  }
+  .about-col2 { width: min(var(--about-col), 100%); }
+  .about-bio strong { font-weight: 700; }
+  .about-col2 { display: flex; flex-direction: column; gap: var(--about-sec-gap); }
+
+  .about-sec { display: flex; flex-direction: column; gap: var(--about-head-gap); }
+  .about-h { margin: 0; font-size: var(--type-size); font-weight: 400; }
+  .about-list { display: flex; flex-direction: column; gap: var(--about-item-gap); }
+  .about-item { margin: 0; }
+  .about-item .yr { color: var(--about-year); }
+  .about-item a { color: inherit; text-underline-offset: 2px; }
+
+  @media (max-width: 902px) {
+    .about { flex-direction: column; align-items: center; gap: var(--about-sec-gap); }
+    .about-bio { width: min(var(--about-col), 100%); position: static; }  /* no pin when stacked */
+    /* .about keeps its padding-top here — it is now the only thing supplying the band
+       for this panel, stacked or not. */
+  }
+
+/* ============================================================================
+   ADDED BY THE ASTRO PORT (2026-08-13). Everything above this line is v6 verbatim.
+   Two additions, both deliberate. Keep new rules below this marker so the next
+   reader can still diff the style layer against prototype-v6.html cleanly.
+   ============================================================================ */
+
+/* ---- 1. THE EMPTY MEDIA STATE -------------------------------------------------
+   ⚠︎ NOT a nicety — it is the state EVERY visual is in right now. The repo's images
+   were deleted on 2026-08-10 and no Cloudflare URLs have been pasted yet, so all 26
+   content files render this today.
+
+   It must carry a SIZE. v6's images sized their own boxes from intrinsic dimensions
+   (`.artwork { height: var(--card-h); width: auto }`), so an empty <div> collapsed the
+   carousel to zero scroll width — the layout silently had no content. A default aspect
+   ratio keeps the layout honest until real images arrive, at which point intrinsic
+   dimensions take over for any surface not passing an explicit `ratio`. */
+.media-empty {
+  --media-empty-ratio: 3 / 2;
+  aspect-ratio: var(--media-empty-ratio);
+  background: repeating-linear-gradient(
+    45deg, #cfcfcf, #cfcfcf 10px, #c7c7c7 10px, #c7c7c7 20px);
+  display: block;
+}
+/* the carousel and grid size by height, so the empty box must too */
+.card .media-empty { height: var(--card-h); max-height: calc(var(--landing-h) - 80px); width: auto; }
+.gcard .media-empty { width: 100%; height: auto; }
+.ni-img.media-empty { --media-empty-ratio: 1 / 1; }
+.detail-hero.media-empty { width: 100%; --media-empty-ratio: 16 / 9; }
+.detail-figs .media-empty, .tech-figs .media-empty { width: 100%; }
+
+/* ---- 2. THE SPEC LINE (JJ, 2026-08-13) ----------------------------------------
+   medium / size / duration as grey text under the artwork title. All three are 11/11
+   populated in the CMS and had no surface until now — the "medium/dimensions in or out"
+   question that had been open since 2026-08-05.
+
+   Sits between the title and exhibitions, inside art column 1. Uses --muted (the same
+   grey as news meta and captions) rather than --tech-muted, which is scoped to captions
+   on the black technical ground.
+
+   [TUNE] --spec-gap is the space between the spec block and the exhibitions below it;
+   the 48px above it is .detail-heading's own margin-bottom, deliberately untouched. */
+:root { --spec-gap: 24px; }        /* [TUNE] spec block -> exhibitions */
+.detail-spec {
+  color: var(--muted);
+  line-height: 1.5;
+  margin: -32px 0 var(--spec-gap);  /* pull up under the title; 48 - 32 = 16px gap */
+}
+
+/* ---- 3. CARDS ARE LINKS ---------------------------------------------------------
+   Every card is now an <a href="/art/slug">, so with JavaScript off the browser loads
+   the pre-rendered detail route and the sheet is already up. With JS on, site.js
+   intercepts the click, fetches the partial and runs the rise instead.
+   These rules only neutralise the anchor's default look — layout is unchanged. */
+a.card, a.gcard, a.ni-inner { color: inherit; text-decoration: none; }
+a.card:focus-visible, a.gcard:focus-visible, a.ni-inner:focus-visible {
+  outline: 1px solid currentColor; outline-offset: 4px;
+}

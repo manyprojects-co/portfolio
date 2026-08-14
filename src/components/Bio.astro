@@ -1,0 +1,36 @@
+---
+/**
+ * BIO panel.
+ *
+ * ⚠︎ THE BIO PAIR — v6's one-bug fork, and the trap this component is most likely to
+ * reintroduce. `#bio` must carry `padding-top: 0` and `.about` must carry the band.
+ * A sticky offset is measured from where CONTENT begins, not from the scroll container's
+ * padding-box edge, so a scroller with padding-top: X and a sticky child with top: X
+ * applies X twice — that shipped in v3–v5 and put column 1 exactly 134px low.
+ * Both rules live in global.css. A layout that sets panel padding from a shared rule
+ * WILL silently bring the bug back. Signature: displacement at rest == `top`, exactly.
+ */
+import { inlineMd, aboutItem } from "../lib/format";
+import { lines } from "../lib/map";
+interface Props { about: any }
+const { about } = Astro.props;
+// Rich-text arrives as one markdown blob; the bio lists are one entry per line.
+const sections = [
+  { heading: "Exhibitions & Appearances", rows: lines(about.exhibitionsAppearances) },
+  { heading: "Awards & Commissions", rows: lines(about.awardsCommissions) },
+  { heading: "Press & Mentions", rows: lines(about.pressMentions) },
+].filter((s) => s.rows.length);
+---
+<div class="sub" id="bio">
+  <div class="about" id="about">
+    <p class="about-bio" set:html={inlineMd(about.bio ?? "")} />
+    <div class="about-col2">
+      {sections.map((sec) => (
+        <section class="about-sec">
+          <h3 class="about-h">{sec.heading}</h3>
+          <div class="about-list" set:html={sec.rows.map(aboutItem).join("")} />
+        </section>
+      ))}
+    </div>
+  </div>
+</div>

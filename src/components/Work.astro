@@ -1,0 +1,95 @@
+---
+/**
+ * Work.astro — the artwork sheet's inner content. ONE component, TWO consumers:
+ *   /art/[slug].astro          inlines it (cold load, SEO, no-JS)
+ *   /art/[slug]/_content.astro serves it bare (fetched on an in-site click)
+ *
+ * ⭐ That sharing is the point. hooks.md: "the fetched markup is identical to what the
+ * route inlines." Two renderers would drift, and the drift would only show up as the
+ * card looking subtly different depending on how you arrived at it.
+ *
+ * ⚠︎ NOTHING HERE MAY BE TRANSPARENT. #detail carries a hard-stop grey->black gradient
+ * and a card background does not scroll with its content, so every full-bleed section
+ * paints its own ground (.art-ground, .tech) or the card goes half black.
+ */
+import Media from "./Media.astro";
+interface Props { work: any }
+const { work: wk } = Astro.props;
+
+const t = wk.technical ?? {};
+const hasTech = !!(t.tagline || t.text?.length || t.gallery?.length);
+// medium / size / duration — grey under the title (JJ, 2026-08-13). 11/11 in the CMS.
+const spec = [wk.medium, wk.size, wk.duration].filter(Boolean);
+---
+<div class:list={["art-ground", hasTech && "has-tech"]}>
+  <div class="detail-body">
+    <Media media={wk.visuals.cardCover ?? wk.visuals.landing} alt={wk.title}
+           class="detail-hero" widths={[900, 1400, 1920]} sizes="min(900px, 100vw)"
+           ratio={[16, 9]} loading="eager" />
+    <div class="art-info">
+      <div class="art-col">
+        <p class="detail-heading">
+          <span class="title">{wk.title}</span><span class="year">({wk.year})</span>
+        </p>
+        {spec.length > 0 && (
+          <div class="detail-spec">{spec.map((s) => <div>{s}</div>)}</div>
+        )}
+        {wk.exhibitions?.length > 0 && (
+          <div class="detail-block detail-exh">
+            {wk.exhibitions.map((x: string) => <div>·&nbsp;{x}</div>)}
+          </div>
+        )}
+        {wk.acknowledgements?.length > 0 && (
+          <div class="detail-block detail-ack">
+            {wk.acknowledgements.map((x: string) => <div>·&nbsp;{x}</div>)}
+          </div>
+        )}
+      </div>
+      {wk.statement?.length > 0 && (
+        <div class="art-col">
+          <div class="detail-block">
+            {wk.statement.map((p: string) => <p style="margin:0 0 1em">{p}</p>)}
+          </div>
+        </div>
+      )}
+    </div>
+    {wk.gallery?.length > 0 && (
+      <div class="detail-figs">
+        {wk.gallery.map((g: any) => <Media media={g} alt={wk.title} widths={[900, 1400, 1920]} />)}
+      </div>
+    )}
+  </div>
+</div>
+
+{/* TECHNICAL — a SIBLING of .detail-body, never a child: its negative inline margin has
+    to break out of #detailScroll's padding to reach the card edge, and inside .detail-body
+    it would only reach the 900px content column. Reads the real CMS fields; v5's standalone
+    TECH placeholder map is deleted. */}
+{hasTech && (
+  <section class="tech">
+    <div class="tech-inner">
+      {(t.tagline || t.text?.length) && (
+        <div class="art-info">
+          {t.tagline && <div class="art-col"><p class="tech-tagline">{t.tagline}</p></div>}
+          {t.text?.length > 0 && (
+            <div class="art-col">
+              <div class="detail-block">
+                {t.text.map((p: string) => <p style="margin:0 0 1em">{p}</p>)}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+      {t.gallery?.length > 0 && (
+        <div class="tech-figs">
+          {t.gallery.map((g: any) => (
+            <figure>
+              <Media media={g} alt={wk.title} widths={[900, 1400]} />
+              {g.caption && <figcaption>{g.caption}</figcaption>}
+            </figure>
+          ))}
+        </div>
+      )}
+    </div>
+  </section>
+)}

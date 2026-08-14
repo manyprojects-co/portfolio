@@ -1,0 +1,60 @@
+---
+/**
+ * Site.astro — the shell. Mirrors prototype-v6.html's skeleton exactly:
+ *   #detail  (below, the card)  ·  #stage  (owns the detail offset)
+ *   #world   (owns landing<->tab)  ·  .hero + .section
+ *
+ * ⚠︎ THE ORDER AND NESTING ARE LOad-BEARING. #stage and #world own different offsets,
+ * and every geometry measurement in site.js reads from this exact tree.
+ */
+import "../styles/global.css";
+interface Props {
+  title?: string;
+  description?: string;
+  /** Set on a detail route. Tells site.js to ADOPT the pre-rendered sheet rather than
+   *  build one — and to present it AT REST, with no rise. A rise is the response to a
+   *  click; arriving by URL is not a click. (hooks.md § Detail-route architecture) */
+  coldOpen?: { type: "art" | "news"; slug: string } | null;
+}
+const {
+  title = "Many Projects",
+  description = "Xin Wen & JJ Agcaoili — XJ",
+  coldOpen = null,
+} = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- BELOW: the detail card. Rises over the site; #detail owns the grey->black ground. -->
+    <div
+      id="detail"
+      aria-label="Artwork or news detail"
+      class:list={[coldOpen && "open", coldOpen && "cold"]}
+      data-cold-open={coldOpen ? `${coldOpen.type}/${coldOpen.slug}` : undefined}
+    >
+      <div id="detailScroll"><div id="detailContent"><slot name="detail" /></div></div>
+    </div>
+
+    <!-- ABOVE: the site. #stage owns the detail offset, #world the landing<->tab offset. -->
+    <div id="stage">
+      <div id="world">
+        <slot />
+      </div>
+    </div>
+
+    <slot name="data" />
+    <script>import "../scripts/site.js";</script>
+  </body>
+</html>

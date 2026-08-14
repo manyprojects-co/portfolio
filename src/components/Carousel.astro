@@ -1,0 +1,17 @@
+---
+/** Landing carousel — featured works, by featureOrder. Pre-rendered, not built in JS. */
+import Media from "./Media.astro";
+interface Props { works: any[] }
+const { works } = Astro.props;
+---
+<main class="carousel" id="carousel" aria-label="Artworks">
+  {works.map((wk) => (
+    <a class="card" href={`/art/${wk.slug}`} data-detail={`art/${wk.slug}`}>
+      <Media media={wk.visuals.landing} alt={wk.title} class="artwork"
+             widths={[480, 960, 1440]} ratio={[3, 2]} sizes="(max-width: 900px) 90vw, 40vw" loading="eager" />
+      <span class="caption">
+        <span class="title">{wk.title}</span><span class="year">({wk.year})</span>
+      </span>
+    </a>
+  ))}
+</main>

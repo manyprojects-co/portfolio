@@ -1,0 +1,20 @@
+---
+/** ART panel. Grid caption renders `premiereCity` as-is (comma-separated, editor-typed). */
+import Media from "./Media.astro";
+interface Props { works: any[] }
+const { works } = Astro.props;
+---
+<div class="sub" id="art">
+  <div class="grid" id="grid">
+    {works.map((wk) => (
+      <a class="gcard" href={`/art/${wk.slug}`} data-detail={`art/${wk.slug}`}>
+        <Media media={wk.visuals.tabArt ?? wk.visuals.cardCover ?? wk.visuals.landing}
+               alt={wk.title} widths={[400, 800, 1200]} ratio={[4, 3]} sizes="(max-width: 900px) 45vw, 30vw" />
+        <span class="gcap">
+          <div><span class="title">{wk.title}</span><span class="year">({wk.year})</span></div>
+          {wk.city && <div class="cities">{wk.city}</div>}
+        </span>
+      </a>
+    ))}
+  </div>
+</div>

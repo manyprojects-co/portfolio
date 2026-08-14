@@ -1,0 +1,17 @@
+---
+/** /news/[slug] — the landing with the news sheet pre-rendered open. See /art/[slug]. */
+import Site from "../../layouts/Site.astro";
+import Landing from "../../components/Landing.astro";
+import NewsItem from "../../components/NewsItem.astro";
+
+export async function getStaticPaths() {
+  const { allNews } = await import("../../lib/content");
+  return (await allNews()).map((item) => ({ params: { slug: item.slug }, props: { item } }));
+}
+const { item } = Astro.props;
+---
+<Site title={`${item.title} — Many Projects`} description={item.subheading}
+      coldOpen={{ type: "news", slug: item.slug }}>
+  <Landing />
+  <NewsItem slot="detail" item={item} />
+</Site>

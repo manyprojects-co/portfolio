@@ -1,0 +1,23 @@
+---
+/**
+ * /art/[slug] — the landing with the artwork sheet PRE-RENDERED OPEN.
+ * Content is inlined in the initial HTML, so this works with no JS and is indexable.
+ * site.js sees `data-cold-open` and adopts it AT REST — no rise animation, because a
+ * rise is the response to a click and arriving by URL is not one.
+ */
+import Site from "../../layouts/Site.astro";
+import Landing from "../../components/Landing.astro";
+import Work from "../../components/Work.astro";
+import { allWorks } from "../../lib/content";
+
+export async function getStaticPaths() {
+  const { allWorks } = await import("../../lib/content");
+  return (await allWorks()).map((work) => ({ params: { slug: work.slug }, props: { work } }));
+}
+const { work } = Astro.props;
+---
+<Site title={`${work.title} — Many Projects`} description={work.tagline}
+      coldOpen={{ type: "art", slug: work.slug }}>
+  <Landing />
+  <Work slot="detail" work={work} />
+</Site>
