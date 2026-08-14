@@ -42,6 +42,9 @@ landingVisual:
 tabArtVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/artworks/personhood/psh-tab.png
+cardCoverVisual:
+  mediaType: image
+  imageUrl: https://media.agawen.com/artworks/personhood/psh-card.jpg
 technicalTagline: "[Personhood Technical Tagline Placeholder]"
 technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
   eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
