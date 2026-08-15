@@ -35,6 +35,9 @@ statement: >-
 
 
   -- Xin, 2024
+mainVisual:
+  mediaType: image
+  imageUrl: https://media.agawen.com/news/into-the-future/itf-tab.jpg
 gallery:
   - {}
   - {}
