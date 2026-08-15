@@ -11,5 +11,4 @@ statement: "EMERGE:NCY (2023) was screened on the Piccadilly Lights at 20:23
 gallery:
   - {}
   - {}
-  - {}
 ---
