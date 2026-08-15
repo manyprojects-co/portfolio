@@ -2,6 +2,7 @@
 title: Technarte Conference
 isDateRange: false
 date: 2024-05-17
+endDate: 2026-08-15
 location: Palacio Euskalduna
 city: Bilbao, Spain
 eventType: Artist Talk
@@ -32,6 +33,9 @@ statement: >-
 
   A huge thank you to Nacho Martínez for bringing this incredible community
   together, and to everyone who made Technarte possible.
+mainVisual:
+  mediaType: image
+  imageUrl: https://media.agawen.com/news/technarte/tnt-tab.jpg
 gallery:
   - {}
   - {}
