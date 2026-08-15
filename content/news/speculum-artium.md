@@ -1,5 +1,6 @@
 ---
 title: Personhood / Speculum Artium
+subheading: "We exhibited a new iteration of "
 isDateRange: true
 date: 2025-09-17
 endDate: 2025-09-20
