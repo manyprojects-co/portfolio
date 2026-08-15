@@ -14,4 +14,7 @@ statement: Powered by Piccadilly Lights, ++**[JJ Agcaoili & Xin
   the iconic London landmark. The recent graduates from **The Royal College of
   Art** Global Innovation Design (MA/MSc) course received an additional £10,000
   to support their joint artistic practice.
+mainVisual:
+  mediaType: image
+  imageUrl: https://media.agawen.com/news/circa-prize/circa-p-tab.jpg
 ---
