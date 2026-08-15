@@ -1,6 +1,7 @@
 ---
 title: Personhood / Speculum Artium
-subheading: "We exhibited a new iteration of "
+subheading: We exhibited a new iteration of Personhood (2024) for the Speculum
+  Artium Festival.
 isDateRange: true
 date: 2025-09-17
 endDate: 2025-09-20
