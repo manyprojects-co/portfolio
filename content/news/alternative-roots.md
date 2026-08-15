@@ -12,4 +12,7 @@ statement: 'About the festival: "On 8 November 2025, 18 artists and collectives
   Ming Strike in partnership with Kakilang, the day unfolded across multiple
   rooms, with audiences moving freely between live performance, film, sound
   works, workshops, conversation and a bustling marketplace."'
+mainVisual:
+  mediaType: image
+  imageUrl: https://media.agawen.com/news/alternative-roots/aroots-tab.jpg
 ---
