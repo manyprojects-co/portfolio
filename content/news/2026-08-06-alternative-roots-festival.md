@@ -1,7 +1,8 @@
 ---
-title: Alternative Roots Festival
+title: 2025PCM / Alternative Roots Festival
 isDateRange: false
 date: 2025-11-08
+endDate: 2026-08-15
 location: Hoxton Hall
 city: London, UK
 eventType: Group exhibition
