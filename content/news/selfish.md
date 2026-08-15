@@ -3,7 +3,6 @@ title: Self—ish
 isDateRange: true
 date: 2026-03-07
 endDate: 2026-03-19
-year: March 2026
 location: Helix Art Space
 city: Stockholm, Sweden
 eventType: Solo exhibition
@@ -42,12 +41,14 @@ statement: >-
 
   Curated by Ruoxi Gao for the Helix Art Space. Co-developed with Yul Cho and
   Daniel Daboczy.
-image: /assets/SF-1.jpg
+mainVisual:
+  mediaType: image
+  imageUrl: https://media.agawen.com/news/selfish/sf-tab.jpg
 gallery:
-  - /assets/SF-1.jpg
-  - /assets/SF-2.jpg
-  - /assets/SF-3.jpg
-  - /assets/SF-4.jpg
-  - /assets/SF-5.jpg
-  - /assets/SF-6.jpg
+  - {}
+  - {}
+  - {}
+  - {}
+  - {}
+  - {}
 ---
