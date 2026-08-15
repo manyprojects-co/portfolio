@@ -1,6 +1,5 @@
 ---
-title: "Personhood: Iteration 4"
-subheading: Test text for slot
+title: "Personhood: a more personal iteration"
 isDateRange: true
 date: 2026-04-25
 endDate: 2026-05-14
@@ -24,5 +23,4 @@ statement: >-
 
 
   *Curated by So-Yeon Yoon, supported by Cornell Council for the Arts.*
-image: /assets/PSH7.jpg
 ---
