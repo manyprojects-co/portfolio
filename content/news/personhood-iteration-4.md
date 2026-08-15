@@ -23,4 +23,7 @@ statement: >-
 
 
   *Curated by So-Yeon Yoon, supported by Cornell Council for the Arts.*
+mainVisual:
+  mediaType: image
+  imageUrl: https://media.agawen.com/news/mvr/mvr-tab.jpg
 ---
