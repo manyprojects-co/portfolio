@@ -35,4 +35,7 @@ statement: >-
   performance art, illustration, 3D animation, photography, and videography.
   Together with the pieces, the artists presented a collection of art manifestos
   to reinforce their call to action.
+mainVisual:
+  mediaType: image
+  imageUrl: https://media.agawen.com/news/art-act/aact-tab.jpg
 ---
