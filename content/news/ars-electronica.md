@@ -9,6 +9,9 @@ eventType: Group exhibition
 statement: "Box Body was exhibited as a part of “Butterfly’s Dreams: The New
   Aesthetic of AI in Artistic Practice”, curated by Ina Conradi and Ong Kian
   Peng, supported by Nanyang Technological University (NTU)."
+mainVisual:
+  mediaType: image
+  imageUrl: https://media.agawen.com/news/ars-electronica/aef-tab.jpg
 gallery:
   - {}
   - {}
