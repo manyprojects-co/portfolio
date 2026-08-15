@@ -19,9 +19,11 @@ statement: >-
   BEAM was conceptualized for the 2023 Interplay Kinetic Design Competition, and
   co-developed with Wei Zhang and Luling Wang for the exhibition. It was a
   finalist and recipient of a £1K Development Prize.
-image: /assets/BEAM-1.jpg
+mainVisual:
+  mediaType: image
+  imageUrl: https://media.agawen.com/news/beam/beam-tab.jpg
 gallery:
-  - /assets/BEAM2.jpg
-  - /assets/BEAM-3.jpg
-  - /assets/BEAM-4.jpg
+  - {}
+  - {}
+  - {}
 ---
