@@ -797,8 +797,42 @@ import { createTrace } from "../lib/trace.mjs";
     document.fonts.ready.then(() => { pinContact(); measureGeom(); });
   }
 
+  // ⚠︎ K — ON iOS THE URL BAR CAN CUT A TRANSITION.
+  // iOS Safari fires `resize` when the URL bar collapses, and it collapses DURING a scroll
+  // gesture. So a gesture that commits a transition *and* collapses the bar used to cancel
+  // its own lerp and hard-snap to the end state — the transition visibly cut. The handler's
+  // logic is right for a genuine resize; on iOS a URL-bar collapse is not one, and it lands
+  // at the worst possible moment.
+  //
+  // ⚠︎ INVISIBLE TO THE CURRENT TEST DISCIPLINE — "a cut satisfies an end-state assertion
+  // perfectly." Verify by sampling frames DURING the transition, never after a wait.
+  //
+  // The discriminator is HEIGHT-ONLY + A TWEEN IN FLIGHT. A window resized with a mouse
+  // almost always changes width too, and a device rotation changes both — so neither takes
+  // this path. Re-aiming is not a new mechanism: worldTo()/stageTo() already tween FROM the
+  // current position, which is exactly "re-aim at the new geometry without stopping".
+  //
+  // ⚠︎ Known remainder, deliberately NOT fixed here: the same collapse AT REST still jumps,
+  // because applyWorld(-LANDING_H) moves when LANDING_H does. Fixing that means keying the
+  // geometry on svh/dvh/visualViewport — which changes what measures LANDING_H, and
+  // LANDING_H feeds revealP(), so it changes every reveal dynamic. Bigger, and separate.
+  let lastW = window.innerWidth, lastH = window.innerHeight;
+
   window.addEventListener("resize", () => {
-    // a resize invalidates every in-flight target — land on the current state instead
+    const w = window.innerWidth, h = window.innerHeight;
+    const heightOnly = w === lastW && h !== lastH;
+    lastW = w; lastH = h;
+
+    if (heightOnly && (worldTween || stageTween)) {
+      measureGeom();
+      // RE-AIM, don't cancel. Contact is left alone: its geometry is the nav's line width,
+      // which is width-driven, so a height-only change has not invalidated it.
+      if (worldTween) worldTo(view === "tab" ? -LANDING_H : 0);
+      if (stageTween) stageTo(detailOpen ? stageOpenY() : 0);
+      return;                                     // snap offset is width-driven: nothing to do
+    }
+
+    // a genuine resize invalidates every in-flight target — land on the current state instead
     if (worldTween) { worldTween.cancel(); worldTween = null; }
     if (stageTween) { stageTween.cancel(); stageTween = null; }
     setContact(false);                            // an open group is stale geometry
