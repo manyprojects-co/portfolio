@@ -22,9 +22,16 @@
 import { createArbiter } from "../lib/gesture-arbiter.mjs";
 import { titleCase, typeLabel, timeElapsed } from "../lib/format";
 import { parseCssTime } from "../lib/css-time";
+import { createTrace } from "../lib/trace.mjs";
 
 
 {
+  // ============================================================================
+  // TRACE — inert unless ?trace=1. See src/lib/trace.mjs for what it measures, and
+  // for why the harness lives in the BUILT app rather than in a standalone prototype.
+  // ============================================================================
+  const T = createTrace(new URLSearchParams(location.search).get("trace") === "1");
+
   // ============================================================================
   // MOTION PRIMITIVES — ported from prototype-tabsnap.html
   // ============================================================================
@@ -289,6 +296,7 @@ import { parseCssTime } from "../lib/css-time";
 
   function goTab() {
     if (view === "tab") return;
+    T.push({ k: "@goTab", g: arb.state().gestureId, claim: arb.state().gRegion });
     view = "tab";
     arb.consume();                                    // this gesture has had its transition
     applyView();                                  // unlock the tabs NOW so they scroll mid-lerp
@@ -297,6 +305,7 @@ import { parseCssTime } from "../lib/css-time";
 
   function goLanding() {
     if (view === "landing") return;
+    T.push({ k: "@goLanding", g: arb.state().gestureId, claim: arb.state().gRegion });
     view = "landing";
     arb.consume();                                    // this gesture has had its transition
     // tabs stay unlocked through the return so a caught lerp can still be scrolled
@@ -328,6 +337,9 @@ import { parseCssTime } from "../lib/css-time";
 
   function closeDetail() {
     if (!detailOpen) return;
+    // ⭐ the anchor for every leak counter — the post-close window opens HERE, which is
+    // also where `detailOpen` flips and the coast becomes free to reach the deck.
+    T.push({ k: "@closeDetail", g: arb.state().gestureId, claim: arb.state().gRegion });
     closeViaHistory();   // keep the URL in step with a gesture-driven close
     detailOpen = false;
     arb.consume();   // spend the gesture HERE, not when the lerp lands: detailOpen flips
@@ -391,7 +403,12 @@ import { parseCssTime } from "../lib/css-time";
     const dt = now - lastT; lastT = now;
 
     // The arbiter owns idle-reset AND segmentation; see src/lib/gesture-arbiter.mjs.
+    // ⚠︎ state() is read on BOTH sides of feed() so the trace can see a MINT from outside
+    // the module — a change in gestureId across feed() is a new gesture, by definition.
+    // Both reads are no-ops (and the object is never built) when the trace is off.
+    const tBefore = T.on ? arb.state() : null;
     arb.feed({ deltaY: e.deltaY, dt, clientY: e.clientY });
+    if (T.on) T.wheel(e, dt, tBefore, arb.state());
 
     // ---- STATE 3: art-news detail ----
     if (detailOpen) {
@@ -419,7 +436,15 @@ import { parseCssTime } from "../lib/css-time";
       // frame, arrives here mid-coast through no intent of the user's. It does not own the
       // carousel and gets nothing. The event is still preventDefault'd above, so it dies
       // here rather than leaking to native scroll.
-      if (arb.ownsCarousel()) mapToCarousel(carousel, e);
+      // ⚠︎ RECORDED ON THE GRANT, NOT ON THE PIXELS. A coast that wins ownsCarousel() has
+      // leaked, whether or not the deck had room left to move — count the moved pixels and
+      // you get a counter that reads 0 at either end of the carousel, and on a cold load
+      // before the images size it. `moved` keeps the distinction visible.
+      if (arb.ownsCarousel()) {
+        const moved = mapToCarousel(carousel, e);
+        T.push({ k: ">DECK", via: "region", g: arb.state().gestureId, moved,
+                 dx: +e.deltaX.toFixed(2), dy: +e.deltaY.toFixed(2), mom: e.momentum });
+      }
       arb.resetIntent();
       return;
     }
@@ -431,7 +456,14 @@ import { parseCssTime } from "../lib/css-time";
       // write to the same scroller, and the old momentum gate never covered it. Ownership
       // does: anything born over the open card is excluded, the rest browses as before.
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
-        if (arb.region() !== "detail") carousel.scrollLeft += e.deltaX;
+        if (arb.region() !== "detail") {
+          carousel.scrollLeft += e.deltaX;
+          // ⚠︎ the SECOND writer to the same scroller, behind a DIFFERENT gate. Tagged
+          // separately so the report can show which of the two gates leaked. C collapses
+          // these into one unconditional rule.
+          T.push({ k: ">DECK", via: "frame", g: arb.state().gestureId,
+                   dx: +e.deltaX.toFixed(2), dy: +e.deltaY.toFixed(2), mom: e.momentum });
+        }
         return;
       }
       if (e.deltaY > 0) {              // downward → commit into tab view (catches a return lerp)
@@ -754,6 +786,7 @@ import { parseCssTime } from "../lib/css-time";
     applyView();
     scrollToTab(order.indexOf(current), false);
     paintNav();
+    T.bind();                          // HUD + keybindings; a no-op unless ?trace=1
   }
   init();
 
