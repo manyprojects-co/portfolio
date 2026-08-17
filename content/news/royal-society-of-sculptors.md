@@ -1,24 +1,17 @@
 ---
 title: BEAM / Royal Society of Sculptors
+subheading: A first prototype of BEAM (2023) was exhibited at the Royal Society
+  of Sculptors as one of the finalists of the Interplay Kinetic Design
+  Competition.
 isDateRange: true
 date: 2023-11-28
 endDate: 2023-12-05
 location: Royal Society of Sculptors
 city: London, UK
 eventType: Group exhibition
-statement: >-
-  BEAM (Bright Emotive Animated Module) (2023) is a speculative robotic lamp
-  that imagines future household objects as creatures that cohabitate our living
-  space.  Where one might see an optimistic future of home robotics that
-  celebrate biophilic sensibilities, others might see a warning for a future
-  where we surround ourselves with mere simulacra. Does it tell of a future
-  where living machines are built out of an admiration for life, or a
-  desperation to mimic what we’ve lost?
-
-
-  BEAM was conceptualized for the 2023 Interplay Kinetic Design Competition, and
-  co-developed with Wei Zhang and Luling Wang for the exhibition. It was a
-  finalist and recipient of a £1K Development Prize.
+statement: This prototype of BEAM (2023) was co-developed with Wei Zhang and
+  Luling Wang for the Interplay exhibition. It was a finalist and recipient of a
+  £1K Development Prize.
 mainVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/news/beam/beam-tab.jpg
