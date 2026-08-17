@@ -15,16 +15,10 @@ statement: >-
   2023.
 
 
-  // About the Festival: ART-ACT Festival featured audiovisual art pieces from
-  international and emerging artists reflecting on some of the most relevant and
-  pressing topics experienced today globally such as the climate crisis, human
-  rights, and freedom of expression, among others.
-
-
-  The festival featured 7 curated art pieces that were screened in two large LED
-  billboard formats around the city of Singapore, one Ten Square, Landmark of
-  Good at the Selegie Art District, and Media Art Nexus at the Nanyang
-  Technological University Singapore.
+  // About the Festival: The festival featured 7 curated art pieces that were
+  screened in two large LED billboard formats around the city of Singapore, one
+  Ten Square, Landmark of Good at the Selegie Art District, and Media Art Nexus
+  at the Nanyang Technological University Singapore.
 
 
   The pieces harness the power of art activism to engage the audience in a
