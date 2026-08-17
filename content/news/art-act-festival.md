@@ -1,11 +1,12 @@
 ---
 title: ART-ACT Festival
-subheading: Our first site-specific art work, Box Body (2023), was featured as
-  one of the 7 works at the ART-ACT Festival at Singapore Art Week 2023.
-  Co-curated by Aura Murillo and Ina Conradi, ART-ACT Festival featured
-  audiovisual art pieces from international and emerging artists reflecting on
-  some of the most relevant and pressing topics experienced today globally such
-  as the climate crisis, human rights, and freedom of expression, among others.
+subheading: Our first site-specific anamorphic 3D video installation, Box Body
+  (2023), was featured as one of the 7 works at the ART-ACT Festival at
+  Singapore Art Week 2023. Co-curated by Aura Murillo and Ina Conradi, ART-ACT
+  Festival featured audiovisual art pieces from international and emerging
+  artists reflecting on some of the most relevant and pressing topics
+  experienced today globally such as the climate crisis, human rights, and
+  freedom of expression, among others.
 isDateRange: true
 date: 2023-01-12
 endDate: 2023-01-15
@@ -13,8 +14,9 @@ location: Ten Square
 city: Singapore
 eventType: Group exhibition
 statement: >-
-  Box Body (2023) was featured as one of the 7 works at the ART-ACT Festival at
-  Singapore Art Week 2023.
+  Our first site-specific anamorphic 3D video installation, Box Body (2023), was
+  featured as one of the 7 works at the ART-ACT Festival at Singapore Art Week
+  2023.
 
 
   // About the Festival: ART-ACT Festival featured audiovisual art pieces from
