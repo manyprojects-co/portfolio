@@ -48,8 +48,8 @@ content:
       # Premiere City, Exhibitions, Artist Statement, Acknowledgements
       - { name: premiereCity, label: Premiere City, type: string }
       - { name: exhibitions, label: Exhibitions, type: rich-text }
-      - { name: artistStatement, label: Artist Statement, type: rich-text }
-      - { name: acknowledgements, label: Acknowledgements, type: rich-text }
+      - { name: artistStatement, label: Artist Statement (and acknowledgements), type: rich-text }
+      - { name: institutionSupport, label: Institution Support, type: rich-text }
 
   # Single Key Visuals (100% Cloudflare Hosted)
       - name: landingVisual
