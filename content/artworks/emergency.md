@@ -32,11 +32,11 @@ tabArtVisual:
 cardCoverVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/artworks/emergency/emgc-card.jpg
-technicalTagline: "[EMERGENCY Technical Tagline Placeholder]"
-technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-  eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-  veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-  commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit
-  esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat
-  non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+technicalTagline: Light beyond the dark
+technicalText: "This award-winning artwork was made in the shared basement
+  entertainment room of an east london flat complex. It builds on a technique
+  previously tested in Singapore through [Box
+  Body](https://agawen.com/art/box-body/), but this iteration sought to
+  introduce a more emotionally dynamic performance and the implication of space
+  beyond the confines of the screen. "
 ---
