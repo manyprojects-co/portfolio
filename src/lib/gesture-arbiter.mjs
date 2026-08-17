@@ -296,10 +296,16 @@ export function createArbiter(cfg = {}, env = {}) {
           spentOn = -1; acc = 0; rRun = 0;
           log(`[gesture #${gestureId}] RESUME — transition re-armed (hole/flag)`);
         }
-        // (b) THE DECK — v6's §4, same scope: hands back the deck, never a transition.
-        if (gRegion !== "carousel" && !detailOpen() && clientY < tabTopY()) {
+        // (b) THE CLAIM — v6's §4, same scope: hands back a region, never a transition.
+        // ⚠︎ Re-claims WHEREVER THE CURSOR IS, not only over the carousel. v6 could only
+        // ever grant "carousel", which left a stale "detail" claim sitting on a gesture in
+        // tab view long after the card was gone — and `region() !== "detail"` is what
+        // site.js uses to decide whether a gesture may reach native scroll at all. So the
+        // stale claim was load-bearing in a place nobody had looked.
+        // This is still a claim, never a budget: it cannot mint and cannot spend.
+        if (!detailOpen() && gRegion !== regionAt(clientY)) {
           gRegion = regionAt(clientY);
-          log(`[gesture #${gestureId}] RESUME — deck re-claimed, now ${gRegion}`);
+          log(`[gesture #${gestureId}] RESUME — re-claimed, now ${gRegion}`);
         }
       }
       if (spentOn === gestureId) acc = 0;
@@ -402,6 +408,19 @@ export function createArbiter(cfg = {}, env = {}) {
       segment(deltaY, dt, clientY, deltaX, momentum);
     },
     segment, consume, meant, gestureLive, ownsCarousel,
+    /**
+     * Is a LIVE coast still attached to this gesture?
+     * ⚠︎ Exists so site.js can gate the one path it leaves to native scroll WITHOUT
+     * creating a lockout. The gate must stop momentum from scrolling the panel a closing
+     * card uncovers — but a coast that has decayed below `holeLive` can no longer be
+     * detected as interrupted (a resume needs a live coast to interrupt), so holding the
+     * gate past that point would trap the user until 100ms of silence minted a new gesture.
+     * A dead coast is 1-3px an event and harmless. So: block while it can still do damage,
+     * release when it cannot. Measured on both engines, that boundary is the same number
+     * the resume detector already uses, which is why it is not a second threshold.
+     * ⛔ Always false in compat — v6 had no such gate.
+     */
+    coasting: () => !C.compat && median(vHist) >= C.holeLive,
     /** intent accumulator — the wheel handler banks px into this per branch */
     addIntent(delta) { acc += delta; return acc; },
     resetIntent() { acc = 0; },

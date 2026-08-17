@@ -479,6 +479,31 @@ import { createTrace } from "../lib/trace.mjs";
     }
 
     // ---- REGION: over the tab frame, in tab view ----
+    // ⚠︎ A SPENT, DETAIL-BORN GESTURE MUST NOT REACH NATIVE SCROLL EITHER.
+    // Everything else in this handler is preventDefault'd, so ownership decides what
+    // happens. This branch is the one place a wheel event is deliberately left to the
+    // browser — and that made it the one place a closing card's momentum could still act.
+    // Reported by JJ on Safari, 2026-08-17: "card -> tab, momentum carries into tab scroll
+    // as soon as the card closes."
+    //
+    // Not an arbiter bug: the arbiter had it right — spent, claimed "detail", nothing
+    // granted. The events simply fell past every gate to the panel's own scroller.
+    // closeDetail() already locks `detailScroll.overflowY` for exactly this reason, one
+    // layer up; this is the same argument applied to the panel the card uncovers. One
+    // gesture, one action: the flick that closed the card does not also scroll what is
+    // underneath.
+    //
+    // ⭐ Scoped, and self-releasing: a genuine resume clears `spentOn`, so this stops
+    // holding the instant the user pushes again — no timer and no fixed window (DEAD 1/2).
+    // ⚠︎ `coasting()` is what stops this becoming a lockout — see its comment in the
+    // arbiter. Block while the coast can still move the panel; release once it is spent
+    // down to a few px, because past that point a resume is no longer detectable and
+    // holding would trap the user until 100ms of silence.
+    if (arb.region() === "detail" && !arb.gestureLive() && arb.coasting()) {
+      e.preventDefault();
+      return;
+    }
+
     // horizontal is left entirely to the native snap track (no preventDefault); a
     // swipe mid-slide releases the nav tween so the gesture takes over
     if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) { releaseTab(); arb.resetIntent(); return; }
