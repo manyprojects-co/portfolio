@@ -52,4 +52,11 @@ technicalText: "This award-winning artwork was made in the shared basement
   Body](https://agawen.com/art/box-body/), but this iteration sought to
   introduce a more emotionally dynamic performance and the implication of space
   beyond the confines of the screen. "
+technicalGallery:
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/emergency/emgc-tech1.jpg
+    caption: Film set
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/emergency/emgc-tech2.jpg
+    caption: Frames from the final film (skewed for Piccadilly Lights)
 ---
