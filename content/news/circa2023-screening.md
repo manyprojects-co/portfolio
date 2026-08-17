@@ -58,4 +58,10 @@ gallery:
     imageUrl: https://media.agawen.com/news/circa-screen/circa-s7.jpg
   - mediaType: image
     imageUrl: https://media.agawen.com/news/circa-screen/circa-s8.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/circa-screen/circa-s9.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/circa-screen/circa-s10.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/circa-screen/circa-s11.jpg
 ---
