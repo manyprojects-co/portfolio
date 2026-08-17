@@ -407,7 +407,12 @@ import { createTrace } from "../lib/trace.mjs";
     // the module — a change in gestureId across feed() is a new gesture, by definition.
     // Both reads are no-ops (and the object is never built) when the trace is off.
     const tBefore = T.on ? arb.state() : null;
-    arb.feed({ deltaY: e.deltaY, dt, clientY: e.clientY });
+    // ⭐ deltaX and momentum are both load-bearing now (B):
+    //   momentum — WheelEvent.momentum where the engine has it (Chrome 151+). Absent on
+    //              Safari and Firefox, which fall to the hole detector.
+    //   deltaX   — feeds the resume detector's VECTOR magnitude, which is what makes a
+    //              horizontal swipe able to re-claim the deck at all (defect C).
+    arb.feed({ deltaY: e.deltaY, deltaX: e.deltaX, dt, clientY: e.clientY, momentum: e.momentum });
     if (T.on) T.wheel(e, dt, tBefore, arb.state());
 
     // ---- STATE 3: art-news detail ----
