@@ -45,4 +45,10 @@ gallery:
     imageUrl: https://media.agawen.com/news/art-act/aact-2.jpg
   - mediaType: image
     imageUrl: https://media.agawen.com/news/art-act/aact-3.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/art-act/aact-4.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/art-act/aact-5.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/art-act/aact-6.jpg
 ---
