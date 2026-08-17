@@ -32,6 +32,13 @@ tabArtVisual:
 cardCoverVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/artworks/emergency/emgc-card.jpg
+cardGallery:
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/emergency/emgc-art1.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/emergency/emgc-art2.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/emergency/emgc-art3.jpg
 technicalTagline: Light beyond the dark
 technicalText: "This award-winning artwork was made in the shared basement
   entertainment room of an east london flat complex. It builds on a technique
