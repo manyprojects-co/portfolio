@@ -89,6 +89,19 @@ export const ARBITER_DEFAULTS = Object.freeze({
                          //    median |v| of 15/26/19/28/38/30 before a real resume, vs 2
                          //    before the dying tail hands off from 120Hz to 60Hz.
   holeWindow:     5,     // events the medians are taken over
+  gateHoleMs:     28,    // ⚠︎ SEPARATE, LARGER floor for releasing site.js's native-scroll
+                         //   gate — see coasting(). Measured on Safari, 2026-08-17:
+                         //     frame-rate handoff holes (120Hz -> 60Hz -> 30Hz)  max 24ms
+                         //     real second pushes                                min 30ms
+                         //   28 sits between. ⚠︎ THAT IS A 4ms AND 2ms MARGIN, fitted to
+                         //   nine samples on one trackpad. It is the least-evidenced number
+                         //   in this file. If a handoff ever reads as a push, the leak is a
+                         //   few px of dead coast; if a push reads as a handoff, the user is
+                         //   briefly locked out. Re-measure with gesture/score-heuristic.mjs
+                         //   before trusting it on other hardware.
+                         //   A sturdier discriminator exists if this proves flaky: a handoff
+                         //   is followed by MORE clock-regular events, a finger by sub-6ms
+                         //   irregular ones. That costs a 2-3 event delay to decide.
   coastSpread:    0.6,   // (max-min)/median of recent dt that still counts as CLOCK-DRIVEN.
                          //   ⚠︎ This is the flagless statement of "a coast was running", and
                          //   it is what the first cut was missing. Measured dt spread:
@@ -141,6 +154,8 @@ export function createArbiter(cfg = {}, env = {}) {
   const dtHist = [], vHist = [];
   // ⭐ has the PLATFORM been coasting? A finger event is only a resume if it interrupts one.
   let sawCoast = false;
+  // has anything interrupted this gesture's coast? Drives coasting(); see below.
+  let holeSeen = false;
   const median = (a) => {
     if (!a.length) return 0;
     const s = [...a].sort((x, y) => x - y);
@@ -218,6 +233,7 @@ export function createArbiter(cfg = {}, env = {}) {
     spentOn = gestureId; acc = 0;
     sawCoast = false;   // ⚠︎ closeDetail() spends HERE, mid-flick. The finger events still
                         // arriving from this same swipe must not read as a resume.
+    holeSeen = false;
     rPeak = 0; rTail = false; rArmed = false; rRun = 0; rPrev = Infinity;  // watch the coast
   }
 
@@ -225,7 +241,7 @@ export function createArbiter(cfg = {}, env = {}) {
     gestureId++;
     gRegion = regionAt(clientY);
     log(`[gesture #${gestureId}] ${why}  mag ${mag.toFixed(1)}  claims ${gRegion}`);
-    prevDir = dir; peak = mag; acc = 0; cTrough = Infinity; sawCoast = false;
+    prevDir = dir; peak = mag; acc = 0; cTrough = Infinity; sawCoast = false; holeSeen = false;
     rPeak = 0; rTail = false; rArmed = false; rRun = 0; rPrev = Infinity;
   }
 
@@ -234,6 +250,18 @@ export function createArbiter(cfg = {}, env = {}) {
     const vmag = Math.hypot(deltaX || 0, deltaY);
     // evaluated BEFORE the histories absorb this event
     const isResume = C.compat ? false : resumed(momentum, dt, vmag);
+    // ⭐ THE GATE'S OWN, CHEAPER QUESTION — rule 2, applied properly.
+    // A full resume re-arms a TRANSITION, where a wrong answer changes the view, so it
+    // demands hole + regularity + a live coast. Releasing site.js's native-scroll gate only
+    // costs a few px of scroll, so it must NOT demand liveness — the lockout it would
+    // otherwise cause is real (JJ, Safari: a push 62ms after the coast had decayed to 1px).
+    // Instead it pays a larger absolute floor, which is what separates a real push from the
+    // frame-rate handoff a dying coast performs.
+    if (!C.compat && !holeSeen && dtHist.length >= C.holeWindow) {
+      const m = median(dtHist);
+      const sp = m ? (Math.max(...dtHist) - Math.min(...dtHist)) / m : Infinity;
+      if (sp <= C.coastSpread && dt >= C.gateHoleMs && dt >= m * C.holeRatio) holeSeen = true;
+    }
     const push = () => {
       if (C.compat) return;
       dtHist.push(dt); vHist.push(vmag);
@@ -420,7 +448,7 @@ export function createArbiter(cfg = {}, env = {}) {
      * the resume detector already uses, which is why it is not a second threshold.
      * ⛔ Always false in compat — v6 had no such gate.
      */
-    coasting: () => !C.compat && median(vHist) >= C.holeLive,
+    coasting: () => !C.compat && !holeSeen,
     /** intent accumulator — the wheel handler banks px into this per branch */
     addIntent(delta) { acc += delta; return acc; },
     resetIntent() { acc = 0; },
