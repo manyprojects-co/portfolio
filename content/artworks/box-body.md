@@ -30,7 +30,12 @@ tabArtVisual:
 cardCoverVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/artworks/box-body/bb-card.jpg
-technicalTagline: "[Box-body technical tagline placeholder]"
+cardGallery:
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/box-body/bb-art1.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/box-body/bb-art2.jpg
+technicalTagline: A new living screen workflow
 technicalText: Anamorphic illusions are a centuries-old perspective trick, and
   the shinjuku crossings and times squares of modern-day had adapted them for
   the spectacle of 3D cats in curvy billboards by the time this project was
