@@ -105,7 +105,12 @@ export function createTrace(enabled, opts = {}) {
         if (KNOWN.has(k) || k.startsWith("__")) continue;
         let v; try { v = e[k]; } catch { continue; }
         if (typeof v === "function") continue;
-        nonStandard[k] = v;
+        // ⚠︎ PRIMITIVES ONLY. A DOM node in the table makes Safari's console.table render
+        // nothing at all — which is exactly what happened on 2026-08-17: the heading
+        // printed and no table followed, so the one question the probe existed to answer
+        // came back blank. Objects are summarised by type; the answer here is a NAME.
+        nonStandard[k] = (v !== null && typeof v === "object")
+          ? `[${v.constructor ? v.constructor.name : "object"}]` : v;
       }
     }
   }
@@ -310,6 +315,8 @@ export function createTrace(enabled, opts = {}) {
       L("%c  ⚠︎ this engine exposes NEITHER — it takes the LEGACY path. Behaviour must be unchanged here.", "color:#c60");
       L("%c  Every NON-STANDARD property found on a real event from this engine, in case the\n" +
         "  signal exists under a name nobody documented:", "font-weight:bold");
+      // plain log FIRST — console.table is the one that can silently render nothing
+      L("   " + (nonStandard ? Object.keys(nonStandard).join(" · ") || "(none found)" : "(no event seen yet)"));
       console.table([nonStandard && Object.keys(nonStandard).length ? nonStandard : { "(none found)": true }]);
     }
 
