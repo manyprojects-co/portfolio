@@ -5,6 +5,7 @@ subheading: Powered by Piccadilly Lights, JJ Agcaoili & Xin Wen received the
   a LIVE! takeover on the iconic screen.
 isDateRange: false
 date: 2023-10-10
+endDate: 2026-08-17
 location: Piccadilly Lights
 city: London, UK
 eventType: Award
@@ -17,4 +18,15 @@ statement: Powered by Piccadilly Lights, JJ Agcaoili & Xin Wen received the most
 mainVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/news/circa-prize/circa-p-tab.jpg
+gallery:
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/circa-prize/circa-p1.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/circa-prize/circa-p2.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/circa-prize/circa-p3.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/circa-prize/circa-p4.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/circa-prize/circa-p5.jpg
 ---
