@@ -126,12 +126,23 @@ export const ARBITER_DEFAULTS = Object.freeze({
  *   tabTopY()     -> number   y of the tab strip's top edge. ⚠︎ THIS MOVES as the
  *                             card closes — that motion is the parked-bug mechanism
  *                             the gRegion claim exists to defeat.
+ *   deckBottomY() -> number   OPTIONAL. Lower edge of the deck region — the artwork band,
+ *                             not the hero. Defaults to tabTopY (v6 geometry). See A.
  *   tweenActive() -> boolean  is a stage/world tween in flight? (stageTween||worldTween)
  */
 export function createArbiter(cfg = {}, env = {}) {
   const C = { ...ARBITER_DEFAULTS, ...cfg };
   const detailOpen  = env.detailOpen  ?? (() => false);
   const tabTopY     = env.tabTopY     ?? (() => 0);
+  /**
+   * ⭐ A (2026-08-17): the deck region's LOWER EDGE, which is not the tab frame's top.
+   * `.carousel` used to be `height: 100%` of `.hero`, so "over the carousel" meant "over
+   * the whole hero" — and the empty band below the artwork browsed the deck when the design
+   * says it should leave the landing (~170px at a 900px viewport, ~320px at 1200px).
+   * ⚠︎ Defaults to tabTopY so every existing test and caller keeps v6's geometry, and
+   * compat forces it, so differential.test.mjs stays exact.
+   */
+  const deckBottom  = () => (C.compat ? tabTopY() : (env.deckBottomY ?? tabTopY)());
   const tweenActive = env.tweenActive ?? (() => false);
   const log = C.debug ? (m) => console.log(m) : () => {};
 
@@ -222,7 +233,7 @@ export function createArbiter(cfg = {}, env = {}) {
    * gesture born there can never be a deck gesture no matter what the geometry does later.
    */
   const regionAt = (clientY) =>
-    detailOpen() ? "detail" : (clientY < tabTopY() ? "carousel" : "frame");
+    detailOpen() ? "detail" : (clientY < deckBottom() ? "carousel" : "frame");
 
   /**
    * Called AS a commit fires. `peak` is NOT reset — the gesture is still running and its
@@ -376,7 +387,7 @@ export function createArbiter(cfg = {}, env = {}) {
     //    The "no tween in flight" guard is load-bearing: a commit can fire during the
     //    gesture's own RAMP, and that ramp is always inside the tween the commit started, so
     //    the acceleration would read as a fresh push.
-    const overCarousel = !detailOpen() && clientY < tabTopY();
+    const overCarousel = !detailOpen() && clientY < deckBottom();
     if (gRegion !== "carousel" && overCarousel && !tweenActive()) {
       if (cTrough === Infinity) cTrough = mag;                  // seed once the tween is done
       else if (mag > cTrough * C.claimRise && mag > peak * C.claimFloor) {
