@@ -51,6 +51,72 @@ export const ARBITER_DEFAULTS = Object.freeze({
   commitVelBack:  1.8,   // --commit-vel-back  back/up: px/ms flick
   idleReset:      200,   // (not a token in v6 — a hardcoded literal; see NOTES)
   debug:          false, // --gesture-debug
+
+  // ---- B (2026-08-17): TELLING THE USER FROM THE PLATFORM ------------------------------
+  // Two ways, chosen per event by what the engine offers.
+  //
+  //   FLAGGED   WheelEvent.momentum (Chrome 151+, boolean). Exact, no thresholds.
+  //   FLAGLESS  "the hole" — a coast is clock-driven and metronomic (~8.3ms on BOTH
+  //             engines, rock steady). When a finger lands again the OS stops synthesising
+  //             for a beat, leaving a 25-55ms gap before the first real event.
+  //
+  // ⚠︎ Safari exposes NOTHING — not momentum, not momentumPhase, not phase (measured
+  // 2026-08-17, Version/26.2). motion-fork-brief.md assumed WebKit had the long-standing
+  // non-standard pair; it does not. So the flagless path IS Safari and Firefox, not a
+  // courtesy fallback for engines nobody uses.
+  //
+  // ⭐ Why the hole should transfer across engines where a delta-shape rule cannot: it is
+  // the OS pausing its own synthesis when real input arrives, upstream of both engines.
+  // The measured hole durations match (Chrome 25-50ms, Safari 30-54ms) despite completely
+  // different momentum implementations.
+  //
+  // Scored by gesture/score-heuristic.mjs against Chrome's own momentum labels:
+  //   6 of 6 resumes detected, 0 false positives; 0 false positives across 496 events of
+  //   pure coast; fires 7/7 at real push points on an unlabelled Safari capture.
+  //
+  // ⚠︎ RETUNE WITH THE SCORER, NEVER BY ARGUMENT. Two earlier candidates were convincing in
+  // prose and died on exactly this test: "amplitude rose" is DEAD END #4 (|dy| rises up to
+  // 2.0x inside a pure coast), and "dx !== 0" was perfect on Chrome and inverted on WebKit
+  // (0/461 vs 140/144) because Chrome axis-locks its fling while Safari decays the whole
+  // velocity vector.
+  holeRatio:      2.5,   // dt must exceed this multiple of the recent median dt
+  holeMinMs:      18,    // ...and this absolute floor, so a 4ms->10ms wobble never counts
+  holeLive:       8,     // ...and the COAST BEFORE THE HOLE must still be this big.
+                         //    ⚠︎ Tested against the coast, NOT this event: a real resume's
+                         //    first event is tiny (measured: 1,3,5,2,3,7) because the finger
+                         //    has only just landed, so gating on it throws away every true
+                         //    positive. What separates them is what came BEFORE the hole —
+                         //    median |v| of 15/26/19/28/38/30 before a real resume, vs 2
+                         //    before the dying tail hands off from 120Hz to 60Hz.
+  holeWindow:     5,     // events the medians are taken over
+  gateHoleMs:     28,    // ⚠︎ SEPARATE, LARGER floor for releasing site.js's native-scroll
+                         //   gate — see coasting(). Measured on Safari, 2026-08-17:
+                         //     frame-rate handoff holes (120Hz -> 60Hz -> 30Hz)  max 24ms
+                         //     real second pushes                                min 30ms
+                         //   28 sits between. ⚠︎ THAT IS A 4ms AND 2ms MARGIN, fitted to
+                         //   nine samples on one trackpad. It is the least-evidenced number
+                         //   in this file. If a handoff ever reads as a push, the leak is a
+                         //   few px of dead coast; if a push reads as a handoff, the user is
+                         //   briefly locked out. Re-measure with gesture/score-heuristic.mjs
+                         //   before trusting it on other hardware.
+                         //   A sturdier discriminator exists if this proves flaky: a handoff
+                         //   is followed by MORE clock-regular events, a finger by sub-6ms
+                         //   irregular ones. That costs a 2-3 event delay to decide.
+  coastSpread:    0.6,   // (max-min)/median of recent dt that still counts as CLOCK-DRIVEN.
+                         //   ⚠︎ This is the flagless statement of "a coast was running", and
+                         //   it is what the first cut was missing. Measured dt spread:
+                         //     coast   chrome 0.24   safari 0.25
+                         //     ramp    chrome 1.30   safari >>1 (duplicate timestamps, 0-3ms
+                         //                                       between 30ms jumps)
+                         //   Without it a finger RAMP can present as a hole.
+
+  // ⛔ v6 EMULATION — A TEST HARNESS SETTING, NEVER SHIPPED.
+  // Restores the amplitude heuristics this replaces (§3 re-push, §4 deck re-claim) exactly,
+  // so differential.test.mjs can still prove the extraction was faithful to
+  // prototype-v6.html. The differential is a FIDELITY test: any intentional behaviour change
+  // makes it un-greenable by construction, so the choice is between freezing behaviour
+  // forever and giving the test its own mode. This is that mode.
+  compat:         false,
 });
 
 /**
@@ -84,6 +150,67 @@ export function createArbiter(cfg = {}, env = {}) {
   // RE-PUSH detector state (transitions only). Measured since the last COMMIT.
   let rPeak = 0, rTail = false, rArmed = false, rRun = 0, rPrev = Infinity;
 
+  // ---- B: the flagless resume detector ("the hole"). Rolling medians only. ----
+  const dtHist = [], vHist = [];
+  // ⭐ has the PLATFORM been coasting? A finger event is only a resume if it interrupts one.
+  let sawCoast = false;
+  // has anything interrupted this gesture's coast? Drives coasting(); see below.
+  let holeSeen = false;
+  const median = (a) => {
+    if (!a.length) return 0;
+    const s = [...a].sort((x, y) => x - y);
+    return s[s.length >> 1];
+  };
+  /**
+   * Did the USER just take over from a coast?
+   * @param {boolean|undefined} momentum  e.momentum, where the engine provides it
+   * @param {number} dt
+   * @param {number} vmag  ⚠︎ the VECTOR magnitude, hypot(dx,dy) — not `mag`.
+   *   This is what makes defect C fall out of B rather than needing its own fix. v6's deck
+   *   re-claim tested `mag = |deltaY|`, so a pure horizontal gesture had mag 0 and the
+   *   re-claim was STRUCTURALLY UNREACHABLE by horizontal input: after a card closed with
+   *   the claim on "detail", a sideways swipe — the most natural way to browse a horizontal
+   *   carousel — could never win the deck back. Feeding the resume detector the vector
+   *   magnitude fixes that, and deliberately does NOT touch `peak`, which is the reversal
+   *   yardstick and would change segmentation globally.
+   */
+  function resumed(momentum, dt, vmag) {
+    // ⭐⭐ A RESUME IS A TRANSITION, NOT A PROPERTY OF ONE EVENT.
+    // The 2026-08-17 first cut asked only "is this event a finger", and traded the jam for
+    // a leak on the engine that has the flag. The reason is the close flick's own TAIL:
+    // closeDetail() flips detailOpen false MID-FLICK, and the six-or-so finger events still
+    // arriving from that same physical swipe are all `momentum === false`. They re-claimed
+    // the deck and re-armed the transition, so the coast behind them drove the carousel
+    // (Chrome) and one flick spent two lerps (card -> landing at tab-top).
+    //
+    // ⚠︎ The correct definition was already written down, in gesture/score-heuristic.mjs,
+    // as the GROUND TRUTH the detector was scored against: "the first `momentum === false`
+    // event that FOLLOWS at least one `momentum === true` event." The scorer was right and
+    // the implementation did not match it. A coast must have happened first.
+    //
+    // Engine asymmetry confirms the diagnosis: Safari showed no carousel leak, because the
+    // flagless path needs a HOLE and a continuous flick tail has none.
+    if (momentum === true) { sawCoast = true; return false; }
+    if (momentum === false) {
+      if (!sawCoast) return false;            // the flick's own tail is a finger, not a resume
+      sawCoast = false;                       // one grant per coast
+      return true;
+    }
+    // ---- flagless: the hole, plus the same precondition expressed as a MEASUREMENT.
+    // ⚠︎ `holeLive` alone does not say "a coast was running" — a finger ramp is large too.
+    // What separates them is regularity: a coast is clock-driven (dt spread ~0.25 of the
+    // median) and a finger is not (Chrome ramp ~1.3, Safari ramp far worse — its ramps carry
+    // duplicate timestamps and dt of 0-3ms between 30ms jumps). Without this gate a Safari
+    // ramp can itself look like a hole, which is the other half of what JJ saw.
+    if (dtHist.length < C.holeWindow) return false;
+    const med = median(dtHist);
+    const spread = med ? (Math.max(...dtHist) - Math.min(...dtHist)) / med : Infinity;
+    return spread <= C.coastSpread
+        && dt >= C.holeMinMs
+        && dt >= med * C.holeRatio
+        && median(vHist) >= C.holeLive;
+  }
+
   /** one test for "did the user mean it", per direction */
   const meant = (accum, delta, dt, back) =>
     accum > (back ? C.commitDistBack : C.commitDist) ||
@@ -104,6 +231,9 @@ export function createArbiter(cfg = {}, env = {}) {
    */
   function consume() {
     spentOn = gestureId; acc = 0;
+    sawCoast = false;   // ⚠︎ closeDetail() spends HERE, mid-flick. The finger events still
+                        // arriving from this same swipe must not read as a resume.
+    holeSeen = false;
     rPeak = 0; rTail = false; rArmed = false; rRun = 0; rPrev = Infinity;  // watch the coast
   }
 
@@ -111,17 +241,47 @@ export function createArbiter(cfg = {}, env = {}) {
     gestureId++;
     gRegion = regionAt(clientY);
     log(`[gesture #${gestureId}] ${why}  mag ${mag.toFixed(1)}  claims ${gRegion}`);
-    prevDir = dir; peak = mag; acc = 0; cTrough = Infinity;
+    prevDir = dir; peak = mag; acc = 0; cTrough = Infinity; sawCoast = false; holeSeen = false;
     rPeak = 0; rTail = false; rArmed = false; rRun = 0; rPrev = Infinity;
   }
 
-  function segment(deltaY, dt, clientY) {
+  function segment(deltaY, dt, clientY, deltaX = 0, momentum) {
     const mag = Math.abs(deltaY), dir = deltaY < 0 ? -1 : 1;
+    const vmag = Math.hypot(deltaX || 0, deltaY);
+    // evaluated BEFORE the histories absorb this event
+    const isResume = C.compat ? false : resumed(momentum, dt, vmag);
+    // ⭐ THE GATE'S OWN, CHEAPER QUESTION — rule 2, applied properly.
+    // A full resume re-arms a TRANSITION, where a wrong answer changes the view, so it
+    // demands hole + regularity + a live coast. Releasing site.js's native-scroll gate only
+    // costs a few px of scroll, so it must NOT demand liveness — the lockout it would
+    // otherwise cause is real (JJ, Safari: a push 62ms after the coast had decayed to 1px).
+    // Instead it pays a larger absolute floor, which is what separates a real push from the
+    // frame-rate handoff a dying coast performs.
+    if (!C.compat && !holeSeen && dtHist.length >= C.holeWindow) {
+      const m = median(dtHist);
+      const sp = m ? (Math.max(...dtHist) - Math.min(...dtHist)) / m : Infinity;
+      if (sp <= C.coastSpread && dt >= C.gateHoleMs && dt >= m * C.holeRatio) holeSeen = true;
+    }
+    const push = () => {
+      if (C.compat) return;
+      dtHist.push(dt); vHist.push(vmag);
+      if (dtHist.length > C.holeWindow) { dtHist.shift(); vHist.shift(); }
+    };
 
-    // 1. SILENCE — the only amplitude-independent signal. A coast cannot violate the
-    //    one property that it ENDS, so this is trustworthy at any scale.
+    // 1. SILENCE — the only amplitude-independent signal in v6's model.
+    //    ⚠︎ THE LOCKED ASSUMPTION BEHIND IT IS FALSE. "The one property a coast cannot
+    //    violate is that it ENDS" — measured, a coast's longest internal gap is 67ms on
+    //    Chrome and 54ms on Safari, both UNDER --gesture-gap, so a coast never mints. Good.
+    //    But the converse is what bites: a finger landing mid-coast leaves only a 25-55ms
+    //    hole, also under the gap, so a REAL second push never mints either. That is the
+    //    jam. Silence is not wrong here, it is just blind in both directions.
     if (dt > C.gestureGap) {
+      // A flagged momentum event may never mint. On the flagless path this cannot trigger
+      // anyway (no coast gap ever reached 100ms in any capture), so there is nothing to
+      // guard and nothing to guess at.
+      if (momentum === true) { push(); return; }
       newGesture(dir, mag, `gap ${Math.round(dt)}ms`, clientY);
+      push();
       return;
     }
 
@@ -133,6 +293,7 @@ export function createArbiter(cfg = {}, env = {}) {
     if (decisive) {
       if (prevDir !== 0 && dir !== prevDir) {
         newGesture(dir, mag, `reversal ${mag.toFixed(1)} vs peak ${peak.toFixed(1)}`, clientY);
+        push();
         return;
       }
       prevDir = dir;        // only decisive events define direction; jitter cannot flip it
@@ -147,6 +308,39 @@ export function createArbiter(cfg = {}, env = {}) {
     //    deliberately untouched, so a false positive costs at most one transition and can
     //    never reach the deck. The identical detector wrapped in newGesture() was rolled
     //    back the same day it was tried.
+    // ⭐ B — THE REPLACEMENT FOR §3 AND §4, on both live paths.
+    // One signal, two scoped grants, in the same order and with the same scopes v6 used.
+    // Neither can mint a gesture: the whole safety argument of rule 1 is preserved.
+    if (!C.compat) {
+      if (isResume) {
+        // (a) TRANSITIONS — v6's §3 re-push, without the amplitude machinery.
+        //     ⚠︎ NO tweenActive() GUARD, deliberately. v6 froze this while a lerp ran, for
+        //     two reasons that no longer hold: "the stream is at its least trustworthy"
+        //     dies with a definite resume signal, and "a SECOND transition before the first
+        //     has landed is premature" contradicts site.js's own top note — "a commit in
+        //     the opposite direction catches the lerp and re-aims it." Catching a lerp
+        //     mid-flight is a feature, and DEAD 1/2 already rejected post-commit windows.
+        if (spentOn === gestureId) {
+          spentOn = -1; acc = 0; rRun = 0;
+          log(`[gesture #${gestureId}] RESUME — transition re-armed (hole/flag)`);
+        }
+        // (b) THE CLAIM — v6's §4, same scope: hands back a region, never a transition.
+        // ⚠︎ Re-claims WHEREVER THE CURSOR IS, not only over the carousel. v6 could only
+        // ever grant "carousel", which left a stale "detail" claim sitting on a gesture in
+        // tab view long after the card was gone — and `region() !== "detail"` is what
+        // site.js uses to decide whether a gesture may reach native scroll at all. So the
+        // stale claim was load-bearing in a place nobody had looked.
+        // This is still a claim, never a budget: it cannot mint and cannot spend.
+        if (!detailOpen() && gRegion !== regionAt(clientY)) {
+          gRegion = regionAt(clientY);
+          log(`[gesture #${gestureId}] RESUME — re-claimed, now ${gRegion}`);
+        }
+      }
+      if (spentOn === gestureId) acc = 0;
+      push();
+      return;
+    }
+
     if (C.repushRun && spentOn === gestureId) {
       if (tweenActive()) {
         // While the transition is still animating the stream is at its least trustworthy,
@@ -237,11 +431,24 @@ export function createArbiter(cfg = {}, env = {}) {
     beginGesture(clientY) { gestureId++; spentOn = -1; gRegion = regionAt(clientY); },
 
     /** Feed one wheel event. Mirrors v6's handler order: idle-reset, then segment. */
-    feed({ deltaY, dt, clientY }) {
+    feed({ deltaY, dt, clientY, deltaX, momentum }) {
       if (dt > C.idleReset) acc = 0;
-      segment(deltaY, dt, clientY);
+      segment(deltaY, dt, clientY, deltaX, momentum);
     },
     segment, consume, meant, gestureLive, ownsCarousel,
+    /**
+     * Is a LIVE coast still attached to this gesture?
+     * ⚠︎ Exists so site.js can gate the one path it leaves to native scroll WITHOUT
+     * creating a lockout. The gate must stop momentum from scrolling the panel a closing
+     * card uncovers — but a coast that has decayed below `holeLive` can no longer be
+     * detected as interrupted (a resume needs a live coast to interrupt), so holding the
+     * gate past that point would trap the user until 100ms of silence minted a new gesture.
+     * A dead coast is 1-3px an event and harmless. So: block while it can still do damage,
+     * release when it cannot. Measured on both engines, that boundary is the same number
+     * the resume detector already uses, which is why it is not a second threshold.
+     * ⛔ Always false in compat — v6 had no such gate.
+     */
+    coasting: () => !C.compat && !holeSeen,
     /** intent accumulator — the wheel handler banks px into this per branch */
     addIntent(delta) { acc += delta; return acc; },
     resetIntent() { acc = 0; },

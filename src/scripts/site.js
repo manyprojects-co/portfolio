@@ -22,9 +22,16 @@
 import { createArbiter } from "../lib/gesture-arbiter.mjs";
 import { titleCase, typeLabel, timeElapsed } from "../lib/format";
 import { parseCssTime } from "../lib/css-time";
+import { createTrace } from "../lib/trace.mjs";
 
 
 {
+  // ============================================================================
+  // TRACE — inert unless ?trace=1. See src/lib/trace.mjs for what it measures, and
+  // for why the harness lives in the BUILT app rather than in a standalone prototype.
+  // ============================================================================
+  const T = createTrace(new URLSearchParams(location.search).get("trace") === "1");
+
   // ============================================================================
   // MOTION PRIMITIVES — ported from prototype-tabsnap.html
   // ============================================================================
@@ -289,6 +296,7 @@ import { parseCssTime } from "../lib/css-time";
 
   function goTab() {
     if (view === "tab") return;
+    T.push({ k: "@goTab", g: arb.state().gestureId, claim: arb.state().gRegion });
     view = "tab";
     arb.consume();                                    // this gesture has had its transition
     applyView();                                  // unlock the tabs NOW so they scroll mid-lerp
@@ -297,6 +305,7 @@ import { parseCssTime } from "../lib/css-time";
 
   function goLanding() {
     if (view === "landing") return;
+    T.push({ k: "@goLanding", g: arb.state().gestureId, claim: arb.state().gRegion });
     view = "landing";
     arb.consume();                                    // this gesture has had its transition
     // tabs stay unlocked through the return so a caught lerp can still be scrolled
@@ -328,6 +337,9 @@ import { parseCssTime } from "../lib/css-time";
 
   function closeDetail() {
     if (!detailOpen) return;
+    // ⭐ the anchor for every leak counter — the post-close window opens HERE, which is
+    // also where `detailOpen` flips and the coast becomes free to reach the deck.
+    T.push({ k: "@closeDetail", g: arb.state().gestureId, claim: arb.state().gRegion });
     closeViaHistory();   // keep the URL in step with a gesture-driven close
     detailOpen = false;
     arb.consume();   // spend the gesture HERE, not when the lerp lands: detailOpen flips
@@ -391,7 +403,17 @@ import { parseCssTime } from "../lib/css-time";
     const dt = now - lastT; lastT = now;
 
     // The arbiter owns idle-reset AND segmentation; see src/lib/gesture-arbiter.mjs.
-    arb.feed({ deltaY: e.deltaY, dt, clientY: e.clientY });
+    // ⚠︎ state() is read on BOTH sides of feed() so the trace can see a MINT from outside
+    // the module — a change in gestureId across feed() is a new gesture, by definition.
+    // Both reads are no-ops (and the object is never built) when the trace is off.
+    const tBefore = T.on ? arb.state() : null;
+    // ⭐ deltaX and momentum are both load-bearing now (B):
+    //   momentum — WheelEvent.momentum where the engine has it (Chrome 151+). Absent on
+    //              Safari and Firefox, which fall to the hole detector.
+    //   deltaX   — feeds the resume detector's VECTOR magnitude, which is what makes a
+    //              horizontal swipe able to re-claim the deck at all (defect C).
+    arb.feed({ deltaY: e.deltaY, deltaX: e.deltaX, dt, clientY: e.clientY, momentum: e.momentum });
+    if (T.on) T.wheel(e, dt, tBefore, arb.state());
 
     // ---- STATE 3: art-news detail ----
     if (detailOpen) {
@@ -419,7 +441,15 @@ import { parseCssTime } from "../lib/css-time";
       // frame, arrives here mid-coast through no intent of the user's. It does not own the
       // carousel and gets nothing. The event is still preventDefault'd above, so it dies
       // here rather than leaking to native scroll.
-      if (arb.ownsCarousel()) mapToCarousel(carousel, e);
+      // ⚠︎ RECORDED ON THE GRANT, NOT ON THE PIXELS. A coast that wins ownsCarousel() has
+      // leaked, whether or not the deck had room left to move — count the moved pixels and
+      // you get a counter that reads 0 at either end of the carousel, and on a cold load
+      // before the images size it. `moved` keeps the distinction visible.
+      if (arb.ownsCarousel()) {
+        const moved = mapToCarousel(carousel, e);
+        T.push({ k: ">DECK", via: "region", g: arb.state().gestureId, moved,
+                 dx: +e.deltaX.toFixed(2), dy: +e.deltaY.toFixed(2), mom: e.momentum });
+      }
       arb.resetIntent();
       return;
     }
@@ -431,7 +461,14 @@ import { parseCssTime } from "../lib/css-time";
       // write to the same scroller, and the old momentum gate never covered it. Ownership
       // does: anything born over the open card is excluded, the rest browses as before.
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
-        if (arb.region() !== "detail") carousel.scrollLeft += e.deltaX;
+        if (arb.region() !== "detail") {
+          carousel.scrollLeft += e.deltaX;
+          // ⚠︎ the SECOND writer to the same scroller, behind a DIFFERENT gate. Tagged
+          // separately so the report can show which of the two gates leaked. C collapses
+          // these into one unconditional rule.
+          T.push({ k: ">DECK", via: "frame", g: arb.state().gestureId,
+                   dx: +e.deltaX.toFixed(2), dy: +e.deltaY.toFixed(2), mom: e.momentum });
+        }
         return;
       }
       if (e.deltaY > 0) {              // downward → commit into tab view (catches a return lerp)
@@ -442,6 +479,31 @@ import { parseCssTime } from "../lib/css-time";
     }
 
     // ---- REGION: over the tab frame, in tab view ----
+    // ⚠︎ A SPENT, DETAIL-BORN GESTURE MUST NOT REACH NATIVE SCROLL EITHER.
+    // Everything else in this handler is preventDefault'd, so ownership decides what
+    // happens. This branch is the one place a wheel event is deliberately left to the
+    // browser — and that made it the one place a closing card's momentum could still act.
+    // Reported by JJ on Safari, 2026-08-17: "card -> tab, momentum carries into tab scroll
+    // as soon as the card closes."
+    //
+    // Not an arbiter bug: the arbiter had it right — spent, claimed "detail", nothing
+    // granted. The events simply fell past every gate to the panel's own scroller.
+    // closeDetail() already locks `detailScroll.overflowY` for exactly this reason, one
+    // layer up; this is the same argument applied to the panel the card uncovers. One
+    // gesture, one action: the flick that closed the card does not also scroll what is
+    // underneath.
+    //
+    // ⭐ Scoped, and self-releasing: a genuine resume clears `spentOn`, so this stops
+    // holding the instant the user pushes again — no timer and no fixed window (DEAD 1/2).
+    // ⚠︎ `coasting()` is what stops this becoming a lockout — see its comment in the
+    // arbiter. Block while the coast can still move the panel; release once it is spent
+    // down to a few px, because past that point a resume is no longer detectable and
+    // holding would trap the user until 100ms of silence.
+    if (arb.region() === "detail" && !arb.gestureLive() && arb.coasting()) {
+      e.preventDefault();
+      return;
+    }
+
     // horizontal is left entirely to the native snap track (no preventDefault); a
     // swipe mid-slide releases the nav tween so the gesture takes over
     if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) { releaseTab(); arb.resetIntent(); return; }
@@ -754,6 +816,7 @@ import { parseCssTime } from "../lib/css-time";
     applyView();
     scrollToTab(order.indexOf(current), false);
     paintNav();
+    T.bind();                          // HUD + keybindings; a no-op unless ?trace=1
   }
   init();
 
@@ -764,8 +827,42 @@ import { parseCssTime } from "../lib/css-time";
     document.fonts.ready.then(() => { pinContact(); measureGeom(); });
   }
 
+  // ⚠︎ K — ON iOS THE URL BAR CAN CUT A TRANSITION.
+  // iOS Safari fires `resize` when the URL bar collapses, and it collapses DURING a scroll
+  // gesture. So a gesture that commits a transition *and* collapses the bar used to cancel
+  // its own lerp and hard-snap to the end state — the transition visibly cut. The handler's
+  // logic is right for a genuine resize; on iOS a URL-bar collapse is not one, and it lands
+  // at the worst possible moment.
+  //
+  // ⚠︎ INVISIBLE TO THE CURRENT TEST DISCIPLINE — "a cut satisfies an end-state assertion
+  // perfectly." Verify by sampling frames DURING the transition, never after a wait.
+  //
+  // The discriminator is HEIGHT-ONLY + A TWEEN IN FLIGHT. A window resized with a mouse
+  // almost always changes width too, and a device rotation changes both — so neither takes
+  // this path. Re-aiming is not a new mechanism: worldTo()/stageTo() already tween FROM the
+  // current position, which is exactly "re-aim at the new geometry without stopping".
+  //
+  // ⚠︎ Known remainder, deliberately NOT fixed here: the same collapse AT REST still jumps,
+  // because applyWorld(-LANDING_H) moves when LANDING_H does. Fixing that means keying the
+  // geometry on svh/dvh/visualViewport — which changes what measures LANDING_H, and
+  // LANDING_H feeds revealP(), so it changes every reveal dynamic. Bigger, and separate.
+  let lastW = window.innerWidth, lastH = window.innerHeight;
+
   window.addEventListener("resize", () => {
-    // a resize invalidates every in-flight target — land on the current state instead
+    const w = window.innerWidth, h = window.innerHeight;
+    const heightOnly = w === lastW && h !== lastH;
+    lastW = w; lastH = h;
+
+    if (heightOnly && (worldTween || stageTween)) {
+      measureGeom();
+      // RE-AIM, don't cancel. Contact is left alone: its geometry is the nav's line width,
+      // which is width-driven, so a height-only change has not invalidated it.
+      if (worldTween) worldTo(view === "tab" ? -LANDING_H : 0);
+      if (stageTween) stageTo(detailOpen ? stageOpenY() : 0);
+      return;                                     // snap offset is width-driven: nothing to do
+    }
+
+    // a genuine resize invalidates every in-flight target — land on the current state instead
     if (worldTween) { worldTween.cancel(); worldTween = null; }
     if (stageTween) { stageTween.cancel(); stageTween = null; }
     setContact(false);                            // an open group is stale geometry
