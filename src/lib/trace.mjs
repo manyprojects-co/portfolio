@@ -77,6 +77,26 @@ export function createTrace(enabled, opts = {}) {
   // on them, and this is that verification.
   const seen = { momentum: new Set(), momentumPhase: new Set(), phase: new Set() };
 
+  /**
+   * Is this event the USER, or the platform coasting?
+   * @returns {true|false|null}  null = this engine exposes nothing and cannot say.
+   *
+   * ⚠︎ Returning `null` rather than guessing is the whole point. The first version of this
+   * file asked `e.momentum === false`, which on WebKit is `undefined === false` — always
+   * false — so every WebKit event read as inertia and the leak counter ran away. An engine
+   * that cannot answer must SAY SO; the report then marks its counts unreliable instead of
+   * printing a confident wrong number.
+   */
+  const idle = (v) => v === undefined || v === null || v === "none" || v === 0 || v === "";
+  function deliberate(e) {
+    if (supports.momentum) return e.momentum === false;
+    // WebKit: momentumPhase is "began"/"changed"/"ended" (or a small integer) while coasting,
+    // and "none"/0 during real finger contact. ⚠︎ VERIFY THE VALUES IN Q0 BEFORE TRUSTING —
+    // this property is non-standard and undocumented by Apple for the web.
+    if (supports.momentumPhase) return idle(e.momentumPhase);
+    return null;
+  }
+
   const push = (o) => {
     if (rows.length < C.max) rows.push({ i: seq++, t: Math.round(performance.now()), ...o });
     schedulePaint();
@@ -120,6 +140,9 @@ export function createTrace(enabled, opts = {}) {
       // a change in gestureId across feed() is a new gesture, by definition.
       minted: after.gestureId !== before.gestureId,
       peak: fmt(after.peak),
+      // true = user, false = inertia, null = this engine cannot say. Classified HERE, at
+      // capture time, because only here is the live event available.
+      deliberate: deliberate(e),
     });
   };
 
@@ -168,26 +191,65 @@ export function createTrace(enabled, opts = {}) {
   function counts() {
     const sameGesture = { total: 0, deck: 0, tab: 0, landing: 0, rows: [] };
     const postClose = { total: 0, deck: 0, tab: 0, landing: 0, rows: [] };
+    // ⭐ THE OTHER FAILURE MODE, which had no counter at all in the first version. On an
+    // engine whose inertial stream never pauses, the post-close gesture never ENDS — it
+    // stays spent (no transition) and claimed "detail" (no deck), and every event lands on
+    // it, INCLUDING the user's genuine next swipe. Nothing leaks; everything jams.
+    const jam = { spans: 0, events: 0, swallowed: 0, longestMs: 0, rows: [] };
 
     let close = null;         // the most recent @closeDetail
+    let span = null;          // the jam currently accumulating under it
+    const endSpan = () => {
+      if (span && span.events) {
+        jam.spans++; jam.events += span.events; jam.swallowed += span.swallowed;
+        jam.longestMs = Math.max(jam.longestMs, span.ms);
+        jam.rows.push(span);
+      }
+      span = null;
+    };
+
     for (const r of rows) {
-      if (r.k === "@closeDetail") { close = r; continue; }
+      if (r.k === "@closeDetail") {
+        endSpan();
+        close = r;
+        span = { closeG: r.g, events: 0, swallowed: 0, ms: 0, deliberateKnown: true };
+        continue;
+      }
       if (!close) continue;
 
-      // a non-momentum wheel event is DELIBERATE INPUT — it ends the post-close window,
-      // because whatever happens next is something the user asked for.
-      if (r.k === "wheel" && r.mom === false) { close = null; continue; }
+      // ---- the jam side: an event that hit a spent, detail-claimed gesture and produced
+      // nothing. `spent === g` means this gesture has no transition left; `claim==="detail"`
+      // means it has no deck either. Together: this event could not do anything at all.
+      if (r.k === "wheel" && span && r.g === close.g && r.spent === r.g && r.claim === "detail") {
+        span.events++;
+        span.ms = r.t - close.t;
+        if (r.deliberate === true) span.swallowed++;      // ⭐ a REAL user push, ignored
+        else if (r.deliberate === null) span.deliberateKnown = false;
+      }
+
+      // ---- a DELIBERATE event ends the post-close window: whatever happens next is
+      // something the user asked for.
+      // ⚠︎ THIS WAS ENGINE-DEPENDENTLY BROKEN. It tested `r.mom === false`, and on WebKit
+      // `momentum` is undefined — never `false` — so the window never closed on real input
+      // and every event within `window` ms of a close was counted as a leak. Safari's
+      // numbers from the 2026-08-16 capture are inflated for exactly this reason. Now the
+      // classification is computed per-engine at capture time, and `null` (engine cannot
+      // say) is reported rather than silently treated as inertia.
+      if (r.k === "wheel" && r.deliberate === true) { endSpan(); close = null; continue; }
 
       if (!isLeaky(r)) continue;
       const gap = r.t - close.t;
-      if (gap > C.window) { close = null; continue; }
+      if (gap > C.window) { endSpan(); close = null; continue; }
 
       const b = bucket(r);
       const rec = { ...r, gapMs: gap, closeG: close.g, sameGesture: r.g === close.g };
       postClose.total++; postClose[b]++; postClose.rows.push(rec);
       if (r.g === close.g) { sameGesture.total++; sameGesture[b]++; sameGesture.rows.push(rec); }
     }
-    return { sameGesture, postClose };
+    endSpan();
+    // can this capture distinguish user input from inertia at all?
+    const reliable = supports.momentum || supports.momentumPhase || supports.phase;
+    return { sameGesture, postClose, jam, reliable };
   }
 
   function report() {
@@ -213,6 +275,23 @@ export function createTrace(enabled, opts = {}) {
     if (!supports.momentum && !supports.momentumPhase) {
       L("%c  ⚠︎ this engine exposes NEITHER — it takes the LEGACY path. Behaviour must be unchanged here.", "color:#c60");
     }
+
+    if (!c.reliable) {
+      L("%c  ⛔ THIS ENGINE EXPOSES NEITHER SIGNAL. Every count below is UNRELIABLE: the trace\n" +
+        "     cannot tell your swipe from the platform coasting, so the post-close window\n" +
+        "     never closes on real input and leaks over-count. Treat as qualitative only.",
+        "color:#c00;font-weight:bold");
+    }
+
+    // ---- ⭐ THE JAM: the opposite failure, and the one with no counter until now ----
+    L("%cQ9 JAM — input SWALLOWED after a card close", "font-weight:bold");
+    L(`%c  jammed spans ${c.jam.spans}   events absorbed ${c.jam.events}   longest ${c.jam.longestMs}ms` +
+      `   confirmed user pushes ignored: ${c.jam.rows.every((s) => s.deliberateKnown) ? c.jam.swallowed : "unknown (engine cannot say)"}`,
+      ok(c.jam.events));
+    L("%c  A spent, \"detail\"-claimed gesture has NO transition and NO deck. On an engine whose\n" +
+      "  inertial stream never pauses, it never ends — so every event lands on it and does\n" +
+      "  nothing, INCLUDING your genuine next swipe. Nothing leaks; everything jams.", "color:#666");
+    if (c.jam.rows.length) console.table(c.jam.rows);
 
     // ---- the leak counters ----
     L("%cQ4/Q6 LEAKS AFTER A CARD CLOSE — two definitions, deliberately", "font-weight:bold");
