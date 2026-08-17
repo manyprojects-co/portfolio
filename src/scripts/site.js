@@ -367,7 +367,8 @@ import { createTrace } from "../lib/trace.mjs";
     if (!detailOpen) return;
     // ⭐ the anchor for every leak counter — the post-close window opens HERE, which is
     // also where `detailOpen` flips and the coast becomes free to reach the deck.
-    T.push({ k: "@closeDetail", g: arb.state().gestureId, claim: arb.state().gRegion });
+    T.push({ k: "@closeDetail", g: arb.state().gestureId, claim: arb.state().gRegion,
+             spent: arb.state().spentOn, sTop: detailScroll.scrollTop });
     closeViaHistory();   // keep the URL in step with a gesture-driven close
     detailOpen = false;
     arb.consume();   // spend the gesture HERE, not when the lerp lands: detailOpen flips
@@ -452,6 +453,12 @@ import { createTrace } from "../lib/trace.mjs";
       // only axis and the native scroller owns it
       if (detailScroll.scrollTop <= 0 && e.deltaY < 0) {                  // beyond the upper bound
         arb.addIntent(-e.deltaY);
+        // ⭐ THE BOUNDARY, RECORDED. This is where the card-close decision is made, and it
+        // is the one place in the handler whose inputs were invisible in an export.
+        T.push({ k: "@cardEdge", g: arb.state().gestureId, spent: arb.state().spentOn,
+                 claim: arb.state().claim ?? arb.region(), sTop: detailScroll.scrollTop,
+                 dy: +e.deltaY.toFixed(2), dt: +dt.toFixed(1), mom: e.momentum,
+                 live: arb.gestureLive(), acc: +arb.intent.toFixed(1) });
         if (arb.meant(arb.intent, -e.deltaY, dt, true) && arb.gestureLive()) closeDetail();
       } else {
         arb.resetIntent();
@@ -461,6 +468,8 @@ import { createTrace } from "../lib/trace.mjs";
         // spendOnNativeScroll() in the arbiter for why this is not a momentum test.
         // Closing then needs a second push, which is what J specifies and what B detects.
         arb.spendOnNativeScroll();
+        T.push({ k: "@cardScroll", g: arb.state().gestureId, spent: arb.state().spentOn,
+                 sTop: detailScroll.scrollTop, dy: +e.deltaY.toFixed(2), mom: e.momentum });
       }
       return;                                                            // native scroll otherwise
     }

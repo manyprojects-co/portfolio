@@ -407,9 +407,16 @@ export function createTrace(enabled, opts = {}) {
       ua: navigator.userAgent,
       supports, nonStandard,
       // one compact row per wheel event: everything a discriminator could key on
-      cols: ["t", "dt", "dx", "dy", "momentum", "gestureId", "minted"],
-      rows: rows.filter((r) => r.k === "wheel")
-        .map((r) => [r.t, r.dt, r.dx, r.dy, r.mom ?? null, r.g, r.minted ? 1 : 0]),
+      // ⚠︎ EVERY row, not just wheels. The 2026-08-17 card-overshoot report could not be
+      // diagnosed from an export because the MARKERS — @closeDetail, @cardScroll, >DECK —
+      // were filtered out, so there was no way to see what the arbiter's budget looked like
+      // at the instant the close fired. A capture that omits the event you are debugging is
+      // not a capture.
+      cols: ["t", "k", "dt", "dx", "dy", "momentum", "gestureId", "spent", "claim",
+             "minted", "repush", "reclaim", "scrollTop"],
+      rows: rows.map((r) => [r.t, r.k, r.dt ?? null, r.dx ?? null, r.dy ?? null,
+        r.mom ?? null, r.g ?? null, r.spent ?? null, r.claim ?? null,
+        r.minted ? 1 : 0, r.repush ? 1 : 0, r.reclaim ? 1 : 0, r.sTop ?? null]),
     }),
   };
   return api;
