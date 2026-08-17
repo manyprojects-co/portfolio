@@ -38,4 +38,7 @@ statement: >-
 mainVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/news/art-act/aact-tab.jpg
+gallery:
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/art-act/aact-1.jpg
 ---
