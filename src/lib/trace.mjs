@@ -77,6 +77,39 @@ export function createTrace(enabled, opts = {}) {
   // on them, and this is that verification.
   const seen = { momentum: new Set(), momentumPhase: new Set(), phase: new Set() };
 
+  // ⚠︎ `X in WheelEvent.prototype` finds standard, prototype-installed properties. It does
+  // NOT find a property an engine hangs on the event INSTANCE, which is how legacy WebKit
+  // extensions have historically been shipped. The 2026-08-17 Safari capture reported
+  // momentum/momentumPhase/phase all false — that may be the truth, or it may be this
+  // detection looking in the wrong place. So on the first event, enumerate everything the
+  // object actually has and subtract the known-standard names. Whatever is left is what
+  // this engine offers, under whatever name it chose. Runs once.
+  const KNOWN = new Set([
+    "deltaX", "deltaY", "deltaZ", "deltaMode", "DOM_DELTA_PIXEL", "DOM_DELTA_LINE",
+    "DOM_DELTA_PAGE", "screenX", "screenY", "clientX", "clientY", "layerX", "layerY",
+    "offsetX", "offsetY", "pageX", "pageY", "x", "y", "movementX", "movementY", "button",
+    "buttons", "relatedTarget", "ctrlKey", "shiftKey", "altKey", "metaKey", "getModifierState",
+    "initMouseEvent", "initUIEvent", "initWheelEvent", "view", "detail", "which", "sourceCapabilities",
+    "type", "target", "currentTarget", "eventPhase", "bubbles", "cancelable", "defaultPrevented",
+    "composed", "isTrusted", "timeStamp", "srcElement", "returnValue", "cancelBubble",
+    "composedPath", "stopPropagation", "stopImmediatePropagation", "preventDefault",
+    "initEvent", "NONE", "CAPTURING_PHASE", "AT_TARGET", "BUBBLING_PHASE",
+    "wheelDelta", "wheelDeltaX", "wheelDeltaY",
+  ]);
+  let nonStandard = null;          // filled from the first real event
+  function probeOnce(e) {
+    if (nonStandard) return;
+    nonStandard = {};
+    for (let o = e; o && o !== Object.prototype; o = Object.getPrototypeOf(o)) {
+      for (const k of Object.getOwnPropertyNames(o)) {
+        if (KNOWN.has(k) || k.startsWith("__")) continue;
+        let v; try { v = e[k]; } catch { continue; }
+        if (typeof v === "function") continue;
+        nonStandard[k] = v;
+      }
+    }
+  }
+
   /**
    * Is this event the USER, or the platform coasting?
    * @returns {true|false|null}  null = this engine exposes nothing and cannot say.
@@ -121,6 +154,7 @@ export function createTrace(enabled, opts = {}) {
    * @param {object} after   arb.state() AFTER feed
    */
   const wheel = (e, dt, before, after) => {
+    probeOnce(e);
     for (const k of ["momentum", "momentumPhase", "phase"]) {
       if (e[k] !== undefined) seen[k].add(String(e[k]));
     }
@@ -274,6 +308,9 @@ export function createTrace(enabled, opts = {}) {
     }]);
     if (!supports.momentum && !supports.momentumPhase) {
       L("%c  ⚠︎ this engine exposes NEITHER — it takes the LEGACY path. Behaviour must be unchanged here.", "color:#c60");
+      L("%c  Every NON-STANDARD property found on a real event from this engine, in case the\n" +
+        "  signal exists under a name nobody documented:", "font-weight:bold");
+      console.table([nonStandard && Object.keys(nonStandard).length ? nonStandard : { "(none found)": true }]);
     }
 
     if (!c.reliable) {
@@ -344,8 +381,29 @@ export function createTrace(enabled, opts = {}) {
   const api = {
     on: true, push, wheel, report, clear, bind,
     /** raw buffer + both counters, no console. For headless probes and regression tests. */
-    data: () => ({ supports, seen: Object.fromEntries(
+    data: () => ({ supports, nonStandard, seen: Object.fromEntries(
       Object.entries(seen).map(([k, v]) => [k, [...v]])), counts: counts(), rows: [...rows] }),
+    /**
+     * ⭐ A CAPTURE FROM A FLAGGED ENGINE IS LABELLED TRAINING DATA.
+     * Safari exposes no momentum signal, so it is stuck on heuristics — but Chrome now
+     * reports ground truth for the very same physical gesture on the very same trackpad.
+     * So: capture on Chrome, and every event arrives already labelled user-or-inertia. Any
+     * candidate heuristic for the flagless path can then be SCORED against real labels
+     * instead of argued about.
+     *
+     * This is strictly better than the plan the brief retired ("measure the Chrome stream,
+     * then tune --claim-rise/--claim-floor"): same measurement, now with an answer key.
+     *
+     *   copy(window.__trace.export())      // in Chrome, after a capture
+     */
+    export: () => JSON.stringify({
+      ua: navigator.userAgent,
+      supports, nonStandard,
+      // one compact row per wheel event: everything a discriminator could key on
+      cols: ["t", "dt", "dx", "dy", "momentum", "gestureId", "minted"],
+      rows: rows.filter((r) => r.k === "wheel")
+        .map((r) => [r.t, r.dt, r.dx, r.dy, r.mom ?? null, r.g, r.minted ? 1 : 0]),
+    }),
   };
   return api;
 }
