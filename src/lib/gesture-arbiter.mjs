@@ -89,6 +89,13 @@ export const ARBITER_DEFAULTS = Object.freeze({
                          //    median |v| of 15/26/19/28/38/30 before a real resume, vs 2
                          //    before the dying tail hands off from 120Hz to 60Hz.
   holeWindow:     5,     // events the medians are taken over
+  coastSpread:    0.6,   // (max-min)/median of recent dt that still counts as CLOCK-DRIVEN.
+                         //   ⚠︎ This is the flagless statement of "a coast was running", and
+                         //   it is what the first cut was missing. Measured dt spread:
+                         //     coast   chrome 0.24   safari 0.25
+                         //     ramp    chrome 1.30   safari >>1 (duplicate timestamps, 0-3ms
+                         //                                       between 30ms jumps)
+                         //   Without it a finger RAMP can present as a hole.
 
   // ⛔ v6 EMULATION — A TEST HARNESS SETTING, NEVER SHIPPED.
   // Restores the amplitude heuristics this replaces (§3 re-push, §4 deck re-claim) exactly,
@@ -132,6 +139,8 @@ export function createArbiter(cfg = {}, env = {}) {
 
   // ---- B: the flagless resume detector ("the hole"). Rolling medians only. ----
   const dtHist = [], vHist = [];
+  // ⭐ has the PLATFORM been coasting? A finger event is only a resume if it interrupts one.
+  let sawCoast = false;
   const median = (a) => {
     if (!a.length) return 0;
     const s = [...a].sort((x, y) => x - y);
@@ -151,11 +160,39 @@ export function createArbiter(cfg = {}, env = {}) {
    *   yardstick and would change segmentation globally.
    */
   function resumed(momentum, dt, vmag) {
-    if (momentum === true) return false;      // flagged: definitely the platform
-    if (momentum === false) return true;      // flagged: definitely a finger
-    return dtHist.length >= C.holeWindow      // flagless: the hole
+    // ⭐⭐ A RESUME IS A TRANSITION, NOT A PROPERTY OF ONE EVENT.
+    // The 2026-08-17 first cut asked only "is this event a finger", and traded the jam for
+    // a leak on the engine that has the flag. The reason is the close flick's own TAIL:
+    // closeDetail() flips detailOpen false MID-FLICK, and the six-or-so finger events still
+    // arriving from that same physical swipe are all `momentum === false`. They re-claimed
+    // the deck and re-armed the transition, so the coast behind them drove the carousel
+    // (Chrome) and one flick spent two lerps (card -> landing at tab-top).
+    //
+    // ⚠︎ The correct definition was already written down, in gesture/score-heuristic.mjs,
+    // as the GROUND TRUTH the detector was scored against: "the first `momentum === false`
+    // event that FOLLOWS at least one `momentum === true` event." The scorer was right and
+    // the implementation did not match it. A coast must have happened first.
+    //
+    // Engine asymmetry confirms the diagnosis: Safari showed no carousel leak, because the
+    // flagless path needs a HOLE and a continuous flick tail has none.
+    if (momentum === true) { sawCoast = true; return false; }
+    if (momentum === false) {
+      if (!sawCoast) return false;            // the flick's own tail is a finger, not a resume
+      sawCoast = false;                       // one grant per coast
+      return true;
+    }
+    // ---- flagless: the hole, plus the same precondition expressed as a MEASUREMENT.
+    // ⚠︎ `holeLive` alone does not say "a coast was running" — a finger ramp is large too.
+    // What separates them is regularity: a coast is clock-driven (dt spread ~0.25 of the
+    // median) and a finger is not (Chrome ramp ~1.3, Safari ramp far worse — its ramps carry
+    // duplicate timestamps and dt of 0-3ms between 30ms jumps). Without this gate a Safari
+    // ramp can itself look like a hole, which is the other half of what JJ saw.
+    if (dtHist.length < C.holeWindow) return false;
+    const med = median(dtHist);
+    const spread = med ? (Math.max(...dtHist) - Math.min(...dtHist)) / med : Infinity;
+    return spread <= C.coastSpread
         && dt >= C.holeMinMs
-        && dt >= median(dtHist) * C.holeRatio
+        && dt >= med * C.holeRatio
         && median(vHist) >= C.holeLive;
   }
 
@@ -179,6 +216,8 @@ export function createArbiter(cfg = {}, env = {}) {
    */
   function consume() {
     spentOn = gestureId; acc = 0;
+    sawCoast = false;   // ⚠︎ closeDetail() spends HERE, mid-flick. The finger events still
+                        // arriving from this same swipe must not read as a resume.
     rPeak = 0; rTail = false; rArmed = false; rRun = 0; rPrev = Infinity;  // watch the coast
   }
 
@@ -186,7 +225,7 @@ export function createArbiter(cfg = {}, env = {}) {
     gestureId++;
     gRegion = regionAt(clientY);
     log(`[gesture #${gestureId}] ${why}  mag ${mag.toFixed(1)}  claims ${gRegion}`);
-    prevDir = dir; peak = mag; acc = 0; cTrough = Infinity;
+    prevDir = dir; peak = mag; acc = 0; cTrough = Infinity; sawCoast = false;
     rPeak = 0; rTail = false; rArmed = false; rRun = 0; rPrev = Infinity;
   }
 
