@@ -56,4 +56,6 @@ gallery:
     imageUrl: https://media.agawen.com/news/circa-screen/circa-s6.jpg
   - mediaType: image
     imageUrl: https://media.agawen.com/news/circa-screen/circa-s7.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/circa-screen/circa-s8.jpg
 ---
