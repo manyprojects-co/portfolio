@@ -42,4 +42,13 @@ technicalText: Anamorphic illusions are a centuries-old perspective trick, and
   concieved. However, skewing and stretching filmed, non-CG footage—let alone
   doing so live with an actor interacting with pedestrians below—seemed to us an
   entirely novel concept.
+technicalGallery:
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/box-body/bb-tech1.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/box-body/bb-tech2.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/box-body/bb-tech3.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/box-body/bb-tech4.jpg
 ---
