@@ -41,4 +41,6 @@ mainVisual:
 gallery:
   - mediaType: image
     imageUrl: https://media.agawen.com/news/art-act/aact-1.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/art-act/aact-2.jpg
 ---
