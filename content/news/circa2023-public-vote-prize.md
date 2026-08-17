@@ -5,7 +5,6 @@ subheading: Powered by Piccadilly Lights, JJ Agcaoili & Xin Wen received the
   a LIVE! takeover on the iconic screen.
 isDateRange: false
 date: 2023-10-10
-endDate: 2026-08-15
 location: Piccadilly Lights
 city: London, UK
 eventType: Award
