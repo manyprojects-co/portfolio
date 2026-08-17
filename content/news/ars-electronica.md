@@ -13,7 +13,10 @@ mainVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/news/ars-electronica/aef-tab.jpg
 gallery:
-  - {}
-  - {}
-  - {}
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/ars-electronica/aef-1.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/ars-electronica/aef-2.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/ars-electronica/aef-3.jpg
 ---
