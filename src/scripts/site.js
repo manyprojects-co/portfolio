@@ -459,7 +459,12 @@ import { createTrace } from "../lib/trace.mjs";
                  claim: arb.state().claim ?? arb.region(), sTop: detailScroll.scrollTop,
                  dy: +e.deltaY.toFixed(2), dt: +dt.toFixed(1), mom: e.momentum,
                  live: arb.gestureLive(), acc: +arb.intent.toFixed(1) });
-        if (arb.meant(arb.intent, -e.deltaY, dt, true) && arb.gestureLive()) closeDetail();
+        // ⚠︎ `scrollSpent()` NOT just `gestureLive()`. A reversal mints a fresh gesture
+        // mid-flick — measured on JJ's stream, ~100px into an up-swipe — and a mint restores
+        // the budget by design. scrollSpent survives that mint; only silence, a resume, or a
+        // real transition clears it. See the arbiter.
+        if (arb.meant(arb.intent, -e.deltaY, dt, true) && arb.gestureLive() && !arb.scrollSpent())
+          closeDetail();
       } else {
         arb.resetIntent();
         // ⭐ THE CARD IS SCROLLING, SO THIS GESTURE IS SPENT. Without this, a flick from

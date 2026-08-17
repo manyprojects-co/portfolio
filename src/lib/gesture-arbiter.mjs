@@ -165,6 +165,27 @@ export function createArbiter(cfg = {}, env = {}) {
   const dtHist = [], vHist = [];
   // ⭐ has the PLATFORM been coasting? A finger event is only a resume if it interrupts one.
   let sawCoast = false;
+  /**
+   * ⭐ HAS THIS PHYSICAL STREAM ALREADY BEEN USED BY A NATIVE SCROLLER?
+   *
+   * Separate from `spentOn` because a MINT RESETS THE BUDGET AND A REVERSAL CAN MINT.
+   * Measured on JJ's Safari stream, 2026-08-17: scrolling down inside a card and then
+   * flicking up trips the decisive-reversal boundary, so `newGesture()` runs mid-flick and
+   * hands the rest of that same physical swipe a fresh, LIVE budget:
+   *
+   *     t=17389  dy=-12  g=10   the up-flick starts
+   *     ...                     ~102px of card scrolled, all of it spending gesture 10
+   *     t=17414  dy=-71  g=11   MINTED — reversal needed mag >= peak*0.25 (282*0.25 = 70.5)
+   *
+   * By then the card is at its top, gesture 11 is live, and -71px at 6ms is 11.8px/ms
+   * against a 1.8px/ms threshold. The close fires on a swipe that was spent scrolling.
+   *
+   * ⚠︎ So `spendOnNativeScroll()` alone could never have worked, and the reversal boundary
+   * is not the thing to weaken — it is what makes a lerp catchable, which is load-bearing.
+   * This flag rides ACROSS a reversal-mint and is cleared only by a real end of stream:
+   * silence, a resume, or a transition actually firing.
+   */
+  let scrollSpent = false;
   // has anything interrupted this gesture's coast? Drives coasting(); see below.
   let holeSeen = false;
   const median = (a) => {
@@ -241,7 +262,7 @@ export function createArbiter(cfg = {}, env = {}) {
    * spending a gesture doesn't change where it began.
    */
   function consume() {
-    spentOn = gestureId; acc = 0;
+    spentOn = gestureId; acc = 0; scrollSpent = false;
     sawCoast = false;   // ⚠︎ closeDetail() spends HERE, mid-flick. The finger events still
                         // arriving from this same swipe must not read as a resume.
     holeSeen = false;
@@ -291,6 +312,9 @@ export function createArbiter(cfg = {}, env = {}) {
       // anyway (no coast gap ever reached 100ms in any capture), so there is nothing to
       // guard and nothing to guess at.
       if (momentum === true) { push(); return; }
+      // ⭐ SILENCE IS A REAL END OF STREAM — the finger is off and the coast has died. This
+      // is the ONLY mint that clears scrollSpent; a reversal-mint deliberately does not.
+      scrollSpent = false;
       newGesture(dir, mag, `gap ${Math.round(dt)}ms`, clientY);
       push();
       return;
@@ -335,6 +359,7 @@ export function createArbiter(cfg = {}, env = {}) {
           spentOn = -1; acc = 0; rRun = 0;
           log(`[gesture #${gestureId}] RESUME — transition re-armed (hole/flag)`);
         }
+        scrollSpent = false;   // a deliberate new push earns the card boundary back too
         // (b) THE CLAIM — v6's §4, same scope: hands back a region, never a transition.
         // ⚠︎ Re-claims WHEREVER THE CURSOR IS, not only over the carousel. v6 could only
         // ever grant "carousel", which left a stale "detail" claim sitting on a gesture in
@@ -474,7 +499,9 @@ export function createArbiter(cfg = {}, env = {}) {
      * needs, and the card could then never be closed at all. Spend the budget, touch
      * nothing else.
      */
-    spendOnNativeScroll() { spentOn = gestureId; acc = 0; },
+    spendOnNativeScroll() { spentOn = gestureId; acc = 0; scrollSpent = true; },
+    /** has this stream already been used by a native scroller? survives a reversal-mint. */
+    scrollSpent: () => scrollSpent,
     /**
      * Is a LIVE coast still attached to this gesture?
      * ⚠︎ Exists so site.js can gate the one path it leaves to native scroll WITHOUT
