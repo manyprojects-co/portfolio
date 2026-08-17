@@ -31,8 +31,10 @@ cardCoverVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/artworks/box-body/bb-card.jpg
 technicalTagline: "[Box-body technical tagline placeholder]"
-technicalText: Through Box Body, we developed a production work flow that
-  involves remapping filmed imagery from a built scaled model of the screens. It
-  has the potential for instant real-time interaction with site-specific 3D
-  visuals, with no need for CGI.
+technicalText: Anamorphic illusions are a centuries-old perspective trick, and
+  the shinjuku crossings and times squares of modern-day had adapted them for
+  the spectacle of 3D cats in curvy billboards by the time this project was
+  concieved. However, skewing and stretching filmed, non-CG footage—let alone
+  doing so live with an actor interacting with pedestrians below—seemed to us an
+  entirely novel concept.
 ---
