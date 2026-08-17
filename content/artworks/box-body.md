@@ -45,10 +45,15 @@ technicalText: Anamorphic illusions are a centuries-old perspective trick, and
 technicalGallery:
   - mediaType: image
     imageUrl: https://media.agawen.com/artworks/box-body/bb-tech1.jpg
+    caption: Film set
   - mediaType: image
     imageUrl: https://media.agawen.com/artworks/box-body/bb-tech2.jpg
+    caption: Test footage depicted in daylight
   - mediaType: image
     imageUrl: https://media.agawen.com/artworks/box-body/bb-tech3.jpg
+    caption: Skewed test footage for display
   - mediaType: image
     imageUrl: https://media.agawen.com/artworks/box-body/bb-tech4.jpg
+    caption: Night time interaction testing. Waving back in real time was proven
+      possible.
 ---
