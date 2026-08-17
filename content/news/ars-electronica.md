@@ -1,5 +1,8 @@
 ---
 title: Ars Electronica Festival
+subheading: 'Box Body (2023) was invited to exhibit as a part of "Butterfly’s
+  Dreams: The New Aesthetic of AI in Artistic Practice" at Ars Electronica
+  Festival 2023, curated by Ina Conradi and Ong Kian Peng.'
 isDateRange: true
 date: 2023-09-06
 endDate: 2023-09-10
