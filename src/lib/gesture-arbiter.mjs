@@ -448,6 +448,34 @@ export function createArbiter(cfg = {}, env = {}) {
     },
     segment, consume, meant, gestureLive, ownsCarousel,
     /**
+     * ⭐ THIS GESTURE IS BEING USED BY A NATIVE SCROLLER — spend it, same as a transition.
+     *
+     * The defect (JJ, Safari, 2026-08-17): "a hard flick from card to tab closes the card
+     * with no momentum spill ONLY IF closed from the TOP. From anywhere below, an
+     * overshoot." Flick up inside a scrolled card and the card scrolls natively to the top,
+     * momentum still running hard — and the instant `scrollTop` hits 0 the boundary sees a
+     * coast event of ~155px at ~8ms. `meant()`'s velocity term is 1.8px/ms. That is 19px/ms:
+     * satisfied TEN TIMES OVER by a single event nobody pushed.
+     *
+     * ⚠︎ `meant()` never asks WHOSE event it is, and that is the whole bug. But the fix is
+     * NOT a fourth momentum heuristic: scored against Chrome's labels, the best flagless
+     * "is this a coast" classifier still called 70 of 461 coast events a finger, and those
+     * 70 cluster at the START of a coast — exactly where a boundary gets reached at speed.
+     * It would have put the overshoot straight back.
+     *
+     * So this uses the invariant the project already has instead of a new threshold: ONE
+     * GESTURE, ONE ACTION. The flick was spent scrolling the card. Closing is a second
+     * action and needs a second push — which B already detects at 100% on labelled data,
+     * on both engines. `motion-fork-brief.md § J` specifies exactly this: "you released
+     * before reaching the edge -> you stop at the top."
+     *
+     * ⚠︎ NOT `consume()`. That also clears `sawCoast` and `holeSeen`, and this fires on
+     * every native-scroll event — so it would erase the coast-tracking the resume detector
+     * needs, and the card could then never be closed at all. Spend the budget, touch
+     * nothing else.
+     */
+    spendOnNativeScroll() { spentOn = gestureId; acc = 0; },
+    /**
      * Is a LIVE coast still attached to this gesture?
      * ⚠︎ Exists so site.js can gate the one path it leaves to native scroll WITHOUT
      * creating a lockout. The gate must stop momentum from scrolling the panel a closing

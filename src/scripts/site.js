@@ -453,7 +453,15 @@ import { createTrace } from "../lib/trace.mjs";
       if (detailScroll.scrollTop <= 0 && e.deltaY < 0) {                  // beyond the upper bound
         arb.addIntent(-e.deltaY);
         if (arb.meant(arb.intent, -e.deltaY, dt, true) && arb.gestureLive()) closeDetail();
-      } else arb.resetIntent();
+      } else {
+        arb.resetIntent();
+        // ⭐ THE CARD IS SCROLLING, SO THIS GESTURE IS SPENT. Without this, a flick from
+        // mid-card coasts to the top and the first coast event at the boundary commits the
+        // close on velocity alone — 19px/ms against a 1.8px/ms threshold. See
+        // spendOnNativeScroll() in the arbiter for why this is not a momentum test.
+        // Closing then needs a second push, which is what J specifies and what B detects.
+        arb.spendOnNativeScroll();
+      }
       return;                                                            // native scroll otherwise
     }
 
