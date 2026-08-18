@@ -1,5 +1,7 @@
 ---
 title: Into the Future
+subheading: You,zip (2024), a predecessor to Metadata (2026), was exhibited in
+  Whitespace Gallery of Edinburgh.
 isDateRange: true
 date: 2024-09-27
 endDate: 2024-09-29
