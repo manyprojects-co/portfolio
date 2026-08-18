@@ -1,5 +1,7 @@
 ---
 title: Technarte Conference
+subheading: On May 17, we presented our talk, ‘Living Screen - Digital Surfaces
+  for Visceral Experiences,’ at Palacio Euskalduna for the Technarte audience.
 isDateRange: false
 date: 2024-05-17
 endDate: 2026-08-15
