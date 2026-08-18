@@ -30,13 +30,11 @@ statement: >-
   defines ‘me’—I can download it as a .zip file. But does it really capture who
   I am? Perhaps it does define me, to acquaintances, to AI, who knows what else?
 
+   -- Xin, 2024
 
   The work was displayed from Sep 27-29 at the Whitespace Gallery in Edinburgh,
   as a part of the *Into the Future* exhibition, co-curated by Anita Gao &
-  Jiarong Yu. 
-
-
-  -- Xin, 2024
+  Jiarong Yu.
 mainVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/news/into-the-future/itf-tab.jpg
