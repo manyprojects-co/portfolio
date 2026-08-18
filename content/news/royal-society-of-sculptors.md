@@ -26,4 +26,6 @@ gallery:
     imageUrl: https://media.agawen.com/news/rss/rss-3.jpg
   - mediaType: image
     imageUrl: https://media.agawen.com/news/rss/rss-4.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/rss/rss-5.jpg
 ---
