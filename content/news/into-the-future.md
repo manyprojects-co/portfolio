@@ -45,6 +45,10 @@ gallery:
     imageUrl: https://media.agawen.com/news/into-the-future/itf-1.jpg
   - mediaType: image
     imageUrl: https://media.agawen.com/news/into-the-future/itf-2.jpg
-  - {}
-  - {}
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/into-the-future/itf-3.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/into-the-future/itf-4.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/into-the-future/itf-5.jpg
 ---
