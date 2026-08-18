@@ -188,6 +188,25 @@ export function createArbiter(cfg = {}, env = {}) {
   let scrollSpent = false;
   // has anything interrupted this gesture's coast? Drives coasting(); see below.
   let holeSeen = false;
+  /**
+   * ⭐ IS THE CURRENT DEVICE DISCRETE? (the deltaMode guard, 2026-08-18)
+   *
+   * `WheelEvent.deltaMode !== 0` means the engine handed us LINES or PAGES, which it only
+   * does for a click-detented mouse wheel. Such a device does not coast — there is no
+   * inertia to interrupt — so every piece of coast machinery below is not merely useless
+   * on it, it is actively wrong. See the guard in segment() for the measured failure.
+   *
+   * ⚠︎ SCOPE, AND IT IS ONE ENGINE. Measured browser behaviour, 2026-08-18:
+   *     Firefox   mouse -> DOM_DELTA_LINE   trackpad -> DOM_DELTA_PIXEL   ✅ exact
+   *     Chrome    both  -> DOM_DELTA_PIXEL  (premultiplied)               — has the flag
+   *     Safari    both  -> DOM_DELTA_PIXEL                                ⛔ BLIND
+   * So this closes Firefox completely, Chrome does not need it (`momentum` is exact), and
+   * ⛔ **Safari + a real mouse is still an OPEN DEFECT.** Safari's only tell is that mouse
+   * deltas are much larger than trackpad ones — an AMPLITUDE rule, which is dead end #4's
+   * exact shape. It does not ship until gesture/score-heuristic.mjs scores it on a real
+   * capture. Use gesture/capture-wheel.html to make one.
+   */
+  let lastDiscrete = false;
   const median = (a) => {
     if (!a.length) return 0;
     const s = [...a].sort((x, y) => x - y);
@@ -277,11 +296,45 @@ export function createArbiter(cfg = {}, env = {}) {
     rPeak = 0; rTail = false; rArmed = false; rRun = 0; rPrev = Infinity;
   }
 
-  function segment(deltaY, dt, clientY, deltaX = 0, momentum) {
+  function segment(deltaY, dt, clientY, deltaX = 0, momentum, deltaMode = 0) {
     const mag = Math.abs(deltaY), dir = deltaY < 0 ? -1 : 1;
     const vmag = Math.hypot(deltaX || 0, deltaY);
+    /**
+     * ⭐ THE deltaMode GUARD. A discrete device bypasses ALL coast machinery.
+     *
+     * THE DEFECT IT FIXES, measured off this file 2026-08-18. The flagless detector asks
+     * "regular cadence, then a hole, with size behind it" — and a hand spinning a wheel at
+     * a steady rate IS regular, and every click IS large. So a mouse manufactures a resume
+     * out of nothing more than an ordinary hesitation:
+     *
+     *     cadence   hesitation that spuriously resumes
+     *     16ms      45, 60, 75, 90, 99ms   (any)
+     *     25-30ms   75, 90, 99ms
+     *     >=40ms    none — 2.5x median lands past --gesture-gap, so silence mints instead
+     *
+     * A spurious resume clears `spentOn`, so ONE continuous wheel-spin re-arms the
+     * transition over and over: "one gesture = one lerp" is gone for every mouse user on
+     * the flagless path, and it degrades with hardware — the faster the wheel reports, the
+     * wider the window.
+     *
+     * ⚠︎ Note the flagged path was NEVER exposed to this: `resumed()` requires a prior
+     * `momentum === true`, and a mouse never produces one. Chrome was fine. This is
+     * Firefox and Safari only, which is exactly the half with no flag to fall back on.
+     *
+     * ⭐ Deliberately NOT a threshold. Three things die together, and each is a real bug:
+     *   1. resume        — the measured defect above
+     *   2. the histories — so a device switch cannot leave a stale coast model behind
+     *   3. coasting()    — a mouse never sets `holeSeen` at >=40ms cadence, so the
+     *                      native-scroll gate would latch ON and never release: a LOCKOUT,
+     *                      the same failure `gateHoleMs` exists to prevent.
+     * ⛔ compat is untouched — v6 had none of this machinery, so the differential stays
+     * exact by construction, not by a flag.
+     */
+    const discrete = !C.compat && deltaMode !== 0;
+    if (discrete !== lastDiscrete) { dtHist.length = 0; vHist.length = 0; }
+    lastDiscrete = discrete;
     // evaluated BEFORE the histories absorb this event
-    const isResume = C.compat ? false : resumed(momentum, dt, vmag);
+    const isResume = (C.compat || discrete) ? false : resumed(momentum, dt, vmag);
     // ⭐ THE GATE'S OWN, CHEAPER QUESTION — rule 2, applied properly.
     // A full resume re-arms a TRANSITION, where a wrong answer changes the view, so it
     // demands hole + regularity + a live coast. Releasing site.js's native-scroll gate only
@@ -289,13 +342,13 @@ export function createArbiter(cfg = {}, env = {}) {
     // otherwise cause is real (JJ, Safari: a push 62ms after the coast had decayed to 1px).
     // Instead it pays a larger absolute floor, which is what separates a real push from the
     // frame-rate handoff a dying coast performs.
-    if (!C.compat && !holeSeen && dtHist.length >= C.holeWindow) {
+    if (!C.compat && !discrete && !holeSeen && dtHist.length >= C.holeWindow) {
       const m = median(dtHist);
       const sp = m ? (Math.max(...dtHist) - Math.min(...dtHist)) / m : Infinity;
       if (sp <= C.coastSpread && dt >= C.gateHoleMs && dt >= m * C.holeRatio) holeSeen = true;
     }
     const push = () => {
-      if (C.compat) return;
+      if (C.compat || discrete) return;
       dtHist.push(dt); vHist.push(vmag);
       if (dtHist.length > C.holeWindow) { dtHist.shift(); vHist.shift(); }
     };
@@ -467,9 +520,9 @@ export function createArbiter(cfg = {}, env = {}) {
     beginGesture(clientY) { gestureId++; spentOn = -1; gRegion = regionAt(clientY); },
 
     /** Feed one wheel event. Mirrors v6's handler order: idle-reset, then segment. */
-    feed({ deltaY, dt, clientY, deltaX, momentum }) {
+    feed({ deltaY, dt, clientY, deltaX, momentum, deltaMode }) {
       if (dt > C.idleReset) acc = 0;
-      segment(deltaY, dt, clientY, deltaX, momentum);
+      segment(deltaY, dt, clientY, deltaX, momentum, deltaMode);
     },
     segment, consume, meant, gestureLive, ownsCarousel,
     /**
@@ -514,7 +567,7 @@ export function createArbiter(cfg = {}, env = {}) {
      * the resume detector already uses, which is why it is not a second threshold.
      * ⛔ Always false in compat — v6 had no such gate.
      */
-    coasting: () => !C.compat && !holeSeen,
+    coasting: () => !C.compat && !lastDiscrete && !holeSeen,
     /** intent accumulator — the wheel handler banks px into this per branch */
     addIntent(delta) { acc += delta; return acc; },
     resetIntent() { acc = 0; },

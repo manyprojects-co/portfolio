@@ -171,6 +171,11 @@ export function createTrace(enabled, opts = {}) {
       y: Math.round(e.clientY),
       mom: e.momentum,                 // Chrome 151+
       mPhase: e.momentumPhase,         // WebKit
+      // ⭐ 0 PIXEL / 1 LINE / 2 PAGE. The arbiter's deltaMode guard keys on this, so a
+      // capture that omits it cannot score the guard — and score-heuristic.mjs would
+      // silently grade mouse data against the trackpad path. Same failure shape as the
+      // wheel-only suite that certified a broken port.
+      dm: e.deltaMode,
       phase: e.phase,                  // WebKit
       g: after.gestureId,
       claim: after.gRegion,
@@ -412,10 +417,10 @@ export function createTrace(enabled, opts = {}) {
       // were filtered out, so there was no way to see what the arbiter's budget looked like
       // at the instant the close fired. A capture that omits the event you are debugging is
       // not a capture.
-      cols: ["t", "k", "dt", "dx", "dy", "momentum", "gestureId", "spent", "claim",
-             "minted", "repush", "reclaim", "scrollTop"],
+      cols: ["t", "k", "dt", "dx", "dy", "deltaMode", "momentum", "gestureId", "spent",
+             "claim", "minted", "repush", "reclaim", "scrollTop"],
       rows: rows.map((r) => [r.t, r.k, r.dt ?? null, r.dx ?? null, r.dy ?? null,
-        r.mom ?? null, r.g ?? null, r.spent ?? null, r.claim ?? null,
+        r.dm ?? null, r.mom ?? null, r.g ?? null, r.spent ?? null, r.claim ?? null,
         r.minted ? 1 : 0, r.repush ? 1 : 0, r.reclaim ? 1 : 0, r.sTop ?? null]),
     }),
   };

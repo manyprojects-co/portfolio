@@ -438,12 +438,21 @@ import { createTrace } from "../lib/trace.mjs";
     // the module — a change in gestureId across feed() is a new gesture, by definition.
     // Both reads are no-ops (and the object is never built) when the trace is off.
     const tBefore = T.on ? arb.state() : null;
-    // ⭐ deltaX and momentum are both load-bearing now (B):
-    //   momentum — WheelEvent.momentum where the engine has it (Chrome 151+). Absent on
-    //              Safari and Firefox, which fall to the hole detector.
-    //   deltaX   — feeds the resume detector's VECTOR magnitude, which is what makes a
-    //              horizontal swipe able to re-claim the deck at all (defect C).
-    arb.feed({ deltaY: e.deltaY, deltaX: e.deltaX, dt, clientY: e.clientY, momentum: e.momentum });
+    // ⭐ deltaX, momentum and deltaMode are all load-bearing now:
+    //   momentum  — WheelEvent.momentum where the engine has it (Chrome 151+). Absent on
+    //               Safari and Firefox, which fall to the hole detector.
+    //   deltaX    — feeds the resume detector's VECTOR magnitude, which is what makes a
+    //               horizontal swipe able to re-claim the deck at all (defect C).
+    //   deltaMode — ⭐ non-zero means LINES or PAGES, i.e. a click-detented mouse wheel,
+    //               which does not coast. Without it the hole detector reads an ordinary
+    //               wheel hesitation as "the finger came back" and re-arms the transition
+    //               on every spin, and coasting() latches the native-scroll gate ON for
+    //               the session. See gesture-arbiter.mjs § the deltaMode guard.
+    //               ⚠︎ Firefox only — Safari reports PIXEL for a mouse AND a trackpad.
+    // ⛔ Dropping any of the three silently selects the trackpad-only path for every
+    // device. The arbiter cannot tell a missing field from a genuine absence.
+    arb.feed({ deltaY: e.deltaY, deltaX: e.deltaX, dt, clientY: e.clientY,
+               momentum: e.momentum, deltaMode: e.deltaMode });
     if (T.on) T.wheel(e, dt, tBefore, arb.state());
 
     // ---- STATE 3: art-news detail ----
