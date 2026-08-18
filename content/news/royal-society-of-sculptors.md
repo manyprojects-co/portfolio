@@ -14,14 +14,14 @@ statement: This prototype of BEAM (2023) was co-developed with Wei Zhang and
   £1K Development Prize.
 mainVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/news/beamrsc/beamrsc-tab.jpg
+  imageUrl: https://media.agawen.com/news/rss/rss-tab.jpg
 gallery:
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/beamrsc/beamrsc-1.jpg
+    imageUrl: https://media.agawen.com/news/rss/rss-1.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/beamrsc/beamrsc-2.jpg
+    imageUrl: https://media.agawen.com/news/rss/rss-2.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/beamrsc/beamrsc-3.jpg
+    imageUrl: https://media.agawen.com/news/rss/rss-3.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/beamrsc/beamrsc-4.jpg
+    imageUrl: https://media.agawen.com/news/rss/rss-4.jpg
 ---
