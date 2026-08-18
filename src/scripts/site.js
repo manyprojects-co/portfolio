@@ -125,6 +125,11 @@ import { createTrace } from "../lib/trace.mjs";
   const detailScroll = document.getElementById("detailScroll");
   const detailContent = document.getElementById("detailContent");
   const track = document.getElementById("track");
+  // ⚠︎ DECLARED EXPLICITLY. Until A this was never declared at all — the wheel handler's
+  // two references resolved to `window.carousel`, the global a browser creates for any
+  // element with an `id`. It worked, silently, and would have broken the moment anything
+  // else defined that name. A needs the element for measurement anyway.
+  const carousel = document.getElementById("carousel");
   const subs = { art: document.getElementById("art"),
                  news: document.getElementById("news"),
                  bio: document.getElementById("bio") };
@@ -134,7 +139,7 @@ import { createTrace } from "../lib/trace.mjs";
   const links = [...document.querySelectorAll(".nav a[data-section]")];
   const order = links.map((a) => a.dataset.section);
 
-  let VH = 0, BAND = 132, LANDING_H = 0;
+  let VH = 0, BAND = 132, LANDING_H = 0, DECK_H = 0;
 
   function measureGeom() {
     VH = window.innerHeight;
@@ -144,7 +149,30 @@ import { createTrace } from "../lib/trace.mjs";
     root.style.setProperty("--band", BAND + "px");
     root.style.setProperty("--landing-h", LANDING_H + "px");
     root.style.setProperty("--detail-top", DETAIL_TOP + "px");
+    // ⭐ A: the deck's own height — the artwork band, not the hero.
+    // ⚠︎ MEASURED HERE, ON PURPOSE, AND NOWHERE ELSE. The obvious implementation is a
+    // getBoundingClientRect() in the wheel handler, and that is a forced layout read in a
+    // handler that also WRITES scrollLeft — layout thrash on every event of every flick.
+    // The carousel's HEIGHT only changes on resize and font-load, both of which land here;
+    // its POSITION moves with worldY, which JS already tracks. So it is measured once and
+    // the per-event test stays a single comparison, exactly as tabTopY() does it.
+    // ⚠︎ Read AFTER --landing-h is set: `.artwork` has `max-height: calc(--landing-h - 80px)`,
+    // so on a short viewport the band depends on the value set two lines above.
+    DECK_H = carousel ? carousel.getBoundingClientRect().height : 0;
   }
+
+  /**
+   * Bottom edge of the deck region, in viewport coordinates.
+   * The carousel is centred in the hero, and the hero's top edge on screen is worldY — so
+   * the band runs from worldY + (LANDING_H - DECK_H)/2 for DECK_H px, and this is its
+   * lower edge. Moves with the world exactly as tabTopY() does, so the region stays correct
+   * mid-lerp: whatever is under the cursor RIGHT NOW is what responds.
+   * ⚠︎ Falls back to tabTopY() if the carousel is missing or unmeasurable (an empty
+   * `featured` set), which restores v6's whole-hero behaviour rather than collapsing the
+   * region to a sliver around the vertical centre.
+   */
+  const deckBottomY = () =>
+    DECK_H > 0 ? worldY + (LANDING_H + DECK_H) / 2 : tabTopY();
 
   // ============================================================================
   // STATE
@@ -339,7 +367,8 @@ import { createTrace } from "../lib/trace.mjs";
     if (!detailOpen) return;
     // ⭐ the anchor for every leak counter — the post-close window opens HERE, which is
     // also where `detailOpen` flips and the coast becomes free to reach the deck.
-    T.push({ k: "@closeDetail", g: arb.state().gestureId, claim: arb.state().gRegion });
+    T.push({ k: "@closeDetail", g: arb.state().gestureId, claim: arb.state().gRegion,
+             spent: arb.state().spentOn, sTop: detailScroll.scrollTop });
     closeViaHistory();   // keep the URL in step with a gesture-driven close
     detailOpen = false;
     arb.consume();   // spend the gesture HERE, not when the lerp lands: detailOpen flips
@@ -377,6 +406,8 @@ import { createTrace } from "../lib/trace.mjs";
     {
       detailOpen: () => detailOpen,
       tabTopY: () => tabTopY(),
+      // ⭐ A: the region boundary is the artwork band's lower edge, not the tab frame's top.
+      deckBottomY: () => deckBottomY(),
       tweenActive: () => !!(stageTween || worldTween),
     }
   );
@@ -422,8 +453,29 @@ import { createTrace } from "../lib/trace.mjs";
       // only axis and the native scroller owns it
       if (detailScroll.scrollTop <= 0 && e.deltaY < 0) {                  // beyond the upper bound
         arb.addIntent(-e.deltaY);
-        if (arb.meant(arb.intent, -e.deltaY, dt, true) && arb.gestureLive()) closeDetail();
-      } else arb.resetIntent();
+        // ⭐ THE BOUNDARY, RECORDED. This is where the card-close decision is made, and it
+        // is the one place in the handler whose inputs were invisible in an export.
+        T.push({ k: "@cardEdge", g: arb.state().gestureId, spent: arb.state().spentOn,
+                 claim: arb.state().claim ?? arb.region(), sTop: detailScroll.scrollTop,
+                 dy: +e.deltaY.toFixed(2), dt: +dt.toFixed(1), mom: e.momentum,
+                 live: arb.gestureLive(), acc: +arb.intent.toFixed(1) });
+        // ⚠︎ `scrollSpent()` NOT just `gestureLive()`. A reversal mints a fresh gesture
+        // mid-flick — measured on JJ's stream, ~100px into an up-swipe — and a mint restores
+        // the budget by design. scrollSpent survives that mint; only silence, a resume, or a
+        // real transition clears it. See the arbiter.
+        if (arb.meant(arb.intent, -e.deltaY, dt, true) && arb.gestureLive() && !arb.scrollSpent())
+          closeDetail();
+      } else {
+        arb.resetIntent();
+        // ⭐ THE CARD IS SCROLLING, SO THIS GESTURE IS SPENT. Without this, a flick from
+        // mid-card coasts to the top and the first coast event at the boundary commits the
+        // close on velocity alone — 19px/ms against a 1.8px/ms threshold. See
+        // spendOnNativeScroll() in the arbiter for why this is not a momentum test.
+        // Closing then needs a second push, which is what J specifies and what B detects.
+        arb.spendOnNativeScroll();
+        T.push({ k: "@cardScroll", g: arb.state().gestureId, spent: arb.state().spentOn,
+                 sTop: detailScroll.scrollTop, dy: +e.deltaY.toFixed(2), mom: e.momentum });
+      }
       return;                                                            // native scroll otherwise
     }
 
@@ -431,7 +483,9 @@ import { createTrace } from "../lib/trace.mjs";
     // Tested against the carousel's CURRENT on-screen extent rather than a fixed
     // LANDING_H, so the region stays correct while a lerp is in flight: whatever is
     // under the cursor right now is what responds.
-    if (e.clientY < tabTopY()) {
+    // ⭐ A: that extent is now the ARTWORK BAND (deckBottomY), not the whole hero
+    // (tabTopY). The band below the artwork leaves the landing, as designed.
+    if (e.clientY < deckBottomY()) {
       e.preventDefault();
       // BOTH axes drive horizontal movement here, and a vertical gesture never commits.
       //

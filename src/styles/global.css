@@ -224,7 +224,19 @@
   }
   .carousel {
     width: 100%;
-    height: 100%;
+    /* ⭐ A (2026-08-17): `auto`, NOT `100%`.
+       The wheel handler's deck region asks "is the pointer over the carousel", and it
+       answers by testing this element's box. At `height: 100%` that box was the WHOLE
+       HERO, while the artwork is only --card-h + caption (~425px) centred inside it — so
+       the empty band BELOW the artwork browsed the deck when the design says it should
+       leave the landing. ~170px at a 900px viewport, ~320px at 1200px, growing with the
+       window. At `auto` the element's own box IS the artwork band, so the region test and
+       the design agree without a second measurement to keep in sync.
+       `.hero`'s `align-items: center` still centres it, so nothing moves visually, and
+       space ABOVE the artwork stays deck region — which matches "only below it is new".
+       ⚠︎ `.caption` is `position: sticky` on `left` only, so it stays in normal flow and
+       DOES contribute height. That is what puts the edge below the caption, per JJ. */
+    height: auto;
     display: flex;
     align-items: center;
     gap: var(--card-gap);
