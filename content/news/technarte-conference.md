@@ -37,7 +37,14 @@ mainVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/news/technarte/tnt-tab.jpg
 gallery:
-  - {}
-  - {}
-  - {}
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/technarte/tnt-1.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/technarte/tnt-2.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/technarte/tnt-3.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/technarte/tnt-4.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/technarte/tnt-5.jpg
 ---
