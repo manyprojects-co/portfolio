@@ -25,7 +25,6 @@ artistStatement: >-
 
   BEAM was conceptualized for the 2023 Interplay Kinetic Design Competition and
   was awarded as a finalist.
-acknowledgements: In collaboration with Wei Zhang (Development) and Luling Wang (Music)
 landingVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/artworks/beam/beam-ld.jpg
@@ -39,6 +38,10 @@ cardGallery:
   - mediaType: video
     imageUrl: https://media.agawen.com/artworks/beam/beam-art-v1.mp4
   - imageUrl: https://media.agawen.com/artworks/beam/beam-art-v2.mp4
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/beam/beam-art1.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/beam/beam-art2.jpg
 technicalTagline: "[BEAM Technical Tagline Placeholder]"
 technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
   eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
