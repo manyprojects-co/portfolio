@@ -1,6 +1,6 @@
 ---
 title: Personhood / Speculum Artium
-subheading: We exhibited a new iteration of Personhood (2024) for the Speculum
+subheading: A video version of Personhood (2024) was exhibited at the Speculum
   Artium Festival.
 isDateRange: true
 date: 2025-09-17
@@ -11,4 +11,11 @@ eventType: Group exhibition
 mainVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/news/speculum/saf-tab.jpg
+gallery:
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/speculum/saf-1.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/speculum/saf-2.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/speculum/saf-3.jpg
 ---
