@@ -42,6 +42,12 @@ cardGallery:
     imageUrl: https://media.agawen.com/artworks/beam/beam-art1.jpg
   - mediaType: image
     imageUrl: https://media.agawen.com/artworks/beam/beam-art2.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/beam/beam-art3.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/beam/beam-art4.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/beam/beam-art5.jpg
 technicalTagline: "[BEAM Technical Tagline Placeholder]"
 technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
   eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
