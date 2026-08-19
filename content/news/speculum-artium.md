@@ -8,7 +8,10 @@ endDate: 2025-09-20
 location: Delavski dom Trbovlje
 city: Trbovlje, Slovenia
 eventType: Group exhibition
-statement: "A video version of "
+statement: Established in 2008, the Speculum Artium Festival is an annual
+  international event dedicated to new media art, contemporary techno-culture,
+  and the intersection of science and technology. It is hosted each autumn in
+  the post-industrial town of Trbovlje, Slovenia.
 mainVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/news/speculum/saf-tab.jpg
