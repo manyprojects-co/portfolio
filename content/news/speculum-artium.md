@@ -1,12 +1,14 @@
 ---
 title: Personhood / Speculum Artium
-subheading: A version of Personhood (2024) was exhibited at the Speculum Artium Festival.
+subheading: A video version of Personhood (2024) was exhibited at the Speculum
+  Artium Festival.
 isDateRange: true
 date: 2025-09-17
 endDate: 2025-09-20
 location: Delavski dom Trbovlje
 city: Trbovlje, Slovenia
 eventType: Group exhibition
+statement: "A video version of "
 mainVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/news/speculum/saf-tab.jpg
