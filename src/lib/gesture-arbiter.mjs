@@ -210,9 +210,28 @@ export function createArbiter(cfg = {}, env = {}) {
   // consecutive events sitting inside a clock-regular window — the flagless half of
   // coastLikely(). Never feeds a commit; see coastRun.
   let regRun = 0;
-  // the last event's momentum flag, or undefined on an engine that has none. PATH SELECTION,
-  // the same rule the rest of this file uses: an exact answer beats a measured one.
-  let lastMomentum;
+  /**
+   * ⭐ STICKY: has this stream been judged platform-driven? Cleared only by a real
+   * INTERRUPTION — a resume, a new gesture, a transition, or a discrete device.
+   *
+   * 🐞 THE DEFECT THIS FIXES (JJ, Safari, 2026-08-18): "bouncing back down and then letting
+   * momentum carry back up — an up-down wobble on a hard swipe down." `regRun` resets to 0 on
+   * a single out-of-cadence event, so a live coast could read as a coast, release the give,
+   * flicker to NOT-a-coast, re-drive the give, and read as a coast again. The give oscillated
+   * at the flicker rate, and a hard swipe produces the longest coast, so it wobbled most
+   * exactly where it was most visible.
+   *
+   * ⭐ THE FIX IS SEMANTIC, NOT A THRESHOLD. A coast does not become a finger halfway through
+   * itself; it takes an interruption, and this file already detects those. So the CONCLUSION
+   * is sticky even though the per-event EVIDENCE is noisy.
+   *
+   * ⚠︎ Flagged engines are unaffected in behaviour: `momentum === false` clears it on the very
+   * next event, so Chrome stays exact and per-event.
+   * ⚠︎ Cost of a false positive changes shape but not severity: the give stops responding
+   * until you lift or pause, rather than oscillating. Quiet-and-wrong beats loud-and-wrong,
+   * and --coast-run is the knob for the rate.
+   */
+  let coastSeen = false;
   // has anything interrupted this gesture's coast? Drives coasting(); see below.
   let holeSeen = false;
   /**
@@ -309,7 +328,7 @@ export function createArbiter(cfg = {}, env = {}) {
    */
   function consume() {
     spentOn = gestureId; acc = 0; scrollSpent = false;
-    regRun = 0;         // a transition just fired; whatever the stream was doing, restart
+    regRun = 0; coastSeen = false;   // a transition fired; whatever the stream was, restart
     sawCoast = false;   // ⚠︎ closeDetail() spends HERE, mid-flick. The finger events still
                         // arriving from this same swipe must not read as a resume.
     holeSeen = false;
@@ -321,7 +340,7 @@ export function createArbiter(cfg = {}, env = {}) {
     gRegion = regionAt(clientY);
     log(`[gesture #${gestureId}] ${why}  mag ${mag.toFixed(1)}  claims ${gRegion}`);
     prevDir = dir; peak = mag; acc = 0; cTrough = Infinity; sawCoast = false; holeSeen = false;
-    regRun = 0;
+    regRun = 0; coastSeen = false;
     rPeak = 0; rTail = false; rArmed = false; rRun = 0; rPrev = Infinity;
   }
 
@@ -379,14 +398,18 @@ export function createArbiter(cfg = {}, env = {}) {
      * ⚠︎ A TIMING property, not an amplitude one — dead end #4 was "amplitude rose", and this
      * is deliberately not that.
      */
-    if (C.compat || discrete) regRun = 0;
+    if (C.compat || discrete) { regRun = 0; coastSeen = false; }
     else if (dtHist.length >= C.holeWindow) {
       const m = median(dtHist);
       const sp = m ? (Math.max(...dtHist) - Math.min(...dtHist)) / m : Infinity;
       const near = m ? Math.abs(dt - m) <= m * C.coastSpread : false;
       regRun = (sp <= C.coastSpread && near) ? regRun + 1 : 0;
     } else regRun = 0;
-    lastMomentum = momentum;
+    // ⚠︎ PATH SELECTION, same rule as everywhere else: an exact answer beats a measured one.
+    // The flag sets AND clears per event; the measurement can only ever SET (see coastSeen).
+    if (momentum === true) coastSeen = true;
+    else if (momentum === false) coastSeen = false;
+    else if (!C.compat && !discrete && regRun >= C.coastRun) coastSeen = true;
 
     if (!C.compat && !discrete && !holeSeen && dtHist.length >= C.holeWindow) {
       const m = median(dtHist);
@@ -459,7 +482,7 @@ export function createArbiter(cfg = {}, env = {}) {
           log(`[gesture #${gestureId}] RESUME — transition re-armed (hole/flag)`);
         }
         scrollSpent = false;   // a deliberate new push earns the card boundary back too
-        regRun = 0;            // ...and the finger is demonstrably back, so the coast is over
+        regRun = 0; coastSeen = false;   // the finger is demonstrably back; the coast is over
         // (b) THE CLAIM — v6's §4, same scope: hands back a region, never a transition.
         // ⚠︎ Re-claims WHEREVER THE CURSOR IS, not only over the carousel. v6 could only
         // ever grant "carousel", which left a stale "detail" claim sitting on a gesture in
@@ -630,8 +653,9 @@ export function createArbiter(cfg = {}, env = {}) {
      * reason it can ship unscored is that both of its failure modes are cosmetic.
      * ⛔ Always false in compat — v6 had no such notion.
      */
-    coastLikely: () => !C.compat && (
-      lastMomentum !== undefined ? lastMomentum === true : regRun >= C.coastRun),
+    coastLikely: () => !C.compat && coastSeen,
+    /** the current gesture's id, cheaply — `state()` allocates and this is on the hot path. */
+    gestureId: () => gestureId,
     /** intent accumulator — the wheel handler banks px into this per branch */
     addIntent(delta) { acc += delta; return acc; },
     resetIntent() { acc = 0; },
