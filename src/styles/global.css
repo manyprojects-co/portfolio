@@ -86,6 +86,55 @@
        point. Raise --give-max past 0.5 and the view starts outrunning the gesture. */
     --give-max: 0.5;         /* [TUNE] give ceiling, as a fraction of --commit-dist-back */
     --give-ease: 2;          /* [TUNE] resistance. higher = more travel spent early, harder stop */
+
+    /* D2 — TOUCH. The traverse is 1:1 (the finger holds the landing), so commit is not an
+       accumulator: past this fraction of the traverse on release, or a flick clearing
+       --commit-vel in either direction. ⭐ Symmetric by construction, which is why touch
+       answers the forward-vs-back asymmetry question without touching the two --commit-dist
+       tokens above. */
+    --touch-commit: 0.5;     /* [TUNE] fraction of the traverse held at release that commits */
+
+    /* ⏪ EDGE-STRICT — ONE GESTURE, ONE ACTION, AT BOTH BOUNDARIES. A flick from mid-panel
+       that scrolls to the top has had its action; arriving at the edge is not a second one,
+       so it gets the scroller's own bounce and crossing needs a fresh push.
+       The CARD already worked this way (Branch 1's overshoot fix); the TAB did not, and the
+       inconsistency was never reported because there it reads as a feature.
+       ⏪ SET TO 0 TO ROLL BACK — restores the unconditional preventDefault at both edges and
+       drops the tab's spendOnNativeScroll, i.e. exactly the pre-2026-08-18 behaviour.
+       retune() applies it live, so the two can be felt back-to-back without a reload.
+       ⛔ 0 does NOT reintroduce the card overshoot: that gate is unconditional in JS. */
+    --edge-strict: 1;        /* [TUNE] 1 = a scroll-spent flick bounces at the edge. 0 = rollback */
+
+    /* THE LANDING'S TWO EDGES. Down commits into tab view, so it gets the coupled give —
+       keyed to --commit-dist (120), NOT the 200 the back boundaries use. Up is a true dead
+       end: nothing is above the landing, and nothing there scrolls either, so the browser has
+       no bounce to lend. Ours, and deliberately shorter — there is no gate to make legible.
+       ⏪ --landing-give: 0 restores the bare 120px threshold, live via retune(). This is the
+       SECOND attempt; the first jumped and stuttered. See `hooks.md` before touching it. */
+    --landing-give: 1;       /* [TUNE] 1 = give down + bounce up at the landing. 0 = rollback */
+    /* The dead end's two knobs are INDEPENDENT, unlike the give's. A give ties its travel to
+       the commit threshold on purpose — that coupling is what makes the gate legible. A dead
+       end has no gate, so it buys nothing and only costs tuning. ⚠︎ It also used to inherit
+       --commit-dist (120) and express travel as a fraction of it, which meant lengthening the
+       pull silently raised the travel too.
+         opening slope = --give-ease x max / dist   (2 x 48 / 300 = 0.32 today) */
+    --bounce-max: 48px;      /* [TUNE] HOW FAR the dead end travels */
+    --bounce-dist: 300px;    /* [TUNE] HOW LONG it takes to get there — px of pull */
+
+
+    /* ⏳ TUNING PASS OWED — every number in this block shipped as a DERIVATION, not a
+       measurement, and none has been felt on real hardware yet:
+         --give-max / --give-ease   D + E. Their product is the opening slope; at 0.5 x 2 the
+                                    give starts exactly 1:1 and stops dead at the commit
+                                    point. ⚠︎ --give-ease is the ONLY knob for the beat at the
+                                    handoff — at 1 the give arrives still moving, at 2 it
+                                    stops first. Do not touch the lerp.
+         --touch-commit             D2a. 0.5 because halfway is the obvious idiom, nothing more.
+         --commit-vel               reused as D2a's flick threshold. It was tuned for a WHEEL
+                                    accumulator; a thrown finger is a different distribution.
+       ⚠︎ D and E currently SHARE --give-max / --give-ease. If the card wants to be softer
+       than the tab, that is the moment to split them, and not before — one curve is the
+       stated design (§ G). */
     /* ONE GESTURE = ONE LERP. Not a time window — gestures are segmented from the wheel
        stream itself, so momentum can never carry into a second transition however long it
        runs, and a genuinely new scroll responds on its first event. */
@@ -183,6 +232,22 @@
   /* NO WINDOW SCROLL. Every scroll in this document belongs to a named container:
      .carousel (x), .track (x), .sub (y), #detailScroll (y). The landing↔tab and
      detail transitions are transforms, not scroll. */
+  /* 🐞 `contain`, NOT `none` — and this cost the card's bounce for an hour (2026-08-18).
+     Added as an unrequested iOS guard with D2a: nothing here scrolls (overflow: hidden,
+     #stage is fixed), so the touch traverse needs no preventDefault, and `none` was meant
+     only to stop the document-level pull-to-refresh iOS would draw over the top of it.
+
+     ⚠︎ THE LESSON: `overscroll-behavior` ON THE ROOT IS NOT LOCAL. It sets the VIEWPORT's
+     behaviour, and `none` means "no overscroll effect" broadly enough to suppress the bounce
+     in nested scrollers that had asked to keep theirs — #detailScroll says `contain`
+     explicitly and lost it anyway. `contain` blocks the chaining that triggers
+     pull-to-refresh (which is all the guard was ever for) while preserving every local
+     bounce beneath it.
+
+     ⛔ Do not "tighten" this to `none`. The card's bottom bounce is the thing it breaks, and
+     the breakage is silent and two files away from the declaration. */
+  html { overscroll-behavior-y: contain; }
+
   html, body {
     margin: 0;
     height: 100%;
