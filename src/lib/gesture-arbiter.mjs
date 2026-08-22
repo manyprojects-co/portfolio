@@ -102,6 +102,27 @@ export const ARBITER_DEFAULTS = Object.freeze({
                          //   A sturdier discriminator exists if this proves flaky: a handoff
                          //   is followed by MORE clock-regular events, a finger by sub-6ms
                          //   irregular ones. That costs a 2-3 event delay to decide.
+  /**
+   * ⭐ HOW MANY CONSECUTIVE CLOCK-REGULAR EVENTS BEFORE WE CALL IT A COAST — see coastLikely().
+   *
+   * ⚠︎ DELIBERATELY LATE, AND THAT IS THE WHOLE DESIGN. score-heuristic.mjs killed the last
+   * flagless coast classifier because it had to answer AT THE START of a coast, at speed, and
+   * scored 70 false "finger" calls in 461 events — all clustered at the start, exactly where a
+   * wrong answer commits a transition. coastLikely() has the opposite requirement: it releases
+   * a GIVE, where a give that resolves 80ms late is invisible and one that resolves 800ms late
+   * is the bug being fixed. So it demands a long run and is strong precisely where that
+   * classifier was weak.
+   *
+   * ⚠︎ Cost of being wrong is bounded in both directions: a false coast springs a give back
+   * early (mild, visible); a false finger is today's behaviour (the give hangs). It cannot
+   * commit anything — no caller uses it to gate a transition, and none should.
+   *
+   * ⛔ UNSCORED. 10 events is ~83ms at both engines' ~8.3ms coast cadence. That is reasoning,
+   * not measurement, and this project has twice been wrong about exactly this kind of
+   * reasoning. Score it with gesture/score-heuristic.mjs on a real capture
+   * (gesture/capture-wheel.html) before trusting the number.
+   */
+  coastRun:       10,
   coastSpread:    0.6,   // (max-min)/median of recent dt that still counts as CLOCK-DRIVEN.
                          //   ⚠︎ This is the flagless statement of "a coast was running", and
                          //   it is what the first cut was missing. Measured dt spread:
@@ -126,12 +147,23 @@ export const ARBITER_DEFAULTS = Object.freeze({
  *   tabTopY()     -> number   y of the tab strip's top edge. ⚠︎ THIS MOVES as the
  *                             card closes — that motion is the parked-bug mechanism
  *                             the gRegion claim exists to defeat.
+ *   deckBottomY() -> number   OPTIONAL. Lower edge of the deck region — the artwork band,
+ *                             not the hero. Defaults to tabTopY (v6 geometry). See A.
  *   tweenActive() -> boolean  is a stage/world tween in flight? (stageTween||worldTween)
  */
 export function createArbiter(cfg = {}, env = {}) {
   const C = { ...ARBITER_DEFAULTS, ...cfg };
   const detailOpen  = env.detailOpen  ?? (() => false);
   const tabTopY     = env.tabTopY     ?? (() => 0);
+  /**
+   * ⭐ A (2026-08-17): the deck region's LOWER EDGE, which is not the tab frame's top.
+   * `.carousel` used to be `height: 100%` of `.hero`, so "over the carousel" meant "over
+   * the whole hero" — and the empty band below the artwork browsed the deck when the design
+   * says it should leave the landing (~170px at a 900px viewport, ~320px at 1200px).
+   * ⚠︎ Defaults to tabTopY so every existing test and caller keeps v6's geometry, and
+   * compat forces it, so differential.test.mjs stays exact.
+   */
+  const deckBottom  = () => (C.compat ? tabTopY() : (env.deckBottomY ?? tabTopY)());
   const tweenActive = env.tweenActive ?? (() => false);
   const log = C.debug ? (m) => console.log(m) : () => {};
 
@@ -154,8 +186,54 @@ export function createArbiter(cfg = {}, env = {}) {
   const dtHist = [], vHist = [];
   // ⭐ has the PLATFORM been coasting? A finger event is only a resume if it interrupts one.
   let sawCoast = false;
+  /**
+   * ⭐ HAS THIS PHYSICAL STREAM ALREADY BEEN USED BY A NATIVE SCROLLER?
+   *
+   * Separate from `spentOn` because a MINT RESETS THE BUDGET AND A REVERSAL CAN MINT.
+   * Measured on JJ's Safari stream, 2026-08-17: scrolling down inside a card and then
+   * flicking up trips the decisive-reversal boundary, so `newGesture()` runs mid-flick and
+   * hands the rest of that same physical swipe a fresh, LIVE budget:
+   *
+   *     t=17389  dy=-12  g=10   the up-flick starts
+   *     ...                     ~102px of card scrolled, all of it spending gesture 10
+   *     t=17414  dy=-71  g=11   MINTED — reversal needed mag >= peak*0.25 (282*0.25 = 70.5)
+   *
+   * By then the card is at its top, gesture 11 is live, and -71px at 6ms is 11.8px/ms
+   * against a 1.8px/ms threshold. The close fires on a swipe that was spent scrolling.
+   *
+   * ⚠︎ So `spendOnNativeScroll()` alone could never have worked, and the reversal boundary
+   * is not the thing to weaken — it is what makes a lerp catchable, which is load-bearing.
+   * This flag rides ACROSS a reversal-mint and is cleared only by a real end of stream:
+   * silence, a resume, or a transition actually firing.
+   */
+  let scrollSpent = false;
+  // consecutive events sitting inside a clock-regular window — the flagless half of
+  // coastLikely(). Never feeds a commit; see coastRun.
+  let regRun = 0;
+  // the last event's momentum flag, or undefined on an engine that has none. PATH SELECTION,
+  // the same rule the rest of this file uses: an exact answer beats a measured one.
+  let lastMomentum;
   // has anything interrupted this gesture's coast? Drives coasting(); see below.
   let holeSeen = false;
+  /**
+   * ⭐ IS THE CURRENT DEVICE DISCRETE? (the deltaMode guard, 2026-08-18)
+   *
+   * `WheelEvent.deltaMode !== 0` means the engine handed us LINES or PAGES, which it only
+   * does for a click-detented mouse wheel. Such a device does not coast — there is no
+   * inertia to interrupt — so every piece of coast machinery below is not merely useless
+   * on it, it is actively wrong. See the guard in segment() for the measured failure.
+   *
+   * ⚠︎ SCOPE, AND IT IS ONE ENGINE. Measured browser behaviour, 2026-08-18:
+   *     Firefox   mouse -> DOM_DELTA_LINE   trackpad -> DOM_DELTA_PIXEL   ✅ exact
+   *     Chrome    both  -> DOM_DELTA_PIXEL  (premultiplied)               — has the flag
+   *     Safari    both  -> DOM_DELTA_PIXEL                                ⛔ BLIND
+   * So this closes Firefox completely, Chrome does not need it (`momentum` is exact), and
+   * ⛔ **Safari + a real mouse is still an OPEN DEFECT.** Safari's only tell is that mouse
+   * deltas are much larger than trackpad ones — an AMPLITUDE rule, which is dead end #4's
+   * exact shape. It does not ship until gesture/score-heuristic.mjs scores it on a real
+   * capture. Use gesture/capture-wheel.html to make one.
+   */
+  let lastDiscrete = false;
   const median = (a) => {
     if (!a.length) return 0;
     const s = [...a].sort((x, y) => x - y);
@@ -222,7 +300,7 @@ export function createArbiter(cfg = {}, env = {}) {
    * gesture born there can never be a deck gesture no matter what the geometry does later.
    */
   const regionAt = (clientY) =>
-    detailOpen() ? "detail" : (clientY < tabTopY() ? "carousel" : "frame");
+    detailOpen() ? "detail" : (clientY < deckBottom() ? "carousel" : "frame");
 
   /**
    * Called AS a commit fires. `peak` is NOT reset — the gesture is still running and its
@@ -230,7 +308,8 @@ export function createArbiter(cfg = {}, env = {}) {
    * spending a gesture doesn't change where it began.
    */
   function consume() {
-    spentOn = gestureId; acc = 0;
+    spentOn = gestureId; acc = 0; scrollSpent = false;
+    regRun = 0;         // a transition just fired; whatever the stream was doing, restart
     sawCoast = false;   // ⚠︎ closeDetail() spends HERE, mid-flick. The finger events still
                         // arriving from this same swipe must not read as a resume.
     holeSeen = false;
@@ -242,14 +321,49 @@ export function createArbiter(cfg = {}, env = {}) {
     gRegion = regionAt(clientY);
     log(`[gesture #${gestureId}] ${why}  mag ${mag.toFixed(1)}  claims ${gRegion}`);
     prevDir = dir; peak = mag; acc = 0; cTrough = Infinity; sawCoast = false; holeSeen = false;
+    regRun = 0;
     rPeak = 0; rTail = false; rArmed = false; rRun = 0; rPrev = Infinity;
   }
 
-  function segment(deltaY, dt, clientY, deltaX = 0, momentum) {
+  function segment(deltaY, dt, clientY, deltaX = 0, momentum, deltaMode = 0) {
     const mag = Math.abs(deltaY), dir = deltaY < 0 ? -1 : 1;
     const vmag = Math.hypot(deltaX || 0, deltaY);
+    /**
+     * ⭐ THE deltaMode GUARD. A discrete device bypasses ALL coast machinery.
+     *
+     * THE DEFECT IT FIXES, measured off this file 2026-08-18. The flagless detector asks
+     * "regular cadence, then a hole, with size behind it" — and a hand spinning a wheel at
+     * a steady rate IS regular, and every click IS large. So a mouse manufactures a resume
+     * out of nothing more than an ordinary hesitation:
+     *
+     *     cadence   hesitation that spuriously resumes
+     *     16ms      45, 60, 75, 90, 99ms   (any)
+     *     25-30ms   75, 90, 99ms
+     *     >=40ms    none — 2.5x median lands past --gesture-gap, so silence mints instead
+     *
+     * A spurious resume clears `spentOn`, so ONE continuous wheel-spin re-arms the
+     * transition over and over: "one gesture = one lerp" is gone for every mouse user on
+     * the flagless path, and it degrades with hardware — the faster the wheel reports, the
+     * wider the window.
+     *
+     * ⚠︎ Note the flagged path was NEVER exposed to this: `resumed()` requires a prior
+     * `momentum === true`, and a mouse never produces one. Chrome was fine. This is
+     * Firefox and Safari only, which is exactly the half with no flag to fall back on.
+     *
+     * ⭐ Deliberately NOT a threshold. Three things die together, and each is a real bug:
+     *   1. resume        — the measured defect above
+     *   2. the histories — so a device switch cannot leave a stale coast model behind
+     *   3. coasting()    — a mouse never sets `holeSeen` at >=40ms cadence, so the
+     *                      native-scroll gate would latch ON and never release: a LOCKOUT,
+     *                      the same failure `gateHoleMs` exists to prevent.
+     * ⛔ compat is untouched — v6 had none of this machinery, so the differential stays
+     * exact by construction, not by a flag.
+     */
+    const discrete = !C.compat && deltaMode !== 0;
+    if (discrete !== lastDiscrete) { dtHist.length = 0; vHist.length = 0; }
+    lastDiscrete = discrete;
     // evaluated BEFORE the histories absorb this event
-    const isResume = C.compat ? false : resumed(momentum, dt, vmag);
+    const isResume = (C.compat || discrete) ? false : resumed(momentum, dt, vmag);
     // ⭐ THE GATE'S OWN, CHEAPER QUESTION — rule 2, applied properly.
     // A full resume re-arms a TRANSITION, where a wrong answer changes the view, so it
     // demands hole + regularity + a live coast. Releasing site.js's native-scroll gate only
@@ -257,13 +371,30 @@ export function createArbiter(cfg = {}, env = {}) {
     // otherwise cause is real (JJ, Safari: a push 62ms after the coast had decayed to 1px).
     // Instead it pays a larger absolute floor, which is what separates a real push from the
     // frame-rate handoff a dying coast performs.
-    if (!C.compat && !holeSeen && dtHist.length >= C.holeWindow) {
+    /**
+     * ⭐ regRun — the flagless evidence for coastLikely(). A coast is clock-driven and
+     * metronomic; a finger is not (measured dt spread: coast 0.24/0.25, ramp 1.30/≫1). This
+     * asks BOTH that the recent window is regular AND that this event matches its cadence, so
+     * a single well-timed event inside a ragged stream cannot advance the run.
+     * ⚠︎ A TIMING property, not an amplitude one — dead end #4 was "amplitude rose", and this
+     * is deliberately not that.
+     */
+    if (C.compat || discrete) regRun = 0;
+    else if (dtHist.length >= C.holeWindow) {
+      const m = median(dtHist);
+      const sp = m ? (Math.max(...dtHist) - Math.min(...dtHist)) / m : Infinity;
+      const near = m ? Math.abs(dt - m) <= m * C.coastSpread : false;
+      regRun = (sp <= C.coastSpread && near) ? regRun + 1 : 0;
+    } else regRun = 0;
+    lastMomentum = momentum;
+
+    if (!C.compat && !discrete && !holeSeen && dtHist.length >= C.holeWindow) {
       const m = median(dtHist);
       const sp = m ? (Math.max(...dtHist) - Math.min(...dtHist)) / m : Infinity;
       if (sp <= C.coastSpread && dt >= C.gateHoleMs && dt >= m * C.holeRatio) holeSeen = true;
     }
     const push = () => {
-      if (C.compat) return;
+      if (C.compat || discrete) return;
       dtHist.push(dt); vHist.push(vmag);
       if (dtHist.length > C.holeWindow) { dtHist.shift(); vHist.shift(); }
     };
@@ -280,6 +411,9 @@ export function createArbiter(cfg = {}, env = {}) {
       // anyway (no coast gap ever reached 100ms in any capture), so there is nothing to
       // guard and nothing to guess at.
       if (momentum === true) { push(); return; }
+      // ⭐ SILENCE IS A REAL END OF STREAM — the finger is off and the coast has died. This
+      // is the ONLY mint that clears scrollSpent; a reversal-mint deliberately does not.
+      scrollSpent = false;
       newGesture(dir, mag, `gap ${Math.round(dt)}ms`, clientY);
       push();
       return;
@@ -324,6 +458,8 @@ export function createArbiter(cfg = {}, env = {}) {
           spentOn = -1; acc = 0; rRun = 0;
           log(`[gesture #${gestureId}] RESUME — transition re-armed (hole/flag)`);
         }
+        scrollSpent = false;   // a deliberate new push earns the card boundary back too
+        regRun = 0;            // ...and the finger is demonstrably back, so the coast is over
         // (b) THE CLAIM — v6's §4, same scope: hands back a region, never a transition.
         // ⚠︎ Re-claims WHEREVER THE CURSOR IS, not only over the carousel. v6 could only
         // ever grant "carousel", which left a stale "detail" claim sitting on a gesture in
@@ -376,7 +512,7 @@ export function createArbiter(cfg = {}, env = {}) {
     //    The "no tween in flight" guard is load-bearing: a commit can fire during the
     //    gesture's own RAMP, and that ramp is always inside the tween the commit started, so
     //    the acceleration would read as a fresh push.
-    const overCarousel = !detailOpen() && clientY < tabTopY();
+    const overCarousel = !detailOpen() && clientY < deckBottom();
     if (gRegion !== "carousel" && overCarousel && !tweenActive()) {
       if (cTrough === Infinity) cTrough = mag;                  // seed once the tween is done
       else if (mag > cTrough * C.claimRise && mag > peak * C.claimFloor) {
@@ -431,11 +567,41 @@ export function createArbiter(cfg = {}, env = {}) {
     beginGesture(clientY) { gestureId++; spentOn = -1; gRegion = regionAt(clientY); },
 
     /** Feed one wheel event. Mirrors v6's handler order: idle-reset, then segment. */
-    feed({ deltaY, dt, clientY, deltaX, momentum }) {
+    feed({ deltaY, dt, clientY, deltaX, momentum, deltaMode }) {
       if (dt > C.idleReset) acc = 0;
-      segment(deltaY, dt, clientY, deltaX, momentum);
+      segment(deltaY, dt, clientY, deltaX, momentum, deltaMode);
     },
     segment, consume, meant, gestureLive, ownsCarousel,
+    /**
+     * ⭐ THIS GESTURE IS BEING USED BY A NATIVE SCROLLER — spend it, same as a transition.
+     *
+     * The defect (JJ, Safari, 2026-08-17): "a hard flick from card to tab closes the card
+     * with no momentum spill ONLY IF closed from the TOP. From anywhere below, an
+     * overshoot." Flick up inside a scrolled card and the card scrolls natively to the top,
+     * momentum still running hard — and the instant `scrollTop` hits 0 the boundary sees a
+     * coast event of ~155px at ~8ms. `meant()`'s velocity term is 1.8px/ms. That is 19px/ms:
+     * satisfied TEN TIMES OVER by a single event nobody pushed.
+     *
+     * ⚠︎ `meant()` never asks WHOSE event it is, and that is the whole bug. But the fix is
+     * NOT a fourth momentum heuristic: scored against Chrome's labels, the best flagless
+     * "is this a coast" classifier still called 70 of 461 coast events a finger, and those
+     * 70 cluster at the START of a coast — exactly where a boundary gets reached at speed.
+     * It would have put the overshoot straight back.
+     *
+     * So this uses the invariant the project already has instead of a new threshold: ONE
+     * GESTURE, ONE ACTION. The flick was spent scrolling the card. Closing is a second
+     * action and needs a second push — which B already detects at 100% on labelled data,
+     * on both engines. `motion-fork-brief.md § J` specifies exactly this: "you released
+     * before reaching the edge -> you stop at the top."
+     *
+     * ⚠︎ NOT `consume()`. That also clears `sawCoast` and `holeSeen`, and this fires on
+     * every native-scroll event — so it would erase the coast-tracking the resume detector
+     * needs, and the card could then never be closed at all. Spend the budget, touch
+     * nothing else.
+     */
+    spendOnNativeScroll() { spentOn = gestureId; acc = 0; scrollSpent = true; },
+    /** has this stream already been used by a native scroller? survives a reversal-mint. */
+    scrollSpent: () => scrollSpent,
     /**
      * Is a LIVE coast still attached to this gesture?
      * ⚠︎ Exists so site.js can gate the one path it leaves to native scroll WITHOUT
@@ -448,7 +614,24 @@ export function createArbiter(cfg = {}, env = {}) {
      * the resume detector already uses, which is why it is not a second threshold.
      * ⛔ Always false in compat — v6 had no such gate.
      */
-    coasting: () => !C.compat && !holeSeen,
+    coasting: () => !C.compat && !lastDiscrete && !holeSeen,
+    /**
+     * ⭐ IS THE PLATFORM DRIVING THIS STREAM RIGHT NOW? The LATE, CONFIDENT answer.
+     *
+     * Exists so a GIVE can resolve when the finger leaves rather than when the stream goes
+     * silent — `motion-fork-brief.md § J`'s exact prediction: "without a momentum signal
+     * 'release' means silence past --gesture-gap, i.e. ~100ms AFTER momentum fully decays.
+     * Give would stretch and hang."
+     *
+     *   FLAGGED    e.momentum === true. Exact, immediate, no thresholds.
+     *   FLAGLESS   coastRun consecutive clock-regular events. ~83ms of evidence.
+     *
+     * ⛔ NEVER GATE A TRANSITION ON THIS. It is allowed to be wrong; see coastRun. The whole
+     * reason it can ship unscored is that both of its failure modes are cosmetic.
+     * ⛔ Always false in compat — v6 had no such notion.
+     */
+    coastLikely: () => !C.compat && (
+      lastMomentum !== undefined ? lastMomentum === true : regRun >= C.coastRun),
     /** intent accumulator — the wheel handler banks px into this per branch */
     addIntent(delta) { acc += delta; return acc; },
     resetIntent() { acc = 0; },

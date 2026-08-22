@@ -71,7 +71,7 @@ import { createTrace } from "../lib/trace.mjs";
     if (raw === "linear") return (t) => t;
     return bezier(0.5, 0, 0, 1);   // the curve v6 actually rode
   }
-  const ease = easeFromToken();
+  let ease = easeFromToken();
 
   /**
    * ⚠︎ UNIT-AWARE, and it must stay that way. v6 used a bare parseFloat here, which is
@@ -82,18 +82,31 @@ import { createTrace } from "../lib/trace.mjs";
    */
   const cssMs = (name, fallback) =>
     parseCssTime(getComputedStyle(root).getPropertyValue(name), fallback);
-  const DUR = cssMs("--dur", 500);
+  let DUR = cssMs("--dur", 500);
 
   const cssNum = (name, fallback) => {
     const v = parseFloat(getComputedStyle(root).getPropertyValue(name));
     return Number.isFinite(v) ? v : fallback;
   };
-  // v3 reveal dynamics, read once from the tokens above
-  const SITE_ZOOM  = cssNum("--site-zoom-max", 1.1);
-  const SITE_BLUR  = cssNum("--site-blur-max", 50);
-  const CARD_ZOOM  = cssNum("--card-zoom-min", 0.95);
-  const FADE_FLOOR = cssNum("--fade-floor", 0.2);
-  const BLUR_FLOOR = cssNum("--blur-floor", 0.4);
+  // v3 reveal dynamics. ⚠︎ `let`, not `const`, ONLY so retune() can re-read them in dev —
+  // see retune() for why that is not a nicety. Nothing reassigns them at runtime.
+  let SITE_ZOOM  = cssNum("--site-zoom-max", 1.1);
+  let SITE_BLUR  = cssNum("--site-blur-max", 50);
+  let CARD_ZOOM  = cssNum("--card-zoom-min", 0.95);
+  let FADE_FLOOR = cssNum("--fade-floor", 0.2);
+  let BLUR_FLOOR = cssNum("--blur-floor", 0.4);
+  // give (D) — see the GIVE section for what these two numbers mean geometrically
+  let GIVE_MAX   = cssNum("--give-max", 0.5);
+  let GIVE_EASE  = cssNum("--give-ease", 2);
+  let TOUCH_COMMIT = cssNum("--touch-commit", 0.5);   // D2: fraction of the traverse
+  // ⏪ ROLLBACK SWITCH — see "EDGE-STRICT" below. 0 restores the pre-2026-08-18 behaviour
+  // exactly, at both boundaries. Live-tunable: flip it in global.css and retune() picks it up
+  // without a reload, so it can be judged by feel A/B rather than by argument.
+  let EDGE_STRICT = cssNum("--edge-strict", 1) === 1;
+  let BOUNCE_MAX  = cssNum("--bounce-max", 48);     // px of travel  (HOW FAR)
+  let BOUNCE_DIST = cssNum("--bounce-dist", 300);   // px of pull    (HOW LONG)
+  // ⏪ ROLLBACK SWITCH for the landing's two edges. 0 restores the bare 120px threshold.
+  let LANDING_GIVE = cssNum("--landing-give", 1) === 1;
 
   // Generic value tween on the shared curve. Returns a CANCELLABLE handle: every
   // transition in the site can be caught mid-flight and re-aimed from wherever it
@@ -125,6 +138,11 @@ import { createTrace } from "../lib/trace.mjs";
   const detailScroll = document.getElementById("detailScroll");
   const detailContent = document.getElementById("detailContent");
   const track = document.getElementById("track");
+  // ⚠︎ DECLARED EXPLICITLY. Until A this was never declared at all — the wheel handler's
+  // two references resolved to `window.carousel`, the global a browser creates for any
+  // element with an `id`. It worked, silently, and would have broken the moment anything
+  // else defined that name. A needs the element for measurement anyway.
+  const carousel = document.getElementById("carousel");
   const subs = { art: document.getElementById("art"),
                  news: document.getElementById("news"),
                  bio: document.getElementById("bio") };
@@ -134,7 +152,7 @@ import { createTrace } from "../lib/trace.mjs";
   const links = [...document.querySelectorAll(".nav a[data-section]")];
   const order = links.map((a) => a.dataset.section);
 
-  let VH = 0, BAND = 132, LANDING_H = 0;
+  let VH = 0, BAND = 132, LANDING_H = 0, DECK_H = 0;
 
   function measureGeom() {
     VH = window.innerHeight;
@@ -144,7 +162,30 @@ import { createTrace } from "../lib/trace.mjs";
     root.style.setProperty("--band", BAND + "px");
     root.style.setProperty("--landing-h", LANDING_H + "px");
     root.style.setProperty("--detail-top", DETAIL_TOP + "px");
+    // ⭐ A: the deck's own height — the artwork band, not the hero.
+    // ⚠︎ MEASURED HERE, ON PURPOSE, AND NOWHERE ELSE. The obvious implementation is a
+    // getBoundingClientRect() in the wheel handler, and that is a forced layout read in a
+    // handler that also WRITES scrollLeft — layout thrash on every event of every flick.
+    // The carousel's HEIGHT only changes on resize and font-load, both of which land here;
+    // its POSITION moves with worldY, which JS already tracks. So it is measured once and
+    // the per-event test stays a single comparison, exactly as tabTopY() does it.
+    // ⚠︎ Read AFTER --landing-h is set: `.artwork` has `max-height: calc(--landing-h - 80px)`,
+    // so on a short viewport the band depends on the value set two lines above.
+    DECK_H = carousel ? carousel.getBoundingClientRect().height : 0;
   }
+
+  /**
+   * Bottom edge of the deck region, in viewport coordinates.
+   * The carousel is centred in the hero, and the hero's top edge on screen is worldY — so
+   * the band runs from worldY + (LANDING_H - DECK_H)/2 for DECK_H px, and this is its
+   * lower edge. Moves with the world exactly as tabTopY() does, so the region stays correct
+   * mid-lerp: whatever is under the cursor RIGHT NOW is what responds.
+   * ⚠︎ Falls back to tabTopY() if the carousel is missing or unmeasurable (an empty
+   * `featured` set), which restores v6's whole-hero behaviour rather than collapsing the
+   * region to a sliver around the vertical centre.
+   */
+  const deckBottomY = () =>
+    DECK_H > 0 ? worldY + (LANDING_H + DECK_H) / 2 : tabTopY();
 
   // ============================================================================
   // STATE
@@ -194,11 +235,28 @@ import { createTrace } from "../lib/trace.mjs";
     const p = detailP();
     // SITE: rises, enlarges to --site-zoom-max, blurs to --site-blur-max.
     stage.style.transform = `translateY(${y}px) scale(${1 + (SITE_ZOOM - 1) * p})`;
-    // Cleared to "none" at rest so a full-viewport blur layer isn't kept alive for free.
-    // Blur runs on its own floor: it reaches 0 at --blur-floor of the reveal, i.e. 60%
-    // of the way through the exit, rather than trailing all the way to the end.
-    const bp = Math.min(1, Math.max(0, (p - BLUR_FLOOR) / (1 - BLUR_FLOOR)));
-    world.style.filter = bp > 0.001 ? `blur(${(SITE_BLUR * bp).toFixed(2)}px)` : "none";
+    /* ⛔ BLUR OFF (2026-08-18, JJ) — a DESIGN decision, not a bug fix.
+     * `hooks.md`: "the 50px full-viewport blur is the most expensive thing in the file",
+     * applied per frame to the whole viewport simultaneously with a scale() and an opacity
+     * ramp — three compositor-hostile operations at once on the largest element on the page,
+     * and one of JJ's stated reasons for wanting a design alternative rather than more tuning.
+     * Separation of planes is now carried by scale + opacity alone, both composited without
+     * repaint.
+     *
+     * ⭐ CONSEQUENCES, so nobody re-derives them: this deletes `motion-fork-brief.md § F`
+     * (hold the blur constant during give) and most of § 4, and it UNBLOCKS § E (give at the
+     * card boundary), which was gated only on the blur's per-frame cost.
+     *
+     * ⚠︎ Left as a comment, not deleted, and `--site-blur-max` / `--blur-floor` / SITE_BLUR /
+     * BLUR_FLOOR all stay live and unread — so this is a one-line revert, and every tuning
+     * note in `hooks.md` that references those tokens stays executable.
+     *
+     *   const bp = Math.min(1, Math.max(0, (p - BLUR_FLOOR) / (1 - BLUR_FLOOR)));
+     *   world.style.filter = bp > 0.001 ? `blur(${(SITE_BLUR * bp).toFixed(2)}px)` : "none";
+     */
+    // ⚠︎ Still written every frame, and it must be: the property is inline, so a stale
+    // blur() from a previous build or a hot reload would otherwise never be cleared.
+    world.style.filter = "none";
     // CARD: zooms --card-zoom-min → 1. Because (0.95 + 0.05p) >= p for all p <= 1, the
     // card's growing top edge stays tucked behind the rising stage edge the whole way,
     // and the two arrive on the 120px line together.
@@ -296,6 +354,8 @@ import { createTrace } from "../lib/trace.mjs";
 
   function goTab() {
     if (view === "tab") return;
+    giveWorld.cancel();
+    giveLanding.cancel(); landAcc = 0; deckIdle = 0;   // its travel is the lerp's head start
     T.push({ k: "@goTab", g: arb.state().gestureId, claim: arb.state().gRegion });
     view = "tab";
     arb.consume();                                    // this gesture has had its transition
@@ -305,6 +365,10 @@ import { createTrace } from "../lib/trace.mjs";
 
   function goLanding() {
     if (view === "landing") return;
+    // ⭐ .cancel(), NOT .release(). worldTo() tweens FROM the live worldY, so the px the give has
+    // already travelled become the head start of the lerp — and spanDur shortens the
+    // duration to match. Springing back first would be a visible hitch at the commit.
+    giveWorld.cancel();
     T.push({ k: "@goLanding", g: arb.state().gestureId, claim: arb.state().gRegion });
     view = "landing";
     arb.consume();                                    // this gesture has had its transition
@@ -313,6 +377,291 @@ import { createTrace } from "../lib/trace.mjs";
       for (const el of Object.values(subs)) el.scrollTop = 0;   // faded + off-screen → invisible
       applyView();
     });
+  }
+
+  // ============================================================================
+  // GIVE (D) — the elastic at the tab → landing boundary
+  // ============================================================================
+  /**
+   * ⭐ WHAT THIS REPLACES. `interaction-changes.md`, TAB VIEW: pulling up at scrollTop 0
+   * used to hit a hard edge, accumulate 200px of INVISIBLE intent, then teleport into a
+   * lerp. JJ: "did not feel intuitive." ⚠︎ The browser was ALREADY drawing an elastic
+   * there — `overscroll-behavior: contain` blocks chaining but preserves the local bounce
+   * — but one fully decoupled from the threshold, so it told you nothing. This is not
+   * "add give": it is REPLACE A MEANINGLESS GIVE WITH A COUPLED ONE.
+   *
+   * ⭐ NOT A NEW RENDER PATH, and that is the whole reason it is cheap. `applyWorld()` is
+   * a single writer over one scalar, and `revealP()` is `-worldY / LANDING_H` — so writing
+   * worldY during the give fades the tab contents (`paintTrack`) and ramps the nav tint
+   * (`paintNav`) for free, in step. The give IS a preview of the commit, not a decoration
+   * beside it.
+   *
+   * ⛔ GIVE CHANGES THE FEEDBACK, NOT THE GATE. The commit still fires mid-gesture at
+   * --commit-dist-back, exactly as before. Moving the commit to RELEASE is `J`, a separate
+   * change; `motion-fork-brief.md` is explicit that two loosenings must not land together.
+   */
+
+  /**
+   * Pulled px → px of give. Decelerating, and it comes to rest EXACTLY at the commit point.
+   *
+   *   give(u) = CEIL * (1 - (1-u)^EASE),  u = pulled / commitDistBack,  CEIL = MAX * dist
+   *
+   * ⭐ WHY THESE TWO DEFAULTS ARE NOT ARBITRARY. The slope at u=0 is `EASE * MAX`, so at
+   * --give-max 0.5 / --give-ease 2 the give starts at EXACTLY 1:1 with your input and
+   * decelerates to a standstill at the threshold. It never outruns the gesture (which
+   * would read as the page running away) and it never simply stops short (which would read
+   * as a wall). "It gets heavier, it stops, and that is when it goes."
+   *
+   * ⚠︎ Keyed off the COMMIT DISTANCE, not off LANDING_H. `motion-fork-brief.md § G` warns
+   * that a px→px curve cannot be universal because the two boundaries have different spans
+   * — but they share a threshold, so scaling to the threshold satisfies the same
+   * requirement and stays true when E reuses this at the card.
+   *
+   * ⚠︎ `dist` IS A PARAMETER, and it has to be. The back boundaries commit at
+   * --commit-dist-back (200) and the forward one at --commit-dist (120); hardcoding the
+   * former would leave the landing's give still travelling at ~0.4 slope when the commit
+   * fires, which reads as the view running away rather than as a gate being reached.
+   * ⚠︎ This is a piece of `§ G` arriving early — the curve is now genuinely per-threshold
+   * rather than per-boundary. G itself (collapsing 120/200 to one number) is untouched.
+   *
+   * `maxFrac` exists for the DEAD-END bounce, which has no gate to make legible and so wants
+   * a shorter, non-committal travel.
+   *
+   */
+
+  /**
+   * The DEAD END's own curve — same shape, two independent numbers.
+   *
+   * ⭐ WHY IT IS NOT `giveOf`. For a real give, expressing the ceiling as a FRACTION of the
+   * commit threshold is the whole point: the travel and the gate stay locked together, which
+   * is what makes the gate legible. A dead end has no gate, so that coupling buys nothing and
+   * costs the ability to tune. Keyed to --commit-dist (120) the bounce was ~94% spent by 90px
+   * of pull — it arrived at its ceiling almost at once and the rest of the gesture did
+   * nothing. And a fraction-of-dist ceiling meant lengthening the pull SILENTLY RAISED the
+   * travel too (30px → 75px), which is precisely the conflation this separation removes.
+   *
+   *   --bounce-max   px of travel   HOW FAR it goes
+   *   --bounce-dist  px of pull     HOW LONG it takes to get there
+   *   opening slope = --give-ease × max / dist   (2 × 48 / 300 = 0.32 today)
+   */
+  const bounceOf = (pulled) =>
+    BOUNCE_MAX * (1 - Math.pow(1 - Math.min(1, Math.max(0, pulled / BOUNCE_DIST)), GIVE_EASE));
+  function giveOf(pulled, dist, maxFrac = GIVE_MAX) {
+    const u = Math.min(1, Math.max(0, pulled / dist));
+    return maxFrac * dist * (1 - Math.pow(1 - u, GIVE_EASE));
+  }
+
+  /**
+   * ⭐ ONE IMPLEMENTATION, TWO BOUNDARIES. `motion-fork-brief.md § G`: "one threshold, one
+   * universal curve, both directions." Copying this per boundary is how the two would drift.
+   *
+   *   busy()    a lerp owns the scalar right now — give must not write underneath it
+   *   at(px)    write the scalar, `px` past its rest position
+   *   back()    spring home (the caller supplies the tween, so spanDur stays per-boundary)
+   *   map(acc)  accumulated px → px of give. SIGNED where a boundary has two directions.
+   */
+  function createGive({ busy, at, back, map }) {
+    let on = false, timer = 0;
+    const release = () => {
+      clearTimeout(timer);
+      if (!on) return;
+      on = false;
+      if (busy()) return;              // a commit already took the scalar
+      back();
+    };
+    return {
+      release,
+      /** ⛔ ASK THIS BEFORE ACCUMULATING. drive() silently no-ops while blocked, so a caller
+       *  banking into its own accumulator will bank a whole blocked window and then JUMP.
+       *  That was the landing's first attempt; see `hooks.md`. */
+      busy,
+      /** the give's travel became the lerp's opening distance — do NOT spring back */
+      cancel() { on = false; clearTimeout(timer); },
+      drive(pulled) {
+        // ⛔ ONE WRITER. Give is this project's first deliberate SECOND writer for these
+        // scalars, and a lerp in flight outranks it. This is the drift risk P0 exists for.
+        //
+        // ⚠︎ KNOWN NIT, LEFT DELIBERATELY (2026-08-18): a re-push DURING the spring-back
+        // gets no give until the spring lands — a dead window of spanDur's 30% floor,
+        // ~150ms. Letting give cancel the tween would fix it, but a tween here is not
+        // always the spring-back (goTab's forward lerp also runs in tab view), so the
+        // rule has to distinguish them. Small, real, and not worth bundling into the
+        // change that answers "does coupled give feel right."
+        if (busy()) return;
+        on = true;
+        clearTimeout(timer);
+        // ⚠︎ "Release" on wheel is silence, and --gesture-gap is already this project's
+        // definition of a gesture ending. Deliberately NOT a new number.
+        timer = setTimeout(release, arb.config.gestureGap);
+        at(map(pulled));
+      },
+    };
+  }
+
+  /**
+   * ── EDGE-STRICT (2026-08-18, JJ) — one gesture, one action, AT BOTH BOUNDARIES ──────
+   *
+   * ⭐ THE ASYMMETRY THIS REMOVES, as JJ described it: a flick from mid-CARD scrolls to the
+   * top, and the arriving momentum BOUNCES — you need a second push to close. The identical
+   * flick from mid-TAB scrolled to the top and went straight through to the landing. Same
+   * gesture, two answers.
+   *
+   * ⭐ IT IS THE SAME DEFECT, AND IT WAS NEVER REPORTED, because at the tab it reads as a
+   * feature ("seamless with enough force") while at the card it was logged as the overshoot
+   * bug. Branch 1 fixed it at the card with `spendOnNativeScroll()`; the tab branch simply
+   * never got the call. This is that call, plus the piece the card was getting by luck.
+   *
+   * ⚠︎ THE LUCK, NAMED. Both edges used to `preventDefault()` UNCONDITIONALLY, so a spent
+   * arrival should hard-stop, not bounce — the card appears to bounce only because macOS has
+   * already begun its rubber-band before `scrollTop` reaches 0, and an in-flight bounce
+   * survives a later preventDefault. That is platform behaviour, not design, and there is no
+   * reason to expect it to hold on Chrome, on Windows, or next release. So: when the gesture
+   * is spent we now decline to preventDefault at all, and the scroller's own
+   * `overscroll-behavior: contain` bounce plays deliberately.
+   *
+   * ⏪ ROLLBACK: `--edge-strict: 0` in global.css. That restores the unconditional
+   * preventDefault AND drops the tab's spendOnNativeScroll — i.e. exactly today's behaviour
+   * — and retune() applies it live, so the two can be compared back-to-back in one session.
+   * ⛔ It does NOT touch the CARD's spendOnNativeScroll: that is Branch 1's landed overshoot
+   * fix, pinned by tests, and not part of this experiment.
+   *
+   * ⚠︎ TWO PREDICATES, NOT ONE, AND THE DIFFERENCE IS LOAD-BEARING. Collapsing them looks
+   * tidier and silently puts Branch 1's overshoot back at `--edge-strict: 0`: the CARD's
+   * `!scrollSpent()` gate is a landed, test-pinned fix and must hold at every setting. Only
+   * the TAB's copy of that gate is the experiment.
+   */
+  /** card → site. Branch 1's rule, unconditional. */
+  const cardLive = () => arb.gestureLive() && !arb.scrollSpent();
+  /** tab → landing. The same rule, but only while the experiment is on. */
+  const tabLive  = () => arb.gestureLive() && (!EDGE_STRICT || !arb.scrollSpent());
+  /** may we take the edge from the browser? In rollback we always did. */
+  const holdEdge = (live) => live || !EDGE_STRICT;
+
+  /** D — tab → landing. worldY rests at -LANDING_H; give walks it back toward 0. */
+  const giveWorld = createGive({
+    busy: () => !!worldTween || view !== "tab",
+    at: (px) => applyWorld(-LANDING_H + px),
+    back: () => worldTo(-LANDING_H),
+    map: (a) => giveOf(a, arb.config.commitDistBack),
+  });
+
+  /**
+   * E — card → site. Identical shape on a different scalar: stageY rests at stageOpenY()
+   * (negative) and give walks it toward 0, so `detailP()` dips below 1 and the card and the
+   * departing site preview the close exactly as they would during the real lerp.
+   *
+   * ⭐ UNBLOCKED BY THE BLUR COMING OUT. It was gated on nothing else: `applyStage` at
+   * detailP() = 1.0 sat at the full 50px blur, and give would have driven it 50 → 37.5px
+   * PER FRAME from a scroll gesture, on a project already reporting frame drops. With the
+   * blur gone `applyStage` is two transforms — both composited, no repaint — so the card
+   * boundary is now the CHEAPER of the two gives, not the expensive one.
+   *
+   * ⭐ And the curve transfers with no new numbers: it is keyed to --commit-dist-back, not
+   * to the span. The two spans differ (LANDING_H ~763 vs VH - DETAIL_TOP ~780); the
+   * threshold does not.
+   */
+  const giveStage = createGive({
+    busy: () => !!stageTween || !detailOpen,
+    at: (px) => applyStage(stageOpenY() + px),
+    back: () => stageTo(stageOpenY()),
+    map: (a) => giveOf(a, arb.config.commitDistBack),
+  });
+
+  /**
+   * ── THE LANDING'S TWO EDGES — REBUILT (2026-08-18, JJ) ─────────────────────────────
+   *
+   * Down commits into tab view, so it gets the coupled give keyed to --commit-dist (120 —
+   * NOT the 200 the back boundaries use). Up is a true dead end: nothing is above the
+   * landing, so it gets a shorter, non-committal bounce.
+   *
+   * ⚠︎ THE BOUNCE HAS TO BE OURS. Every other dead end here is a real scroller, so
+   * `overscroll-behavior: contain` draws it. At the landing nothing scrolls at all
+   * (`html, body { overflow: hidden }`), so there is no scroller to hand the edge back to.
+   *
+   * ⭐ SIGNED, ONE INSTANCE. Two gives over one scalar would each have to spring the other
+   * back before starting, and `busy()` would block the new direction for the whole spring.
+   * One signed accumulator makes a reversal just the number crossing zero.
+   *
+   * 🐞 THIS IS THE SECOND ATTEMPT. The first shipped two defects with ONE cause — it banked
+   * into `landAcc` even while the give was blocked, so the accumulator survived its own
+   * blocked window and jumped when it unblocked. Both guards below exist for that; see
+   * `hooks.md § The landing's two edges`.
+   *
+   * ⏪ ROLLBACK: `--landing-give: 0`, applied live by retune().
+   */
+  let landAcc = 0;      // signed px pulled at the landing. + = toward the tab, − = dead end.
+  let deckIdle = 0;     // consecutive vertical events the deck could NOT consume
+  const DECK_RUN = 3;   // ...before the landing takes over. Same idiom as --repush-run.
+
+  const giveLanding = createGive({
+    busy: () => !!worldTween || view !== "landing" || detailOpen,
+    at: (px) => applyWorld(px),
+    back: () => { landAcc = 0; deckIdle = 0; worldTo(0); },
+    map: (a) => a >= 0
+      ? -giveOf(a, arb.config.commitDist)                        // toward the tab
+      : bounceOf(-a),                                            // the dead end above
+  });
+
+  /**
+   * The landing's whole vertical answer, shared by BOTH regions — over the deck and below it
+   * — so the two cannot drift.
+   */
+  function landingVertical(e, dt) {
+    if (!LANDING_GIVE) {                       // ⏪ the pre-give behaviour, exactly
+      if (e.deltaY > 0) {
+        arb.addIntent(e.deltaY);
+        if (arb.meant(arb.intent, e.deltaY, dt, false) && arb.gestureLive()) goTab();
+      } else arb.resetIntent();
+      return;
+    }
+    const live = arb.gestureLive() && (!EDGE_STRICT || !arb.scrollSpent());
+    /* ⭐ GIVE FOLLOWS THE FINGER, NOT THE COAST (2026-08-18, JJ).
+       Reported: "on upper-boundary overscroll the landing moves up slightly, then pauses and
+       only settles after momentum."
+
+       Both halves are real. It PINS because the dead-end ceiling is small — 30px at
+       --bounce-max 0.25, and the curve is ~94% there by 90px pulled, so a flick delivering
+       300-800px reaches it in about three events. It then HANGS because release() is gated on
+       --gesture-gap silence, and momentum keeps arriving and clearing the timer, so the spring
+       cannot run until the coast has fully died.
+
+       ⭐ `motion-fork-brief.md § J` predicted precisely this: "wheel has no release event;
+       without a momentum signal 'release' means silence past --gesture-gap, i.e. ~100ms AFTER
+       momentum fully decays. Give would stretch and hang." Branch 1 landed the signal, so the
+       give can now resolve when the FINGER leaves rather than when the stream goes quiet.
+       A give is feedback about what your hand is doing; once your hand is off, it is done.
+
+       ⚠︎ The commit path is deliberately left intact below — a hard flick must still be able
+       to enter the tab. Only the GIVE resolves early.
+       ⭐ BOTH ENGINES NOW. `arb.coastLikely()` is exact on Chrome (`e.momentum`) and, on
+       Safari and Firefox, a deliberately LATE read of sustained clock-regularity — ~83ms of
+       evidence. ⛔ UNSCORED on the flagless side; see `coastRun` in the arbiter. It is
+       allowed to be wrong because both failure modes are cosmetic: a false coast springs the
+       give back early, a false finger is exactly today's hang. ⛔ It gates no transition.
+       ⚠︎ giveWorld and giveStage still release on silence. Less visible because those
+       boundaries usually commit at 200px rather than hanging. Not changed here. */
+    if (arb.coastLikely()) {
+      landAcc = 0;
+      giveLanding.release();
+      if (e.deltaY > 0) {
+        arb.addIntent(e.deltaY);
+        if (live && arb.meant(arb.intent, e.deltaY, dt, false)) goTab();
+      } else arb.resetIntent();
+      return;
+    }
+    /* ⛔ GUARD 1 — NEVER BANK WHILE THE GIVE CANNOT ACT. `drive()` no-ops when busy, so
+       accumulating through a blocked window and applying the total afterwards writes a
+       position built from events the user has long since finished making. That is a jump
+       generator, and it is exactly what shipped and got rolled back. Zero it instead. */
+    if (!live || giveLanding.busy()) { landAcc = 0; arb.resetIntent(); return; }
+    landAcc += e.deltaY;
+    if (e.deltaY > 0) {
+      arb.addIntent(e.deltaY);
+      if (arb.meant(arb.intent, e.deltaY, dt, false)) { goTab(); return; }
+    } else {
+      arb.resetIntent();                       // pulling up can never commit; nothing is up there
+    }
+    giveLanding.drive(landAcc);
   }
 
   function stageTo(target, done) {
@@ -336,10 +685,13 @@ import { createTrace } from "../lib/trace.mjs";
   }
 
   function closeDetail() {
+    // the give's travel becomes the close lerp's head start; stageTo() tweens from stageY
+    giveStage.cancel();
     if (!detailOpen) return;
     // ⭐ the anchor for every leak counter — the post-close window opens HERE, which is
     // also where `detailOpen` flips and the coast becomes free to reach the deck.
-    T.push({ k: "@closeDetail", g: arb.state().gestureId, claim: arb.state().gRegion });
+    T.push({ k: "@closeDetail", g: arb.state().gestureId, claim: arb.state().gRegion,
+             spent: arb.state().spentOn, sTop: detailScroll.scrollTop });
     closeViaHistory();   // keep the URL in step with a gesture-driven close
     detailOpen = false;
     arb.consume();   // spend the gesture HERE, not when the lerp lands: detailOpen flips
@@ -368,6 +720,7 @@ import { createTrace } from "../lib/trace.mjs";
       repushArm: cssNum("--repush-arm", 0.25),
       claimRise: cssNum("--claim-rise", 1.5),
       claimFloor: cssNum("--claim-floor", 0.2),
+      coastRun: cssNum("--coast-run", 10),
       commitDist: cssNum("--commit-dist", 120),
       commitVel: cssNum("--commit-vel", 1.2),
       commitDistBack: cssNum("--commit-dist-back", 200),
@@ -377,6 +730,8 @@ import { createTrace } from "../lib/trace.mjs";
     {
       detailOpen: () => detailOpen,
       tabTopY: () => tabTopY(),
+      // ⭐ A: the region boundary is the artwork band's lower edge, not the tab frame's top.
+      deckBottomY: () => deckBottomY(),
       tweenActive: () => !!(stageTween || worldTween),
     }
   );
@@ -385,14 +740,31 @@ import { createTrace } from "../lib/trace.mjs";
   function mapToCarousel(el, e) {
     const maxLeft = el.scrollWidth - el.clientWidth;
     if (maxLeft <= 0) return false;
-    let consumed = false;
-    if (e.deltaX) { el.scrollLeft += e.deltaX; consumed = true; }
+    const before = el.scrollLeft;
+    /* 🐞 FIX 2 — A VERTICAL GESTURE MUST NOT DRIVE THE DECK SIDEWAYS WITH ITS INCIDENTAL dx.
+       Reported by JJ: "the carousel vibrates horizontally when I scroll vertically at the
+       rightmost boundary." A trackpad's vertical swipe carries a real horizontal component —
+       `hooks.md` records that WebKit decays the whole velocity VECTOR, so dx is just whatever
+       angle you flicked at — and dx was applied unconditionally, with no boundary test. At
+       the end of the deck that jitters it back and forth inside its last pixels.
+       ⭐ Per-event axis dominance, the same rule the touch path already axis-locks with.
+       A deliberate horizontal swipe has |dx| > |dy| and is untouched, so rule 3 ("horizontal
+       is unconditional") still holds. ⏪ Off at --landing-give: 0. */
+    if (e.deltaX && !(LANDING_GIVE && Math.abs(e.deltaY) > Math.abs(e.deltaX))) {
+      el.scrollLeft += e.deltaX;
+    }
     const dy = e.deltaY;
     if (dy) {
       const atStart = el.scrollLeft <= 1, atEnd = el.scrollLeft >= maxLeft - 1;
-      if (!((dy > 0 && atEnd) || (dy < 0 && atStart))) { el.scrollLeft += dy; consumed = true; }
+      if (!((dy > 0 && atEnd) || (dy < 0 && atStart))) el.scrollLeft += dy;
     }
-    return consumed;
+    /* 🐞 FIX 1 — MEASURED, NOT ASSUMED. `consumed` used to mean "we tried to move it", so at
+       either end every event still claimed the deck had acted: deckIdle reset on every event
+       and the give could never start. It now means what the callers actually need — DID THE
+       DECK MOVE. ⚠︎ The trace's leak counter is unaffected: `hooks.md` warns not to count
+       PIXELS for that, and it doesn't — the grant is recorded by the >DECK row existing, and
+       `moved` has always been the extra field beside it. */
+    return Math.abs(el.scrollLeft - before) > 0.5;
   }
 
   window.addEventListener("wheel", (e) => {
@@ -407,12 +779,21 @@ import { createTrace } from "../lib/trace.mjs";
     // the module — a change in gestureId across feed() is a new gesture, by definition.
     // Both reads are no-ops (and the object is never built) when the trace is off.
     const tBefore = T.on ? arb.state() : null;
-    // ⭐ deltaX and momentum are both load-bearing now (B):
-    //   momentum — WheelEvent.momentum where the engine has it (Chrome 151+). Absent on
-    //              Safari and Firefox, which fall to the hole detector.
-    //   deltaX   — feeds the resume detector's VECTOR magnitude, which is what makes a
-    //              horizontal swipe able to re-claim the deck at all (defect C).
-    arb.feed({ deltaY: e.deltaY, deltaX: e.deltaX, dt, clientY: e.clientY, momentum: e.momentum });
+    // ⭐ deltaX, momentum and deltaMode are all load-bearing now:
+    //   momentum  — WheelEvent.momentum where the engine has it (Chrome 151+). Absent on
+    //               Safari and Firefox, which fall to the hole detector.
+    //   deltaX    — feeds the resume detector's VECTOR magnitude, which is what makes a
+    //               horizontal swipe able to re-claim the deck at all (defect C).
+    //   deltaMode — ⭐ non-zero means LINES or PAGES, i.e. a click-detented mouse wheel,
+    //               which does not coast. Without it the hole detector reads an ordinary
+    //               wheel hesitation as "the finger came back" and re-arms the transition
+    //               on every spin, and coasting() latches the native-scroll gate ON for
+    //               the session. See gesture-arbiter.mjs § the deltaMode guard.
+    //               ⚠︎ Firefox only — Safari reports PIXEL for a mouse AND a trackpad.
+    // ⛔ Dropping any of the three silently selects the trackpad-only path for every
+    // device. The arbiter cannot tell a missing field from a genuine absence.
+    arb.feed({ deltaY: e.deltaY, deltaX: e.deltaX, dt, clientY: e.clientY,
+               momentum: e.momentum, deltaMode: e.deltaMode });
     if (T.on) T.wheel(e, dt, tBefore, arb.state());
 
     // ---- STATE 3: art-news detail ----
@@ -421,9 +802,46 @@ import { createTrace } from "../lib/trace.mjs";
       // no horizontal case left: the card is a single column, so vertical is the
       // only axis and the native scroller owns it
       if (detailScroll.scrollTop <= 0 && e.deltaY < 0) {                  // beyond the upper bound
+        // ⭐ E: THE GIVE TAKES OVER THIS BOUNDARY, so the browser must stop drawing its own.
+        // Until now this branch did NOT preventDefault, which is precisely why the elastic
+        // you felt here was the browser's — decoupled from the 200px threshold, and therefore
+        // telling you nothing.
+        // ⚠︎ CONDITIONAL under EDGE-STRICT: when the gesture has already been spent scrolling
+        // the card, we hand the edge BACK to the browser deliberately, rather than relying on
+        // an already-running macOS rubber-band to survive our preventDefault. Same rule as
+        // the tab, which is the symmetry JJ asked for.
+        const live = cardLive();
+        if (holdEdge(live)) e.preventDefault();
         arb.addIntent(-e.deltaY);
-        if (arb.meant(arb.intent, -e.deltaY, dt, true) && arb.gestureLive()) closeDetail();
-      } else arb.resetIntent();
+        // ⭐ THE BOUNDARY, RECORDED. This is where the card-close decision is made, and it
+        // is the one place in the handler whose inputs were invisible in an export.
+        T.push({ k: "@cardEdge", g: arb.state().gestureId, spent: arb.state().spentOn,
+                 claim: arb.state().claim ?? arb.region(), sTop: detailScroll.scrollTop,
+                 dy: +e.deltaY.toFixed(2), dt: +dt.toFixed(1), mom: e.momentum,
+                 live: arb.gestureLive(), acc: +arb.intent.toFixed(1) });
+        // ⚠︎ `scrollSpent()` NOT just `gestureLive()`. A reversal mints a fresh gesture
+        // mid-flick — measured on JJ's stream, ~100px into an up-swipe — and a mint restores
+        // the budget by design. scrollSpent survives that mint; only silence, a resume, or a
+        // real transition clears it. See the arbiter.
+        if (live && arb.meant(arb.intent, -e.deltaY, dt, true)) closeDetail();
+        // ⚠︎ THE GIVE CARRIES THE SAME THREE GATES AS THE COMMIT, `scrollSpent()` included.
+        // A flick that already scrolled the card to its top has spent its one action — it
+        // must not drag the card either, or the overshoot comes back as a visual instead of
+        // as a close. Push again and you get both. This IS `J`'s rule, stated as feedback:
+        // "you released before reaching the edge -> you stop at the top."
+        else if (live) giveStage.drive(arb.intent);
+      } else {
+        arb.resetIntent();
+        giveStage.release();
+        // ⭐ THE CARD IS SCROLLING, SO THIS GESTURE IS SPENT. Without this, a flick from
+        // mid-card coasts to the top and the first coast event at the boundary commits the
+        // close on velocity alone — 19px/ms against a 1.8px/ms threshold. See
+        // spendOnNativeScroll() in the arbiter for why this is not a momentum test.
+        // Closing then needs a second push, which is what J specifies and what B detects.
+        arb.spendOnNativeScroll();
+        T.push({ k: "@cardScroll", g: arb.state().gestureId, spent: arb.state().spentOn,
+                 sTop: detailScroll.scrollTop, dy: +e.deltaY.toFixed(2), mom: e.momentum });
+      }
       return;                                                            // native scroll otherwise
     }
 
@@ -431,7 +849,9 @@ import { createTrace } from "../lib/trace.mjs";
     // Tested against the carousel's CURRENT on-screen extent rather than a fixed
     // LANDING_H, so the region stays correct while a lerp is in flight: whatever is
     // under the cursor right now is what responds.
-    if (e.clientY < tabTopY()) {
+    // ⭐ A: that extent is now the ARTWORK BAND (deckBottomY), not the whole hero
+    // (tabTopY). The band below the artwork leaves the landing, as designed.
+    if (e.clientY < deckBottomY()) {
       e.preventDefault();
       // BOTH axes drive horizontal movement here, and a vertical gesture never commits.
       //
@@ -445,12 +865,36 @@ import { createTrace } from "../lib/trace.mjs";
       // leaked, whether or not the deck had room left to move — count the moved pixels and
       // you get a counter that reads 0 at either end of the carousel, and on a cold load
       // before the images size it. `moved` keeps the distinction visible.
-      if (arb.ownsCarousel()) {
-        const moved = mapToCarousel(carousel, e);
-        T.push({ k: ">DECK", via: "region", g: arb.state().gestureId, moved,
-                 dx: +e.deltaX.toFixed(2), dy: +e.deltaY.toFixed(2), mom: e.momentum });
-      }
-      arb.resetIntent();
+      if (!arb.ownsCarousel()) { arb.resetIntent(); return; }   // ownership: it gets nothing
+      const moved = mapToCarousel(carousel, e);
+      T.push({ k: ">DECK", via: "region", g: arb.state().gestureId, moved,
+               dx: +e.deltaX.toFixed(2), dy: +e.deltaY.toFixed(2), mom: e.momentum });
+      if (!LANDING_GIVE) { arb.resetIntent(); return; }
+      if (moved) {
+        deckIdle = 0;
+        // ⭐ THE DECK HAD THIS GESTURE'S ACTION, so it cannot also leave the landing. Without
+        // this a flick that runs the deck to its end chains straight on into the transition —
+        // momentum crossing a boundary, the exact class Branch 1 spent itself on. The call's
+        // name is about the RULE (one gesture, one action), not about who did the scrolling;
+        // the deck is JS-driven. ⚠︎ ownsCarousel() is deliberately NOT gated by the spend
+        // counter, so the deck itself keeps working — only transitions are blocked.
+        if (EDGE_STRICT) arb.spendOnNativeScroll();
+        arb.resetIntent();
+        // ⚠︎ Safe here ONLY because deckIdle keeps the give from starting during the
+        // alternation — see below. release() is a SPRING, not a no-op: it starts a tween and
+        // therefore self-blocks for ~150ms, so calling it from a branch that flips every
+        // event is what produced the stutter that got attempt 1 rolled back.
+        giveLanding.release();
+      } else if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && ++deckIdle >= DECK_RUN) {
+        /* ⭐ THE DECK IS EXHAUSTED, so vertical here does nothing — mapToCarousel already
+           reports exactly that (`dy > 0 && atEnd`, `dy < 0 && atStart`).
+           ⛔ GUARD 2 — RUN OF N, because `consumed` IS NOT STABLE AT THE BOUNDARY.
+           `atEnd` is `scrollLeft >= maxLeft - 1` against a FRACTIONAL scrollLeft, so right at
+           the end `moved` alternates true/false event to event. Attempt 1 trusted it per
+           event and the give started and sprang back at wheel frequency. Three consecutive
+           refusals is the same idiom --repush-run already uses for "this is not noise". */
+        landingVertical(e, dt);
+      } else arb.resetIntent();
       return;
     }
 
@@ -471,10 +915,8 @@ import { createTrace } from "../lib/trace.mjs";
         }
         return;
       }
-      if (e.deltaY > 0) {              // downward → commit into tab view (catches a return lerp)
-        arb.addIntent(e.deltaY);
-        if (arb.meant(arb.intent, e.deltaY, dt, false) && arb.gestureLive()) goTab();
-      } else arb.resetIntent();
+      deckIdle = 0;                    // below the band the deck is not in play at all
+      landingVertical(e, dt);          // down → give then commit; up → the dead-end bounce
       return;
     }
 
@@ -506,13 +948,30 @@ import { createTrace } from "../lib/trace.mjs";
 
     // horizontal is left entirely to the native snap track (no preventDefault); a
     // swipe mid-slide releases the nav tween so the gesture takes over
-    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) { releaseTab(); arb.resetIntent(); return; }
+    // ⚠︎ giveWorld.release() here is `interaction-changes.md`'s row verbatim: "horizontal swipe
+    // DURING a vertical give → give springs back, track takes over."
+    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+      releaseTab(); arb.resetIntent(); giveWorld.release(); return;
+    }
     const sub = subs[current];
     if (sub.scrollTop <= 0 && e.deltaY < 0) {          // at 0%, pulling up → landing
-      e.preventDefault();
+      // ⚠︎ CONDITIONAL, and that is the whole point — see EDGE-STRICT. Declining to prevent
+      // is what lets `.sub`'s own contain-bounce play for a gesture that has already been
+      // spent scrolling, instead of a hard stop.
+      const live = tabLive();
+      if (holdEdge(live)) e.preventDefault();
       arb.addIntent(-e.deltaY);
-      if (arb.meant(arb.intent, -e.deltaY, dt, true) && arb.gestureLive()) goLanding();
-    } else arb.resetIntent();                                    // otherwise the tab scrolls natively
+      // ⚠︎ `live` gates the give too, not just the commit. A spent gesture — a coast still
+      // arriving after a transition already fired — must not drive the elastic either, or
+      // the view breathes on its own after every commit.
+      if (live && arb.meant(arb.intent, -e.deltaY, dt, true)) goLanding();
+      else if (live) giveWorld.drive(arb.intent);
+    } else {
+      arb.resetIntent(); giveWorld.release();
+      // ⭐ THE ONE LINE THE TAB WAS MISSING. The flick that scrolled the panel has had its
+      // action; reaching the top is not a second one. Mirrors the card exactly.
+      if (EDGE_STRICT) arb.spendOnNativeScroll();
+    }
   }, { passive: false });
 
   // ---- touch: axis-lock at gesture start ----
@@ -521,9 +980,40 @@ import { createTrace } from "../lib/trace.mjs";
   let tsX = 0, tsY = 0, tAxis = null, tDone = false;
   const AXIS_LOCK = 8;              // px before the axis is decided
 
+  /**
+   * ── D2a: THE LANDING → TAB TRAVERSE IS 1:1 ON TOUCH (2026-08-18, JJ) ──────────────
+   *
+   * ⭐ THE MODEL, SETTLED: "one vertical drag owns the whole axis. Through the middle it is
+   * 1:1 — the finger is holding the landing. At the ends it gets heavy and stops."
+   *
+   * ⚠︎ SO THIS IS NOT "GIVE ON TOUCH", AND D2 IS NOT A RIDE-ALONG ON D. On wheel there is no
+   * middle — you are always AT a boundary — so the 100px elastic is all you ever see. On
+   * touch that same boundary is a LANDING_H traverse, and give is REPLACED by it, not
+   * extended. Give survives on touch only at true dead-ends.
+   *
+   * ⚠︎ Region-blindness was already here: this handler has never had a region test for
+   * vertical. What was missing is CONTINUITY — the landing sat still until --commit-dist and
+   * then jumped. That threshold is gone from this branch; see touchend.
+   *
+   * ⭐ AND IT STAYS `passive: true`. Driving the world from touchmove normally forces
+   * `preventDefault`, hence a non-passive listener, hence every touchmove blocking the
+   * compositor until JS returns — the difference between native-smooth and janky. It does
+   * not apply here: `html, body { overflow: hidden }`, `#stage` is fixed, and `.sub` is
+   * `overflow-y: hidden` AT LANDING, so a vertical swipe scrolls nothing and there is
+   * nothing to prevent. ⛔ tab → landing and card → site do NOT get this for free — both
+   * fight a live native scroller. Do not assume this generalises when extending D2.
+   */
+  let tDrag = false;                // is this touch driving the traverse?
+  let tBase = 0, tLockDy = 0;       // worldY when the axis locked, and the dy already spent
+  let tvY = 0, tPrevY = 0, tPrevT = 0;   // release velocity, px/ms, smoothed
+
   window.addEventListener("touchstart", (e) => {
     const t = e.touches[0];
     tsX = t.clientX; tsY = t.clientY; tAxis = null; tDone = false;
+    // ⚠︎ Only on a genuinely NEW touch. A second finger landing mid-drag also fires
+    // touchstart, and clearing tDrag there would strand worldY part-way with no release
+    // left to spring it back.
+    if (e.touches.length === 1) tDrag = false;
     // touchstart IS a gesture boundary — and it is also where this gesture stakes its claim,
     // from the finger's own landing point. Same rule as wheel, better signal.
     arb.beginGesture(t.clientY);
@@ -537,6 +1027,15 @@ import { createTrace } from "../lib/trace.mjs";
       if (Math.abs(dx) < AXIS_LOCK && Math.abs(dy) < AXIS_LOCK) return;
       tAxis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
     }
+    if (!tDrag && tAxis === "y" && view === "landing" && !detailOpen) {
+      // ⭐ DIRECT MANIPULATION OUTRANKS A LERP. Catching a transition mid-flight and taking
+      // it over is this project's defining property (see site.js's top note); on touch it is
+      // literal. Base off the LIVE worldY so a caught lerp continues from where it is, and
+      // subtract the 8px the axis lock has already consumed so the world does not jump.
+      if (worldTween) { worldTween.cancel(); worldTween = null; }
+      tDrag = true; tBase = worldY; tLockDy = dy;
+      tvY = 0; tPrevY = t.clientY; tPrevT = performance.now();
+    }
     if (tAxis === "x") { releaseTab(); return; }   // horizontal → native carousel / track
 
     if (detailOpen) {
@@ -544,11 +1043,49 @@ import { createTrace } from "../lib/trace.mjs";
       return;
     }
     if (view === "landing") {
-      if (-dy > arb.config.commitDist && arb.gestureLive()) { tDone = true; goTab(); }   // forward
+      if (tDrag) {
+        // ⚠︎ WRITE worldY AND NOTHING ELSE. No measurement, no layout read, no branching on
+        // geometry — this runs on every touchmove. applyWorld() already fans out to the fade
+        // and the nav tint, both position-derived, so they stay in step for free.
+        const now = performance.now(), ms = now - tPrevT;
+        if (ms > 0) tvY = tvY * 0.6 + ((t.clientY - tPrevY) / ms) * 0.4;   // EMA, px/ms
+        tPrevY = t.clientY; tPrevT = now;
+        // ⚠︎ Clamped at 0: pulling DOWN at the landing is a true dead-end and currently just
+        // stops. That is the one place give still belongs on touch — marked, not built.
+        applyWorld(Math.min(0, Math.max(-LANDING_H, tBase + (dy - tLockDy))));
+      }
       return;
     }
     if (subs[current].scrollTop <= 0 && dy > arb.config.commitDistBack && arb.gestureLive()) { tDone = true; goLanding(); }
   }, { passive: true });
+
+  /**
+   * ⭐ J, ARRIVING FREE. `touchend` is a REAL release — no momentum inference, no synthesised
+   * silence — so the commit stops being an accumulator and becomes the natural touch idiom:
+   * past halfway, or flicked hard. `motion-fork-brief.md § J` wanted exactly this and listed
+   * it as blocked on a release signal; touch simply has one.
+   *
+   * ⭐ And halfway is SYMMETRIC BY CONSTRUCTION, so touch answers `§ G`'s
+   * forward-vs-back asymmetry question inside its own domain without touching
+   * --commit-dist / --commit-dist-back at all.
+   *
+   * ⚠︎ A hard flick DOWN cancels even past halfway. Position alone would strand the user:
+   * they dragged far, changed their mind, and threw it back — honouring the position there
+   * would be the teleport complaint wearing a different hat.
+   */
+  const endTouchDrag = () => {
+    if (!tDrag) return;
+    tDrag = false;
+    const p = LANDING_H ? -worldY / LANDING_H : 0;
+    const up = -tvY;                          // px/ms, positive = swiping up = toward tab
+    const V = arb.config.commitVel;
+    if (up >= V) goTab();                     // flicked up
+    else if (up <= -V) worldTo(0);            // flicked down — cancel regardless of position
+    else if (p >= TOUCH_COMMIT) goTab();
+    else worldTo(0);
+  };
+  window.addEventListener("touchend", endTouchDrag, { passive: true });
+  window.addEventListener("touchcancel", endTouchDrag, { passive: true });
 
   // ============================================================================  // CONTACT  (v4) — a nav-row expander, NOT a tab.
   // Deliberately not a `.sub`: adding a fourth panel would widen the track and put
@@ -846,6 +1383,72 @@ import { createTrace } from "../lib/trace.mjs";
   // because applyWorld(-LANDING_H) moves when LANDING_H does. Fixing that means keying the
   // geometry on svh/dvh/visualViewport — which changes what measures LANDING_H, and
   // LANDING_H feeds revealP(), so it changes every reveal dynamic. Bigger, and separate.
+  // ============================================================================
+  // RETUNE — dev only. Re-read every [TUNE] token after a CSS hot-swap.
+  // ============================================================================
+  /**
+   * ⭐ THE TRAP THIS CLOSES, recorded in `hooks.md § Motion audit`: JS reads every [TUNE]
+   * token ONCE at init, and Astro's HMR hot-swaps global.css WITHOUT re-running the module.
+   * So editing --give-max, --site-zoom-max or any arbiter token in dev APPEARS TO DO
+   * NOTHING until a hard reload. This did not exist with `open prototype-v6.html`, and it
+   * is worst exactly where tuning matters most — you cannot tell "that value did nothing"
+   * from "the reload didn't take."
+   *
+   * ⚠︎ DEV ONLY, and it must stay that way. `import.meta.hot` is undefined in a production
+   * build, so the whole block is dead code there. Nothing on the hot path reads it.
+   *
+   * ⚠︎ The arbiter's config is MUTATED IN PLACE rather than re-creating the arbiter. That is
+   * deliberate: a fresh arbiter would lose gestureId, the claim and the coast histories
+   * mid-gesture, so retuning would silently reset segmentation and you would be tuning
+   * against a different machine than the one you are feeling.
+   *
+   *   window.__retune()      by hand, from the console
+   *   (automatic on every Vite CSS update)
+   */
+  function retune() {
+    ease = easeFromToken();
+    DUR        = cssMs("--dur", 500);
+    SITE_ZOOM  = cssNum("--site-zoom-max", 1.1);
+    SITE_BLUR  = cssNum("--site-blur-max", 50);
+    CARD_ZOOM  = cssNum("--card-zoom-min", 0.95);
+    FADE_FLOOR = cssNum("--fade-floor", 0.2);
+    BLUR_FLOOR = cssNum("--blur-floor", 0.4);
+    GIVE_MAX   = cssNum("--give-max", 0.5);
+    GIVE_EASE  = cssNum("--give-ease", 2);
+    TOUCH_COMMIT = cssNum("--touch-commit", 0.5);
+    EDGE_STRICT  = cssNum("--edge-strict", 1) === 1;
+    BOUNCE_MAX   = cssNum("--bounce-max", 48);
+    BOUNCE_DIST  = cssNum("--bounce-dist", 300);
+    LANDING_GIVE = cssNum("--landing-give", 1) === 1;
+    Object.assign(arb.config, {
+      gestureGap: cssMs("--gesture-gap", 100),
+      reverseFrac: cssNum("--gesture-reverse", 0.25),
+      repushRun: cssNum("--repush-run", 3),
+      repushFloor: cssNum("--repush-floor", 0.2),
+      repushArm: cssNum("--repush-arm", 0.25),
+      claimRise: cssNum("--claim-rise", 1.5),
+      claimFloor: cssNum("--claim-floor", 0.2),
+      coastRun: cssNum("--coast-run", 10),
+      commitDist: cssNum("--commit-dist", 120),
+      commitVel: cssNum("--commit-vel", 1.2),
+      commitDistBack: cssNum("--commit-dist-back", 200),
+      commitVelBack: cssNum("--commit-vel-back", 1.8),
+      debug: cssNum("--gesture-debug", 0) === 1,
+    });
+    // ⚠︎ REPAINT AT THE CURRENT POSITION. Every dynamic is position-derived, so a token that
+    // changes the MAPPING (zoom, fade floor) shows nothing until something re-applies it.
+    // Without these two lines retune() would look broken for exactly the tokens you most
+    // want to feel.
+    measureGeom();
+    applyWorld(worldY);
+    applyStage(stageY);
+  }
+
+  if (import.meta.hot) {
+    window.__retune = retune;
+    import.meta.hot.on("vite:afterUpdate", retune);
+  }
+
   let lastW = window.innerWidth, lastH = window.innerHeight;
 
   window.addEventListener("resize", () => {
