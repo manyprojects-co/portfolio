@@ -177,6 +177,14 @@
                                 LOWER it if a gentle second swipe is being ignored. */
     --claim-rise: 1.5;       /* [TUNE] rise over the coast trough that hands the deck back */
     --claim-floor: 0.2;      /* [TUNE] ...AND at least this fraction of the gesture's peak */
+    /* How many consecutive clock-regular events before the flagless path calls the stream a
+       coast, so a GIVE can resolve on the finger leaving rather than on 100ms of silence.
+       Chrome answers exactly via WheelEvent.momentum and ignores this; Safari and Firefox
+       expose nothing, so this is the evidence bar. ~83ms at both engines' ~8.3ms cadence.
+       ⛔ UNSCORED — reasoning, not measurement. Score it with gesture/score-heuristic.mjs on a
+       real capture before trusting it. It gates no transition; both ways of being wrong are
+       cosmetic. Lower = the give lets go sooner but may twitch during a slow steady drag. */
+    --coast-run: 10;         /* [TUNE] consecutive regular events that read as a coast */
     --gesture-debug: 0;      /* [TUNE] 1 = console.log every gesture boundary, reason + claim */
     --fg: #000000;
     --muted: #949494;        /* lighter-but-legible grey — date, type, subheading */

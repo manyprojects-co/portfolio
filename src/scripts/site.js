@@ -633,12 +633,14 @@ import { createTrace } from "../lib/trace.mjs";
 
        ⚠︎ The commit path is deliberately left intact below — a hard flick must still be able
        to enter the tab. Only the GIVE resolves early.
-       ⚠︎ FLAGGED ENGINES ONLY (Chrome 151+). On Safari and Firefox `e.momentum` is undefined,
-       so this branch never runs and the old silence-gated behaviour stands. Fixing it there
-       needs the arbiter's hole detector exposed per event, which it does not currently do.
-       ⚠︎ giveWorld and giveStage have the same silence-gated release. Less visible because
-       those boundaries usually commit at 200px rather than hanging. Not changed here. */
-    if (e.momentum === true) {
+       ⭐ BOTH ENGINES NOW. `arb.coastLikely()` is exact on Chrome (`e.momentum`) and, on
+       Safari and Firefox, a deliberately LATE read of sustained clock-regularity — ~83ms of
+       evidence. ⛔ UNSCORED on the flagless side; see `coastRun` in the arbiter. It is
+       allowed to be wrong because both failure modes are cosmetic: a false coast springs the
+       give back early, a false finger is exactly today's hang. ⛔ It gates no transition.
+       ⚠︎ giveWorld and giveStage still release on silence. Less visible because those
+       boundaries usually commit at 200px rather than hanging. Not changed here. */
+    if (arb.coastLikely()) {
       landAcc = 0;
       giveLanding.release();
       if (e.deltaY > 0) {
@@ -718,6 +720,7 @@ import { createTrace } from "../lib/trace.mjs";
       repushArm: cssNum("--repush-arm", 0.25),
       claimRise: cssNum("--claim-rise", 1.5),
       claimFloor: cssNum("--claim-floor", 0.2),
+      coastRun: cssNum("--coast-run", 10),
       commitDist: cssNum("--commit-dist", 120),
       commitVel: cssNum("--commit-vel", 1.2),
       commitDistBack: cssNum("--commit-dist-back", 200),
@@ -1425,6 +1428,7 @@ import { createTrace } from "../lib/trace.mjs";
       repushArm: cssNum("--repush-arm", 0.25),
       claimRise: cssNum("--claim-rise", 1.5),
       claimFloor: cssNum("--claim-floor", 0.2),
+      coastRun: cssNum("--coast-run", 10),
       commitDist: cssNum("--commit-dist", 120),
       commitVel: cssNum("--commit-vel", 1.2),
       commitDistBack: cssNum("--commit-dist-back", 200),

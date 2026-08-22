@@ -102,6 +102,27 @@ export const ARBITER_DEFAULTS = Object.freeze({
                          //   A sturdier discriminator exists if this proves flaky: a handoff
                          //   is followed by MORE clock-regular events, a finger by sub-6ms
                          //   irregular ones. That costs a 2-3 event delay to decide.
+  /**
+   * ⭐ HOW MANY CONSECUTIVE CLOCK-REGULAR EVENTS BEFORE WE CALL IT A COAST — see coastLikely().
+   *
+   * ⚠︎ DELIBERATELY LATE, AND THAT IS THE WHOLE DESIGN. score-heuristic.mjs killed the last
+   * flagless coast classifier because it had to answer AT THE START of a coast, at speed, and
+   * scored 70 false "finger" calls in 461 events — all clustered at the start, exactly where a
+   * wrong answer commits a transition. coastLikely() has the opposite requirement: it releases
+   * a GIVE, where a give that resolves 80ms late is invisible and one that resolves 800ms late
+   * is the bug being fixed. So it demands a long run and is strong precisely where that
+   * classifier was weak.
+   *
+   * ⚠︎ Cost of being wrong is bounded in both directions: a false coast springs a give back
+   * early (mild, visible); a false finger is today's behaviour (the give hangs). It cannot
+   * commit anything — no caller uses it to gate a transition, and none should.
+   *
+   * ⛔ UNSCORED. 10 events is ~83ms at both engines' ~8.3ms coast cadence. That is reasoning,
+   * not measurement, and this project has twice been wrong about exactly this kind of
+   * reasoning. Score it with gesture/score-heuristic.mjs on a real capture
+   * (gesture/capture-wheel.html) before trusting the number.
+   */
+  coastRun:       10,
   coastSpread:    0.6,   // (max-min)/median of recent dt that still counts as CLOCK-DRIVEN.
                          //   ⚠︎ This is the flagless statement of "a coast was running", and
                          //   it is what the first cut was missing. Measured dt spread:
@@ -186,6 +207,12 @@ export function createArbiter(cfg = {}, env = {}) {
    * silence, a resume, or a transition actually firing.
    */
   let scrollSpent = false;
+  // consecutive events sitting inside a clock-regular window — the flagless half of
+  // coastLikely(). Never feeds a commit; see coastRun.
+  let regRun = 0;
+  // the last event's momentum flag, or undefined on an engine that has none. PATH SELECTION,
+  // the same rule the rest of this file uses: an exact answer beats a measured one.
+  let lastMomentum;
   // has anything interrupted this gesture's coast? Drives coasting(); see below.
   let holeSeen = false;
   /**
@@ -282,6 +309,7 @@ export function createArbiter(cfg = {}, env = {}) {
    */
   function consume() {
     spentOn = gestureId; acc = 0; scrollSpent = false;
+    regRun = 0;         // a transition just fired; whatever the stream was doing, restart
     sawCoast = false;   // ⚠︎ closeDetail() spends HERE, mid-flick. The finger events still
                         // arriving from this same swipe must not read as a resume.
     holeSeen = false;
@@ -293,6 +321,7 @@ export function createArbiter(cfg = {}, env = {}) {
     gRegion = regionAt(clientY);
     log(`[gesture #${gestureId}] ${why}  mag ${mag.toFixed(1)}  claims ${gRegion}`);
     prevDir = dir; peak = mag; acc = 0; cTrough = Infinity; sawCoast = false; holeSeen = false;
+    regRun = 0;
     rPeak = 0; rTail = false; rArmed = false; rRun = 0; rPrev = Infinity;
   }
 
@@ -342,6 +371,23 @@ export function createArbiter(cfg = {}, env = {}) {
     // otherwise cause is real (JJ, Safari: a push 62ms after the coast had decayed to 1px).
     // Instead it pays a larger absolute floor, which is what separates a real push from the
     // frame-rate handoff a dying coast performs.
+    /**
+     * ⭐ regRun — the flagless evidence for coastLikely(). A coast is clock-driven and
+     * metronomic; a finger is not (measured dt spread: coast 0.24/0.25, ramp 1.30/≫1). This
+     * asks BOTH that the recent window is regular AND that this event matches its cadence, so
+     * a single well-timed event inside a ragged stream cannot advance the run.
+     * ⚠︎ A TIMING property, not an amplitude one — dead end #4 was "amplitude rose", and this
+     * is deliberately not that.
+     */
+    if (C.compat || discrete) regRun = 0;
+    else if (dtHist.length >= C.holeWindow) {
+      const m = median(dtHist);
+      const sp = m ? (Math.max(...dtHist) - Math.min(...dtHist)) / m : Infinity;
+      const near = m ? Math.abs(dt - m) <= m * C.coastSpread : false;
+      regRun = (sp <= C.coastSpread && near) ? regRun + 1 : 0;
+    } else regRun = 0;
+    lastMomentum = momentum;
+
     if (!C.compat && !discrete && !holeSeen && dtHist.length >= C.holeWindow) {
       const m = median(dtHist);
       const sp = m ? (Math.max(...dtHist) - Math.min(...dtHist)) / m : Infinity;
@@ -413,6 +459,7 @@ export function createArbiter(cfg = {}, env = {}) {
           log(`[gesture #${gestureId}] RESUME — transition re-armed (hole/flag)`);
         }
         scrollSpent = false;   // a deliberate new push earns the card boundary back too
+        regRun = 0;            // ...and the finger is demonstrably back, so the coast is over
         // (b) THE CLAIM — v6's §4, same scope: hands back a region, never a transition.
         // ⚠︎ Re-claims WHEREVER THE CURSOR IS, not only over the carousel. v6 could only
         // ever grant "carousel", which left a stale "detail" claim sitting on a gesture in
@@ -568,6 +615,23 @@ export function createArbiter(cfg = {}, env = {}) {
      * ⛔ Always false in compat — v6 had no such gate.
      */
     coasting: () => !C.compat && !lastDiscrete && !holeSeen,
+    /**
+     * ⭐ IS THE PLATFORM DRIVING THIS STREAM RIGHT NOW? The LATE, CONFIDENT answer.
+     *
+     * Exists so a GIVE can resolve when the finger leaves rather than when the stream goes
+     * silent — `motion-fork-brief.md § J`'s exact prediction: "without a momentum signal
+     * 'release' means silence past --gesture-gap, i.e. ~100ms AFTER momentum fully decays.
+     * Give would stretch and hang."
+     *
+     *   FLAGGED    e.momentum === true. Exact, immediate, no thresholds.
+     *   FLAGLESS   coastRun consecutive clock-regular events. ~83ms of evidence.
+     *
+     * ⛔ NEVER GATE A TRANSITION ON THIS. It is allowed to be wrong; see coastRun. The whole
+     * reason it can ship unscored is that both of its failure modes are cosmetic.
+     * ⛔ Always false in compat — v6 had no such notion.
+     */
+    coastLikely: () => !C.compat && (
+      lastMomentum !== undefined ? lastMomentum === true : regRun >= C.coastRun),
     /** intent accumulator — the wheel handler banks px into this per branch */
     addIntent(delta) { acc += delta; return acc; },
     resetIntent() { acc = 0; },
