@@ -71,7 +71,7 @@ import { createTrace } from "../lib/trace.mjs";
     if (raw === "linear") return (t) => t;
     return bezier(0.5, 0, 0, 1);   // the curve v6 actually rode
   }
-  const ease = easeFromToken();
+  let ease = easeFromToken();
 
   /**
    * ⚠︎ UNIT-AWARE, and it must stay that way. v6 used a bare parseFloat here, which is
@@ -82,18 +82,22 @@ import { createTrace } from "../lib/trace.mjs";
    */
   const cssMs = (name, fallback) =>
     parseCssTime(getComputedStyle(root).getPropertyValue(name), fallback);
-  const DUR = cssMs("--dur", 500);
+  let DUR = cssMs("--dur", 500);
 
   const cssNum = (name, fallback) => {
     const v = parseFloat(getComputedStyle(root).getPropertyValue(name));
     return Number.isFinite(v) ? v : fallback;
   };
-  // v3 reveal dynamics, read once from the tokens above
-  const SITE_ZOOM  = cssNum("--site-zoom-max", 1.1);
-  const SITE_BLUR  = cssNum("--site-blur-max", 50);
-  const CARD_ZOOM  = cssNum("--card-zoom-min", 0.95);
-  const FADE_FLOOR = cssNum("--fade-floor", 0.2);
-  const BLUR_FLOOR = cssNum("--blur-floor", 0.4);
+  // v3 reveal dynamics. ⚠︎ `let`, not `const`, ONLY so retune() can re-read them in dev —
+  // see retune() for why that is not a nicety. Nothing reassigns them at runtime.
+  let SITE_ZOOM  = cssNum("--site-zoom-max", 1.1);
+  let SITE_BLUR  = cssNum("--site-blur-max", 50);
+  let CARD_ZOOM  = cssNum("--card-zoom-min", 0.95);
+  let FADE_FLOOR = cssNum("--fade-floor", 0.2);
+  let BLUR_FLOOR = cssNum("--blur-floor", 0.4);
+  // give (D) — see the GIVE section for what these two numbers mean geometrically
+  let GIVE_MAX   = cssNum("--give-max", 0.5);
+  let GIVE_EASE  = cssNum("--give-ease", 2);
 
   // Generic value tween on the shared curve. Returns a CANCELLABLE handle: every
   // transition in the site can be caught mid-flight and re-aimed from wherever it
@@ -222,11 +226,28 @@ import { createTrace } from "../lib/trace.mjs";
     const p = detailP();
     // SITE: rises, enlarges to --site-zoom-max, blurs to --site-blur-max.
     stage.style.transform = `translateY(${y}px) scale(${1 + (SITE_ZOOM - 1) * p})`;
-    // Cleared to "none" at rest so a full-viewport blur layer isn't kept alive for free.
-    // Blur runs on its own floor: it reaches 0 at --blur-floor of the reveal, i.e. 60%
-    // of the way through the exit, rather than trailing all the way to the end.
-    const bp = Math.min(1, Math.max(0, (p - BLUR_FLOOR) / (1 - BLUR_FLOOR)));
-    world.style.filter = bp > 0.001 ? `blur(${(SITE_BLUR * bp).toFixed(2)}px)` : "none";
+    /* ⛔ BLUR OFF (2026-08-18, JJ) — a DESIGN decision, not a bug fix.
+     * `hooks.md`: "the 50px full-viewport blur is the most expensive thing in the file",
+     * applied per frame to the whole viewport simultaneously with a scale() and an opacity
+     * ramp — three compositor-hostile operations at once on the largest element on the page,
+     * and one of JJ's stated reasons for wanting a design alternative rather than more tuning.
+     * Separation of planes is now carried by scale + opacity alone, both composited without
+     * repaint.
+     *
+     * ⭐ CONSEQUENCES, so nobody re-derives them: this deletes `motion-fork-brief.md § F`
+     * (hold the blur constant during give) and most of § 4, and it UNBLOCKS § E (give at the
+     * card boundary), which was gated only on the blur's per-frame cost.
+     *
+     * ⚠︎ Left as a comment, not deleted, and `--site-blur-max` / `--blur-floor` / SITE_BLUR /
+     * BLUR_FLOOR all stay live and unread — so this is a one-line revert, and every tuning
+     * note in `hooks.md` that references those tokens stays executable.
+     *
+     *   const bp = Math.min(1, Math.max(0, (p - BLUR_FLOOR) / (1 - BLUR_FLOOR)));
+     *   world.style.filter = bp > 0.001 ? `blur(${(SITE_BLUR * bp).toFixed(2)}px)` : "none";
+     */
+    // ⚠︎ Still written every frame, and it must be: the property is inline, so a stale
+    // blur() from a previous build or a hot reload would otherwise never be cleared.
+    world.style.filter = "none";
     // CARD: zooms --card-zoom-min → 1. Because (0.95 + 0.05p) >= p for all p <= 1, the
     // card's growing top edge stays tucked behind the rising stage edge the whole way,
     // and the two arrive on the 120px line together.
@@ -324,6 +345,7 @@ import { createTrace } from "../lib/trace.mjs";
 
   function goTab() {
     if (view === "tab") return;
+    giveWorld.cancel();
     T.push({ k: "@goTab", g: arb.state().gestureId, claim: arb.state().gRegion });
     view = "tab";
     arb.consume();                                    // this gesture has had its transition
@@ -333,6 +355,10 @@ import { createTrace } from "../lib/trace.mjs";
 
   function goLanding() {
     if (view === "landing") return;
+    // ⭐ .cancel(), NOT .release(). worldTo() tweens FROM the live worldY, so the px the give has
+    // already travelled become the head start of the lerp — and spanDur shortens the
+    // duration to match. Springing back first would be a visible hitch at the commit.
+    giveWorld.cancel();
     T.push({ k: "@goLanding", g: arb.state().gestureId, claim: arb.state().gRegion });
     view = "landing";
     arb.consume();                                    // this gesture has had its transition
@@ -342,6 +368,120 @@ import { createTrace } from "../lib/trace.mjs";
       applyView();
     });
   }
+
+  // ============================================================================
+  // GIVE (D) — the elastic at the tab → landing boundary
+  // ============================================================================
+  /**
+   * ⭐ WHAT THIS REPLACES. `interaction-changes.md`, TAB VIEW: pulling up at scrollTop 0
+   * used to hit a hard edge, accumulate 200px of INVISIBLE intent, then teleport into a
+   * lerp. JJ: "did not feel intuitive." ⚠︎ The browser was ALREADY drawing an elastic
+   * there — `overscroll-behavior: contain` blocks chaining but preserves the local bounce
+   * — but one fully decoupled from the threshold, so it told you nothing. This is not
+   * "add give": it is REPLACE A MEANINGLESS GIVE WITH A COUPLED ONE.
+   *
+   * ⭐ NOT A NEW RENDER PATH, and that is the whole reason it is cheap. `applyWorld()` is
+   * a single writer over one scalar, and `revealP()` is `-worldY / LANDING_H` — so writing
+   * worldY during the give fades the tab contents (`paintTrack`) and ramps the nav tint
+   * (`paintNav`) for free, in step. The give IS a preview of the commit, not a decoration
+   * beside it.
+   *
+   * ⛔ GIVE CHANGES THE FEEDBACK, NOT THE GATE. The commit still fires mid-gesture at
+   * --commit-dist-back, exactly as before. Moving the commit to RELEASE is `J`, a separate
+   * change; `motion-fork-brief.md` is explicit that two loosenings must not land together.
+   */
+
+  /**
+   * Pulled px → px of give. Decelerating, and it comes to rest EXACTLY at the commit point.
+   *
+   *   give(u) = CEIL * (1 - (1-u)^EASE),  u = pulled / commitDistBack,  CEIL = MAX * dist
+   *
+   * ⭐ WHY THESE TWO DEFAULTS ARE NOT ARBITRARY. The slope at u=0 is `EASE * MAX`, so at
+   * --give-max 0.5 / --give-ease 2 the give starts at EXACTLY 1:1 with your input and
+   * decelerates to a standstill at the threshold. It never outruns the gesture (which
+   * would read as the page running away) and it never simply stops short (which would read
+   * as a wall). "It gets heavier, it stops, and that is when it goes."
+   *
+   * ⚠︎ Keyed off the COMMIT DISTANCE, not off LANDING_H. `motion-fork-brief.md § G` warns
+   * that a px→px curve cannot be universal because the two boundaries have different spans
+   * — but they share a threshold, so scaling to the threshold satisfies the same
+   * requirement and stays true when E reuses this at the card.
+   */
+  function giveOf(pulled) {
+    const dist = arb.config.commitDistBack;
+    const u = Math.min(1, Math.max(0, pulled / dist));
+    return GIVE_MAX * dist * (1 - Math.pow(1 - u, GIVE_EASE));
+  }
+
+  /**
+   * ⭐ ONE IMPLEMENTATION, TWO BOUNDARIES. `motion-fork-brief.md § G`: "one threshold, one
+   * universal curve, both directions." Copying this per boundary is how the two would drift.
+   *
+   *   busy()    a lerp owns the scalar right now — give must not write underneath it
+   *   at(px)    write the scalar, `px` past its rest position
+   *   back()    spring home (the caller supplies the tween, so spanDur stays per-boundary)
+   */
+  function createGive({ busy, at, back }) {
+    let on = false, timer = 0;
+    const release = () => {
+      clearTimeout(timer);
+      if (!on) return;
+      on = false;
+      if (busy()) return;              // a commit already took the scalar
+      back();
+    };
+    return {
+      release,
+      /** the give's travel became the lerp's opening distance — do NOT spring back */
+      cancel() { on = false; clearTimeout(timer); },
+      drive(pulled) {
+        // ⛔ ONE WRITER. Give is this project's first deliberate SECOND writer for these
+        // scalars, and a lerp in flight outranks it. This is the drift risk P0 exists for.
+        //
+        // ⚠︎ KNOWN NIT, LEFT DELIBERATELY (2026-08-18): a re-push DURING the spring-back
+        // gets no give until the spring lands — a dead window of spanDur's 30% floor,
+        // ~150ms. Letting give cancel the tween would fix it, but a tween here is not
+        // always the spring-back (goTab's forward lerp also runs in tab view), so the
+        // rule has to distinguish them. Small, real, and not worth bundling into the
+        // change that answers "does coupled give feel right."
+        if (busy()) return;
+        on = true;
+        clearTimeout(timer);
+        // ⚠︎ "Release" on wheel is silence, and --gesture-gap is already this project's
+        // definition of a gesture ending. Deliberately NOT a new number.
+        timer = setTimeout(release, arb.config.gestureGap);
+        at(giveOf(pulled));
+      },
+    };
+  }
+
+  /** D — tab → landing. worldY rests at -LANDING_H; give walks it back toward 0. */
+  const giveWorld = createGive({
+    busy: () => !!worldTween || view !== "tab",
+    at: (px) => applyWorld(-LANDING_H + px),
+    back: () => worldTo(-LANDING_H),
+  });
+
+  /**
+   * E — card → site. Identical shape on a different scalar: stageY rests at stageOpenY()
+   * (negative) and give walks it toward 0, so `detailP()` dips below 1 and the card and the
+   * departing site preview the close exactly as they would during the real lerp.
+   *
+   * ⭐ UNBLOCKED BY THE BLUR COMING OUT. It was gated on nothing else: `applyStage` at
+   * detailP() = 1.0 sat at the full 50px blur, and give would have driven it 50 → 37.5px
+   * PER FRAME from a scroll gesture, on a project already reporting frame drops. With the
+   * blur gone `applyStage` is two transforms — both composited, no repaint — so the card
+   * boundary is now the CHEAPER of the two gives, not the expensive one.
+   *
+   * ⭐ And the curve transfers with no new numbers: it is keyed to --commit-dist-back, not
+   * to the span. The two spans differ (LANDING_H ~763 vs VH - DETAIL_TOP ~780); the
+   * threshold does not.
+   */
+  const giveStage = createGive({
+    busy: () => !!stageTween || !detailOpen,
+    at: (px) => applyStage(stageOpenY() + px),
+    back: () => stageTo(stageOpenY()),
+  });
 
   function stageTo(target, done) {
     if (stageTween) stageTween.cancel();
@@ -364,6 +504,8 @@ import { createTrace } from "../lib/trace.mjs";
   }
 
   function closeDetail() {
+    // the give's travel becomes the close lerp's head start; stageTo() tweens from stageY
+    giveStage.cancel();
     if (!detailOpen) return;
     // ⭐ the anchor for every leak counter — the post-close window opens HERE, which is
     // also where `detailOpen` flips and the coast becomes free to reach the deck.
@@ -461,6 +603,11 @@ import { createTrace } from "../lib/trace.mjs";
       // no horizontal case left: the card is a single column, so vertical is the
       // only axis and the native scroller owns it
       if (detailScroll.scrollTop <= 0 && e.deltaY < 0) {                  // beyond the upper bound
+        // ⭐ E: THE GIVE TAKES OVER THIS BOUNDARY, so the browser must stop drawing its own.
+        // Until now this branch did NOT preventDefault, which is precisely why the elastic
+        // you felt here was the browser's — decoupled from the 200px threshold, and therefore
+        // telling you nothing. Paired with `overscroll-behavior-y: none` on #detailScroll.
+        e.preventDefault();
         arb.addIntent(-e.deltaY);
         // ⭐ THE BOUNDARY, RECORDED. This is where the card-close decision is made, and it
         // is the one place in the handler whose inputs were invisible in an export.
@@ -474,8 +621,15 @@ import { createTrace } from "../lib/trace.mjs";
         // real transition clears it. See the arbiter.
         if (arb.meant(arb.intent, -e.deltaY, dt, true) && arb.gestureLive() && !arb.scrollSpent())
           closeDetail();
+        // ⚠︎ THE GIVE CARRIES THE SAME THREE GATES AS THE COMMIT, `scrollSpent()` included.
+        // A flick that already scrolled the card to its top has spent its one action — it
+        // must not drag the card either, or the overshoot comes back as a visual instead of
+        // as a close. Push again and you get both. This IS `J`'s rule, stated as feedback:
+        // "you released before reaching the edge -> you stop at the top."
+        else if (arb.gestureLive() && !arb.scrollSpent()) giveStage.drive(arb.intent);
       } else {
         arb.resetIntent();
+        giveStage.release();
         // ⭐ THE CARD IS SCROLLING, SO THIS GESTURE IS SPENT. Without this, a flick from
         // mid-card coasts to the top and the first coast event at the boundary commits the
         // close on velocity alone — 19px/ms against a 1.8px/ms threshold. See
@@ -569,13 +723,21 @@ import { createTrace } from "../lib/trace.mjs";
 
     // horizontal is left entirely to the native snap track (no preventDefault); a
     // swipe mid-slide releases the nav tween so the gesture takes over
-    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) { releaseTab(); arb.resetIntent(); return; }
+    // ⚠︎ giveWorld.release() here is `interaction-changes.md`'s row verbatim: "horizontal swipe
+    // DURING a vertical give → give springs back, track takes over."
+    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+      releaseTab(); arb.resetIntent(); giveWorld.release(); return;
+    }
     const sub = subs[current];
     if (sub.scrollTop <= 0 && e.deltaY < 0) {          // at 0%, pulling up → landing
       e.preventDefault();
       arb.addIntent(-e.deltaY);
       if (arb.meant(arb.intent, -e.deltaY, dt, true) && arb.gestureLive()) goLanding();
-    } else arb.resetIntent();                                    // otherwise the tab scrolls natively
+      // ⚠︎ gestureLive() gates the give too, not just the commit. A spent gesture — a coast
+      // still arriving after a transition already fired — must not drive the elastic either,
+      // or the view breathes on its own after every commit.
+      else if (arb.gestureLive()) giveWorld.drive(arb.intent);
+    } else { arb.resetIntent(); giveWorld.release(); }           // otherwise the tab scrolls natively
   }, { passive: false });
 
   // ---- touch: axis-lock at gesture start ----
@@ -909,6 +1071,66 @@ import { createTrace } from "../lib/trace.mjs";
   // because applyWorld(-LANDING_H) moves when LANDING_H does. Fixing that means keying the
   // geometry on svh/dvh/visualViewport — which changes what measures LANDING_H, and
   // LANDING_H feeds revealP(), so it changes every reveal dynamic. Bigger, and separate.
+  // ============================================================================
+  // RETUNE — dev only. Re-read every [TUNE] token after a CSS hot-swap.
+  // ============================================================================
+  /**
+   * ⭐ THE TRAP THIS CLOSES, recorded in `hooks.md § Motion audit`: JS reads every [TUNE]
+   * token ONCE at init, and Astro's HMR hot-swaps global.css WITHOUT re-running the module.
+   * So editing --give-max, --site-zoom-max or any arbiter token in dev APPEARS TO DO
+   * NOTHING until a hard reload. This did not exist with `open prototype-v6.html`, and it
+   * is worst exactly where tuning matters most — you cannot tell "that value did nothing"
+   * from "the reload didn't take."
+   *
+   * ⚠︎ DEV ONLY, and it must stay that way. `import.meta.hot` is undefined in a production
+   * build, so the whole block is dead code there. Nothing on the hot path reads it.
+   *
+   * ⚠︎ The arbiter's config is MUTATED IN PLACE rather than re-creating the arbiter. That is
+   * deliberate: a fresh arbiter would lose gestureId, the claim and the coast histories
+   * mid-gesture, so retuning would silently reset segmentation and you would be tuning
+   * against a different machine than the one you are feeling.
+   *
+   *   window.__retune()      by hand, from the console
+   *   (automatic on every Vite CSS update)
+   */
+  function retune() {
+    ease = easeFromToken();
+    DUR        = cssMs("--dur", 500);
+    SITE_ZOOM  = cssNum("--site-zoom-max", 1.1);
+    SITE_BLUR  = cssNum("--site-blur-max", 50);
+    CARD_ZOOM  = cssNum("--card-zoom-min", 0.95);
+    FADE_FLOOR = cssNum("--fade-floor", 0.2);
+    BLUR_FLOOR = cssNum("--blur-floor", 0.4);
+    GIVE_MAX   = cssNum("--give-max", 0.5);
+    GIVE_EASE  = cssNum("--give-ease", 2);
+    Object.assign(arb.config, {
+      gestureGap: cssMs("--gesture-gap", 100),
+      reverseFrac: cssNum("--gesture-reverse", 0.25),
+      repushRun: cssNum("--repush-run", 3),
+      repushFloor: cssNum("--repush-floor", 0.2),
+      repushArm: cssNum("--repush-arm", 0.25),
+      claimRise: cssNum("--claim-rise", 1.5),
+      claimFloor: cssNum("--claim-floor", 0.2),
+      commitDist: cssNum("--commit-dist", 120),
+      commitVel: cssNum("--commit-vel", 1.2),
+      commitDistBack: cssNum("--commit-dist-back", 200),
+      commitVelBack: cssNum("--commit-vel-back", 1.8),
+      debug: cssNum("--gesture-debug", 0) === 1,
+    });
+    // ⚠︎ REPAINT AT THE CURRENT POSITION. Every dynamic is position-derived, so a token that
+    // changes the MAPPING (zoom, fade floor) shows nothing until something re-applies it.
+    // Without these two lines retune() would look broken for exactly the tokens you most
+    // want to feel.
+    measureGeom();
+    applyWorld(worldY);
+    applyStage(stageY);
+  }
+
+  if (import.meta.hot) {
+    window.__retune = retune;
+    import.meta.hot.on("vite:afterUpdate", retune);
+  }
+
   let lastW = window.innerWidth, lastH = window.innerHeight;
 
   window.addEventListener("resize", () => {

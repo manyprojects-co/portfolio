@@ -77,6 +77,15 @@
     --commit-vel: 1.2;          /* [TUNE] px/ms flick to commit forward */
     --commit-dist-back: 200px;  /* [TUNE] accumulated px to commit back/up */
     --commit-vel-back: 1.8;     /* [TUNE] px/ms flick to commit back/up */
+
+    /* GIVE (D) — the elastic that makes --commit-dist-back VISIBLE. The threshold above is
+       unchanged; give is feedback, not a gate. Both are fractions OF THE COMMIT DISTANCE,
+       so the curve stays true when E reuses it at the card, where the span differs.
+       ⭐ Slope at the start is (--give-ease x --give-max), so at 2 x 0.5 the give begins
+       exactly 1:1 with your input and decelerates to a standstill precisely at the commit
+       point. Raise --give-max past 0.5 and the view starts outrunning the gesture. */
+    --give-max: 0.5;         /* [TUNE] give ceiling, as a fraction of --commit-dist-back */
+    --give-ease: 2;          /* [TUNE] resistance. higher = more travel spent early, harder stop */
     /* ONE GESTURE = ONE LERP. Not a time window — gestures are segmented from the wheel
        stream itself, so momentum can never carry into a second transition however long it
        runs, and a genuinely new scroll responds on its first event. */
@@ -406,6 +415,16 @@
        scroll container, and overscroll-behavior-x:contain would tell the browser not to
        chain horizontally out of it, so a sideways swipe would die here instead of
        reaching the track. X must stay `auto` for the tab deck to be swipeable at all. */
+    /* ⭐ STAYS `contain` — H, as specified, was TOO BROAD (2026-08-18).
+       `motion-fork-brief.md § H` says to set `overscroll-behavior-y: none` on whichever
+       scroller takes over the give, to kill the browser's competing bounce. That is right
+       about the TOP edge and wrong about the scroller: the property is per-AXIS, so `none`
+       also kills the bounce at the BOTTOM of the panel, which give does not own and which
+       then dead-ends — the exact feel give exists to remove, relocated.
+       The handler's unconditional `e.preventDefault()` at `scrollTop <= 0 && deltaY < 0`
+       already cancels the browser's top bounce for precisely the events that would draw it.
+       So `contain` is correct at both boundaries. Same reasoning as #detailScroll.
+       ⚠︎ Y only — NEVER the shorthand; see below. */
     overscroll-behavior-y: contain;
     overscroll-behavior-x: auto;
     scrollbar-width: none;
@@ -566,7 +585,25 @@
     height: 100%;
     overflow-x: hidden;
     overflow-y: auto;
-    overscroll-behavior: contain;
+    /* ⭐ `contain`, NOT `none` — and the difference is PER-EDGE even though the property
+       is not (E + JJ, 2026-08-18).
+
+       `none` was the first cut, and it killed the bounce at BOTH edges. The top is fine —
+       give owns it now — but the BOTTOM of a card then hard-stops, which is the same
+       dead-end feel give exists to remove, just moved to the other end.
+
+       There is no bottom-only value. So: `contain` keeps the browser's local bounce
+       available at both edges, and the wheel handler's unconditional `e.preventDefault()`
+       at `scrollTop <= 0 && deltaY < 0` cancels the browser's scroll — bounce included —
+       for exactly the events that would have drawn the TOP one. Ours above, the browser's
+       below, one declaration.
+
+       ⚠︎ AXIS-EXPLICIT REGARDLESS. This was the `overscroll-behavior` SHORTHAND, which is
+       invariant 4's landmine (it kills the tab swipe) and was harmless here only by the
+       accident of overflow-x being hidden. Never restore the shorthand.
+       ⚠︎ If a top bounce ever shows through, the cause is a top-edge event that did NOT get
+       preventDefault'd — fix the handler, do not go back to `none`. */
+    overscroll-behavior-y: contain;
     scrollbar-width: none;
     /* the bleed is absorbed as PADDING, so the content box stays exactly (vw - 120)
        and nothing inside the card had to learn about the overhang */
