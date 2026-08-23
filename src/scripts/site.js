@@ -981,7 +981,7 @@ import { createTrace } from "../lib/trace.mjs";
   const AXIS_LOCK = 8;              // px before the axis is decided
 
   /**
-   * ── D2a: THE LANDING → TAB TRAVERSE IS 1:1 ON TOUCH (2026-08-18, JJ) ──────────────
+   * ── D2: EVERY VERTICAL BOUNDARY IS 1:1 ON TOUCH (2026-08-18, JJ) ──────────────────
    *
    * ⭐ THE MODEL, SETTLED: "one vertical drag owns the whole axis. Through the middle it is
    * 1:1 — the finger is holding the landing. At the ends it gets heavy and stops."
@@ -1003,22 +1003,39 @@ import { createTrace } from "../lib/trace.mjs";
    * nothing to prevent. ⛔ tab → landing and card → site do NOT get this for free — both
    * fight a live native scroller. Do not assume this generalises when extending D2.
    */
-  let tDrag = false;                // is this touch driving the traverse?
-  let tBase = 0, tLockDy = 0;       // worldY when the axis locked, and the dy already spent
+  /**
+   * null   = not decided yet this gesture
+   * "none" = decided: the native scroller owns it, stay out of the way for the whole gesture
+   * "world" | "card" = we are driving that scalar
+   * ⚠︎ Three states, not a boolean, because "we already looked and the answer was no" has to
+   * be distinguishable from "we have not looked yet" — otherwise the decision gets re-made
+   * every event, which is the per-event-signal-as-state bug this file has now hit three times.
+   */
+  let tDrive = null;
+  let tBase = 0, tLockDy = 0;       // the scalar when the axis locked, and the dy already spent
   let tvY = 0, tPrevY = 0, tPrevT = 0;   // release velocity, px/ms, smoothed
 
   window.addEventListener("touchstart", (e) => {
     const t = e.touches[0];
     tsX = t.clientX; tsY = t.clientY; tAxis = null; tDone = false;
     // ⚠︎ Only on a genuinely NEW touch. A second finger landing mid-drag also fires
-    // touchstart, and clearing tDrag there would strand worldY part-way with no release
+    // touchstart, and clearing tDrive there would strand the scalar part-way with no release
     // left to spring it back.
-    if (e.touches.length === 1) tDrag = false;
+    if (e.touches.length === 1) tDrive = null;
     // touchstart IS a gesture boundary — and it is also where this gesture stakes its claim,
     // from the finger's own landing point. Same rule as wheel, better signal.
     arb.beginGesture(t.clientY);
   }, { passive: true });
 
+  /**
+   * ⚠︎ `{ passive: false }` — REQUIRED, and it has a cost. Driving a scalar from touchmove at a
+   * boundary means preventing the scroller underneath, and a non-passive listener puts JS on
+   * the compositor's critical path for every touchmove. D2a got away with `passive: true`
+   * because nothing scrolls vertically at the landing; D2b/D2c do not, because `.sub` and
+   * `#detailScroll` are live scrollers.
+   * ⛔ SO KEEP THIS BODY SMALL. No measurement, no layout reads per event — the one
+   * `scrollTop` read happens ONCE, at axis lock, below.
+   */
   window.addEventListener("touchmove", (e) => {
     if (tDone) return;
     const t = e.touches[0];
@@ -1027,62 +1044,87 @@ import { createTrace } from "../lib/trace.mjs";
       if (Math.abs(dx) < AXIS_LOCK && Math.abs(dy) < AXIS_LOCK) return;
       tAxis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
     }
-    if (!tDrag && tAxis === "y" && view === "landing" && !detailOpen) {
-      // ⭐ DIRECT MANIPULATION OUTRANKS A LERP. Catching a transition mid-flight and taking
-      // it over is this project's defining property (see site.js's top note); on touch it is
-      // literal. Base off the LIVE worldY so a caught lerp continues from where it is, and
-      // subtract the 8px the axis lock has already consumed so the world does not jump.
-      if (worldTween) { worldTween.cancel(); worldTween = null; }
-      tDrag = true; tBase = worldY; tLockDy = dy;
-      tvY = 0; tPrevY = t.clientY; tPrevT = performance.now();
-    }
     if (tAxis === "x") { releaseTab(); return; }   // horizontal → native carousel / track
 
-    if (detailOpen) {
-      if (detailScroll.scrollTop <= 0 && dy > arb.config.commitDistBack && arb.gestureLive()) { tDone = true; closeDetail(); }
-      return;
-    }
-    if (view === "landing") {
-      if (tDrag) {
-        // ⚠︎ WRITE worldY AND NOTHING ELSE. No measurement, no layout read, no branching on
-        // geometry — this runs on every touchmove. applyWorld() already fans out to the fade
-        // and the nav tint, both position-derived, so they stay in step for free.
-        const now = performance.now(), ms = now - tPrevT;
-        if (ms > 0) tvY = tvY * 0.6 + ((t.clientY - tPrevY) / ms) * 0.4;   // EMA, px/ms
-        tPrevY = t.clientY; tPrevT = now;
-        // ⚠︎ Clamped at 0: pulling DOWN at the landing is a true dead-end and currently just
-        // stops. That is the one place give still belongs on touch — marked, not built.
-        applyWorld(Math.min(0, Math.max(-LANDING_H, tBase + (dy - tLockDy))));
+    /**
+     * ⭐ THE DECISION IS MADE ONCE, AT AXIS LOCK, AND NEVER RE-EXAMINED.
+     *
+     * ⛔ This is deliberate and it is the lesson of three separate bugs today (`consumed` at
+     * the deck's edge, `release()` in a flipping branch, `regRun`): A SIGNAL THAT IS CORRECT
+     * PER EVENT IS NOT CORRECT AS A STATE. `scrollTop <= 0` is exactly such a signal — testing
+     * it every event would hand the drive over the instant a mid-panel drag happened to reach
+     * the top, which is scroll-chaining, and would flicker at the boundary.
+     *
+     * ⭐ Deciding once also states edge-strict on touch: a drag that began mid-panel has the
+     * panel's action, and reaching the top is not a second one. Same rule as wheel.
+     * ⚠︎ And it is the performance fix — one `scrollTop` read per GESTURE, not per event.
+     */
+    if (tDrive === null) {
+      tDrive = "none";
+      const down = dy > 0;
+      if (detailOpen) {
+        if (down && detailScroll.scrollTop <= 0) { tDrive = "card"; tBase = stageY; }
+      } else if (view === "landing") {
+        tDrive = "world"; tBase = worldY;            // the traverse — either direction
+      } else if (down && subs[current].scrollTop <= 0) {
+        tDrive = "world"; tBase = worldY;            // tab → landing, from the panel's top
       }
-      return;
+      if (tDrive !== "none") {
+        // ⚠︎ DIRECT MANIPULATION OUTRANKS A LERP. Catching a transition mid-flight is this
+        // project's defining property; on touch it is literal. Base off the LIVE scalar.
+        if (tDrive === "world" && worldTween) { worldTween.cancel(); worldTween = null; }
+        if (tDrive === "card" && stageTween) { stageTween.cancel(); stageTween = null; }
+        tLockDy = dy; tvY = 0; tPrevY = t.clientY; tPrevT = performance.now();
+      }
     }
-    if (subs[current].scrollTop <= 0 && dy > arb.config.commitDistBack && arb.gestureLive()) { tDone = true; goLanding(); }
-  }, { passive: true });
+    if (tDrive === "none") return;                   // the panel scrolls natively; leave it alone
+
+    e.preventDefault();
+    const now = performance.now(), ms = now - tPrevT;
+    if (ms > 0) tvY = tvY * 0.6 + ((t.clientY - tPrevY) / ms) * 0.4;   // EMA, px/ms
+    tPrevY = t.clientY; tPrevT = now;
+    const raw = tBase + (dy - tLockDy);
+    if (tDrive === "world") {
+      // ⭐ LANDING AND TAB ARE THE SAME DRIVE. Both are worldY over the same span; only the
+      // starting point differs, and the clamp decides which way there is room. D2a and D2b
+      // are one mechanism, which is why they share a commit rule below.
+      // ⚠︎ Above the landing there is nothing, so reuse the wheel's dead-end curve rather than
+      // hard-stopping — otherwise touch and wheel disagree at the same edge.
+      applyWorld(raw > 0 ? bounceOf(raw) : Math.max(-LANDING_H, raw));
+    } else {
+      applyStage(Math.min(0, Math.max(stageOpenY(), raw)));
+    }
+  }, { passive: false });
 
   /**
-   * ⭐ J, ARRIVING FREE. `touchend` is a REAL release — no momentum inference, no synthesised
-   * silence — so the commit stops being an accumulator and becomes the natural touch idiom:
-   * past halfway, or flicked hard. `motion-fork-brief.md § J` wanted exactly this and listed
-   * it as blocked on a release signal; touch simply has one.
-   *
-   * ⭐ And halfway is SYMMETRIC BY CONSTRUCTION, so touch answers `§ G`'s
-   * forward-vs-back asymmetry question inside its own domain without touching
-   * --commit-dist / --commit-dist-back at all.
-   *
-   * ⚠︎ A hard flick DOWN cancels even past halfway. Position alone would strand the user:
-   * they dragged far, changed their mind, and threw it back — honouring the position there
-   * would be the teleport complaint wearing a different hat.
+   * ⭐ J, ARRIVING FREE — at all three boundaries now. `touchend` is a REAL release, so commit
+   * is the natural touch idiom: past a fraction of the traverse, or flicked hard.
+   * ⭐ Halfway is SYMMETRIC BY CONSTRUCTION, so touch answers `§ G`'s forward-vs-back
+   * asymmetry question inside its own domain without touching either --commit-dist token.
+   * ⚠︎ A hard flick the OTHER WAY cancels even past halfway — position alone would strand a
+   * user who dragged far, changed their mind and threw it back, which is the teleport
+   * complaint wearing a different hat.
    */
   const endTouchDrag = () => {
-    if (!tDrag) return;
-    tDrag = false;
-    const p = LANDING_H ? -worldY / LANDING_H : 0;
-    const up = -tvY;                          // px/ms, positive = swiping up = toward tab
+    const drive = tDrive;
+    tDrive = null;
+    if (drive !== "world" && drive !== "card") return;
     const V = arb.config.commitVel;
-    if (up >= V) goTab();                     // flicked up
-    else if (up <= -V) worldTo(0);            // flicked down — cancel regardless of position
-    else if (p >= TOUCH_COMMIT) goTab();
-    else worldTo(0);
+    if (drive === "world") {
+      const p = LANDING_H ? -worldY / LANDING_H : 0;
+      const up = -tvY;                        // px/ms, positive = swiping up = toward the tab
+      const toTab = up >= V ? true : up <= -V ? false : p >= TOUCH_COMMIT;
+      // ⚠︎ goTab/goLanding early-return when already in that view, which would leave worldY
+      // displaced with nothing to put it back. Spring explicitly in that case.
+      if (toTab) { if (view === "tab") worldTo(-LANDING_H); else goTab(); }
+      else       { if (view === "landing") worldTo(0); else goLanding(); }
+    } else {
+      const open = stageOpenY();
+      const p = open ? stageY / open : 1;     // 1 = fully open, 0 = closed
+      const down = tvY;                       // positive = swiping down = closing
+      const close = down >= V ? true : down <= -V ? false : p <= 1 - TOUCH_COMMIT;
+      if (close) closeDetail(); else stageTo(open);
+    }
   };
   window.addEventListener("touchend", endTouchDrag, { passive: true });
   window.addEventListener("touchcancel", endTouchDrag, { passive: true });
