@@ -97,6 +97,8 @@ import { createTrace } from "../lib/trace.mjs";
   let BLUR_FLOOR = cssNum("--blur-floor", 0.4);
   let CARD_BLUR    = cssNum("--card-blur", 1);
   let CARD_BLUR_IN = cssNum("--card-blur-in", 0.45);
+  let VEIL_MODE    = cssNum("--card-veil-mode", 1);
+  let VEIL_OP      = cssNum("--card-veil-op", 0.9);
   // give (D) — see the GIVE section for what these two numbers mean geometrically
   let GIVE_MAX   = cssNum("--give-max", 0.5);
   let GIVE_EASE  = cssNum("--give-ease", 2);
@@ -139,6 +141,7 @@ import { createTrace } from "../lib/trace.mjs";
   // Rollback at init, not just on retune(): --card-blur: 0 must cost nothing on a cold
   // load too, and a promoted-but-transparent layer is not nothing.
   if (cardBlur && !cssNum("--card-blur", 1)) cardBlur.classList.add("off");
+  if (cardBlur && !cssNum("--card-veil-mode", 1)) cardBlur.classList.add("solid");
   const nav = document.getElementById("nav");
   // hoisted above applyStage, which drives all three layers together
   const detailEl = document.getElementById("detail");
@@ -272,8 +275,13 @@ import { createTrace } from "../lib/trace.mjs";
      * viewport when the card is closed. Position-derived off detailP() like everything
      * else here, so a caught or reversed lerp keeps it exactly in step. */
     if (CARD_BLUR && cardBlur) {
+      /* One ramp, two modes. The blur runs to full strength; the solid scrim tops out at
+       * --card-veil-op so the site never quite disappears into the ground. Same curve,
+       * same position-derived source, so switching modes cannot change the TIMING — only
+       * what is painted. That is what makes the two comparable. */
+      const ceil = VEIL_MODE ? 1 : VEIL_OP;
       cardBlur.style.opacity = p > 0.001
-        ? Math.min(1, p / (CARD_BLUR_IN || 1)).toFixed(3)
+        ? (Math.min(1, p / (CARD_BLUR_IN || 1)) * ceil).toFixed(3)
         : "0";
     }
     // CARD: zooms --card-zoom-min → 1. Because (0.95 + 0.05p) >= p for all p <= 1, the
@@ -1548,8 +1556,11 @@ import { createTrace } from "../lib/trace.mjs";
     BLUR_FLOOR = cssNum("--blur-floor", 0.4);
     CARD_BLUR    = cssNum("--card-blur", 1);
     CARD_BLUR_IN = cssNum("--card-blur-in", 0.45);
+    VEIL_MODE    = cssNum("--card-veil-mode", 1);
+    VEIL_OP      = cssNum("--card-veil-op", 0.9);
     if (cardBlur) {
       cardBlur.classList.toggle("off", !CARD_BLUR);
+      cardBlur.classList.toggle("solid", !VEIL_MODE);
       if (!CARD_BLUR) cardBlur.style.opacity = "0";
     }
     GIVE_MAX   = cssNum("--give-max", 0.5);

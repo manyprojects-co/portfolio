@@ -89,6 +89,24 @@
        stepped radii; that is variant C, and this is the cheap stand-in that answers
        whether the geometry is right. */
     --card-blur: 1;          /* [TUNE] 1 = on. 0 = rollback, and the plane costs nothing */
+    /* [TUNE] WHAT THE PLANE PAINTS. 1 = progressive blur (backdrop sampling, the expensive
+       one). 0 = a solid scrim in --bg, same gradient, same geometry, same ramp.
+       ⭐ THE FALLBACK IS NOT A DEGRADED BLUR, IT IS A DIFFERENT IDEA: the site DISSOLVES
+       into the ground colour instead of going soft. Judge it as its own thing.
+       ⚠︎ Mode 0 cannot stutter. A gradient in a solid colour plus an opacity ramp is pure
+       compositing — no sampling, no repaint, nothing that scales with viewport area or
+       GPU throttling. It is the floor on cost, which is why it is the mobile answer if
+       the knobs do not get there. */
+    --card-veil-mode: 1;
+    --card-veil-op: 0.9;     /* [TUNE] mode 0 only: peak opacity of the grey. 1 = opaque */
+    /* [TUNE] mode 0 only: what the scrim fades TO.
+       ⚠︎ --bg (#E7E7E7) and --detail-bg (#EFEFEF) are one step apart, so fading the site
+       to --bg makes the strip above the card nearly the SAME grey as the card. The blur's
+       job was separation of planes; a scrim in --bg arguably removes it instead. If mode 0
+       reads flat, this is the knob — go DARKER than the card (#D8D8D8, #CFCFCF) so the
+       strip recedes rather than merging. Left at --bg because that is the honest default,
+       not because it is the best answer. */
+    --card-veil-color: var(--bg);
     --card-blur-max: 24px;   /* [TUNE] the radius at the card boundary */
     --card-blur-in: 0.45;    /* [TUNE] blur reaches full strength at this much of the reveal */
     --card-blur-from: 35%;   /* [TUNE] gradient starts here; above it the site is untouched */
@@ -392,17 +410,44 @@
        the gradient starts cuts the sampled area by --card-blur-from with zero visual
        difference. Found when JJ saw frames drop in Low Power Mode, 2026-08-23. */
     top: var(--card-blur-from);
-    left: 0; right: 0; bottom: 0;
+    left: 0; right: 0;
+    /* ⚠︎ OVERSHOOT THE BOUNDARY, DO NOT MEET IT (2026-08-23, JJ saw a sliver of
+       un-blurred site right above the card on Chrome).
+       A backdrop-filter samples pixels AROUND each output pixel. At the plane's own bottom
+       edge there is nothing below to sample, so the last band of output is mixed from a
+       clamped, one-sided neighbourhood — under-blurred, and it reads as a sharp sliver
+       exactly where the blur is supposed to be strongest.
+       Extending the box past #stage's bottom edge gives those pixels a full neighbourhood.
+       ⭐ The overshoot cannot paint onto the card: #stage is overflow:hidden, so everything
+       past its bottom edge is clipped. It only changes what the LAST VISIBLE ROW is
+       averaged from. Roughly one blur radius is enough; keep it a formula off the radius
+       so retuning one cannot silently break the other. */
+    bottom: calc(-1 * var(--card-blur-max));
     z-index: 1;
     pointer-events: none;
     opacity: 0;                    /* JS ramps this off detailP(); see applyStage */
     backdrop-filter: blur(var(--card-blur-max));
     -webkit-backdrop-filter: blur(var(--card-blur-max));
-    /* clear at the top of the plane, full at the card boundary. The plane now BEGINS at
-       --card-blur-from, so the ramp spans its whole height — same picture, less sampled. */
-    mask-image: linear-gradient(to bottom, transparent 0%, black 100%);
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 100%);
+    /* Clear at the top of the plane, full AT THE CARD BOUNDARY — which is no longer the
+       plane's own bottom, because of the overshoot above. The boundary sits exactly
+       --card-blur-max short of it, so the ramp must reach black there and stay black
+       through the clipped overshoot. Getting this wrong is subtle: the blur would peak
+       just below the visible edge and read very slightly soft AT it. */
+    mask-image: linear-gradient(to bottom,
+      transparent 0%, black calc(100% - var(--card-blur-max)));
+    -webkit-mask-image: linear-gradient(to bottom,
+      transparent 0%, black calc(100% - var(--card-blur-max)));
   }
+  /* ⚠︎ MODE 0 MUST REMOVE backdrop-filter, NOT SET IT TO blur(0). A zero-radius
+     backdrop-filter still establishes a backdrop root and can still cost a sample per
+     frame — the whole point of this mode is that nothing is sampled at all. Hence a
+     class that sets it to `none`, driven from JS at init and on retune(). */
+  #cardBlur.solid {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: linear-gradient(to bottom, transparent 0%, var(--card-veil-color) 100%);
+  }
+
   /* Rollback: --card-blur: 0 sets display:none from JS at init (and on retune), so the
      layer is not merely transparent — a promoted-but-invisible surface still costs. */
   #cardBlur.off { display: none; }
