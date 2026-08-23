@@ -1344,9 +1344,28 @@ import { createTrace } from "../lib/trace.mjs";
     }
   }));
 
-  // tapping the sliver of landing/tab in the 120px gap → back to the previous state
+  /* Tapping the sliver of landing/tab in the 120px gap → back to the previous state.
+   *
+   * 🐞 preventDefault() IS NOT OPTIONAL, AND stopPropagation() ALONE NEVER COVERED IT
+   * (JJ, 2026-08-23: "clicking outside the card sometimes clicks into elements there").
+   * stopPropagation() stops LISTENERS. It does nothing to a DEFAULT ACTION, and the
+   * carousel and grid cards are real anchors — `<a class="card" href="/art/slug">`, kept
+   * that way on purpose so cmd-click and "open in new tab" work normally. So a click on
+   * the sliver over a card was cancelled as far as every listener could see, and then the
+   * browser navigated anyway. A full page load, which is why it read as "sometimes": it
+   * only happened where an anchor sat under the sliver.
+   *
+   * ⚠︎ This also cancels cmd/middle-click on those anchors WHILE A CARD IS OPEN, and that
+   * is intended: the sliver is a close affordance, not a link surface. The same anchors
+   * behave completely normally the moment the card is shut.
+   *
+   * ⛔ NOT SOLVED WITH pointer-events: none ON #world, which is the tidier-looking fix.
+   * pointer-events changes HIT TESTING, and hit testing is what routes wheel and touch
+   * events to a region — so it would reach straight into the most heavily tested subsystem
+   * in the project to fix a click bug. Two lines here beat that. */
   stage.addEventListener("click", (e) => {
     if (!detailOpen) return;
+    e.preventDefault();
     e.stopPropagation();
     closeDetail();
   }, true);
