@@ -47,8 +47,16 @@ export const ARBITER_DEFAULTS = Object.freeze({
   claimFloor:     0.2,   // --claim-floor      ...and at least this fraction of the peak
   commitDist:     120,   // --commit-dist      forward: px of accumulated intent
   commitVel:      1.2,   // --commit-vel       forward: px/ms flick
-  commitDistBack: 200,   // --commit-dist-back back/up: px of accumulated intent
-  commitVelBack:  1.8,   // --commit-vel-back  back/up: px/ms flick
+  /**
+   * ⛔ COMPAT ONLY (G, 2026-08-18). The asymmetry is RETIRED on the live path: one threshold,
+   * both directions. These two survive so `differential.test.mjs` can keep proving the
+   * extraction faithful to v6, which was asymmetric — the same arrangement every other
+   * behaviour change this session uses.
+   * ⚠︎ `meant()` keeps its `back` parameter and simply ignores it off compat, so every call
+   * site and the whole differential harness stay untouched.
+   */
+  commitDistBack: 200,   // ⛔ compat only — v6's --commit-dist-back
+  commitVelBack:  1.8,   // ⛔ compat only — v6's --commit-vel-back
   idleReset:      200,   // (not a token in v6 — a hardcoded literal; see NOTES)
   debug:          false, // --gesture-debug
 
@@ -308,10 +316,27 @@ export function createArbiter(cfg = {}, env = {}) {
         && median(vHist) >= C.holeLive;
   }
 
-  /** one test for "did the user mean it", per direction */
+  /**
+   * "Did the user mean it?" — ⭐ ONE TEST, ONE THRESHOLD, BOTH DIRECTIONS (G).
+   *
+   * v6 asked a stiffer question going back (200px / 1.8px/ms) than going forward (120 / 1.2),
+   * so that you only returned on purpose. ⚠︎ That extra stiffness was also doing
+   * MOMENTUM-RESISTANCE work as a side effect — `safari-fork-brief § 2` argued transitions
+   * held precisely because "decaying momentum cannot accumulate 120px or hit 1.2px/ms". So G
+   * was blocked on B: collapsing toward the smaller number would have made the back direction
+   * easier for momentum to commit. ✅ B landed, momentum cannot mint or act at all, and that
+   * objection is now moot.
+   *
+   * ⭐ Touch already answered the same question in its own domain and independently: with a
+   * 1:1 traverse and a real release, "past halfway" is symmetric BY CONSTRUCTION. G brings
+   * wheel to where touch already was.
+   *
+   * ⚠︎ `back` is retained and IGNORED off compat. Deleting the parameter would have touched
+   * five call sites and the differential harness for no behavioural gain.
+   */
   const meant = (accum, delta, dt, back) =>
-    accum > (back ? C.commitDistBack : C.commitDist) ||
-    (delta / Math.max(1, dt)) > (back ? C.commitVelBack : C.commitVel);
+    accum > (C.compat && back ? C.commitDistBack : C.commitDist) ||
+    (delta / Math.max(1, dt)) > (C.compat && back ? C.commitVelBack : C.commitVel);
 
   /**
    * Which consumer owns a gesture starting here, right now. Evaluated ONCE per gesture.

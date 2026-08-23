@@ -580,7 +580,7 @@ import { createTrace } from "../lib/trace.mjs";
     busy: () => !!worldTween || view !== "tab",
     at: (px) => applyWorld(-LANDING_H + px),
     back: () => worldTo(-LANDING_H),
-    map: (a) => giveOf(a, arb.config.commitDistBack),
+    map: (a) => giveOf(a, arb.config.commitDist),   // G: one threshold, both directions
   });
 
   /**
@@ -602,7 +602,7 @@ import { createTrace } from "../lib/trace.mjs";
     busy: () => !!stageTween || !detailOpen,
     at: (px) => applyStage(stageOpenY() + px),
     back: () => stageTo(stageOpenY()),
-    map: (a) => giveOf(a, arb.config.commitDistBack),
+    map: (a) => giveOf(a, arb.config.commitDist),   // G: one threshold, both directions
   });
 
   /**

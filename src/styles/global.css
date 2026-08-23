@@ -73,10 +73,21 @@
     /* ---- gesture sensitivity: how much intent a transition demands ----
        FORWARD = going deeper (landing -> tab). BACK = coming up (tab -> landing,
        closing a card); deliberately stiffer so you only lerp back up on purpose. */
-    --commit-dist: 120px;       /* [TUNE] accumulated px to commit forward */
-    --commit-vel: 1.2;          /* [TUNE] px/ms flick to commit forward */
-    --commit-dist-back: 200px;  /* [TUNE] accumulated px to commit back/up */
-    --commit-vel-back: 1.8;     /* [TUNE] px/ms flick to commit back/up */
+    /* ⭐ G (2026-08-18): ONE THRESHOLD, BOTH DIRECTIONS. v6 asked a stiffer question going
+       back (200 / 1.8) than forward (120 / 1.2) so you only returned on purpose — but that
+       extra stiffness was also doing MOMENTUM-RESISTANCE work as a side effect, which is why
+       G was blocked on B. B landed, momentum cannot act at all, and the objection is moot.
+       ⭐ Touch reached the same place independently: with a 1:1 traverse and a real release,
+       "past halfway" is symmetric by construction. This brings wheel to where touch already
+       was. 150 splits v6's two numbers.
+       ⚠︎ THIS ALSO SETS THE GIVE'S TRAVEL — all three gives are keyed to --commit-dist, so
+       the ceiling is --give-max x this = 75px everywhere (was 60 forward, 100 back). */
+    --commit-dist: 150px;       /* [TUNE] accumulated px to commit, either direction */
+    --commit-vel: 1.5;          /* [TUNE] px/ms flick to commit, either direction */
+    /* ⛔ COMPAT ONLY — v6's asymmetric pair, kept so differential.test.mjs can still prove the
+       extraction faithful. `meant()` ignores them off compat. Changing them changes nothing. */
+    --commit-dist-back: 200px;
+    --commit-vel-back: 1.8;
 
     /* GIVE (D) — the elastic that makes --commit-dist-back VISIBLE. The threshold above is
        unchanged; give is feedback, not a gate. Both are fractions OF THE COMMIT DISTANCE,
