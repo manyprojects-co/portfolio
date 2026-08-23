@@ -52,6 +52,10 @@ const {
       <div id="world">
         <slot />
       </div>
+      <!-- Progressive blur over the departing site, anchored to the card boundary.
+           Inside #stage and pinned to its bottom edge, so it rides the reveal for free.
+           See `#cardBlur` in global.css. Purely decorative. -->
+      <div id="cardBlur" aria-hidden="true"></div>
     </div>
 
     <slot name="data" />

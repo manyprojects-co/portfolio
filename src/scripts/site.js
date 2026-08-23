@@ -95,6 +95,8 @@ import { createTrace } from "../lib/trace.mjs";
   let CARD_ZOOM  = cssNum("--card-zoom-min", 0.95);
   let FADE_FLOOR = cssNum("--fade-floor", 0.2);
   let BLUR_FLOOR = cssNum("--blur-floor", 0.4);
+  let CARD_BLUR    = cssNum("--card-blur", 1);
+  let CARD_BLUR_IN = cssNum("--card-blur-in", 0.45);
   // give (D) — see the GIVE section for what these two numbers mean geometrically
   let GIVE_MAX   = cssNum("--give-max", 0.5);
   let GIVE_EASE  = cssNum("--give-ease", 2);
@@ -133,6 +135,10 @@ import { createTrace } from "../lib/trace.mjs";
 
   const stage = document.getElementById("stage");
   const world = document.getElementById("world");
+  const cardBlur = document.getElementById("cardBlur");
+  // Rollback at init, not just on retune(): --card-blur: 0 must cost nothing on a cold
+  // load too, and a promoted-but-transparent layer is not nothing.
+  if (cardBlur && !cssNum("--card-blur", 1)) cardBlur.classList.add("off");
   const nav = document.getElementById("nav");
   // hoisted above applyStage, which drives all three layers together
   const detailEl = document.getElementById("detail");
@@ -258,6 +264,18 @@ import { createTrace } from "../lib/trace.mjs";
     // ⚠︎ Still written every frame, and it must be: the property is inline, so a stale
     // blur() from a previous build or a hot reload would otherwise never be cleared.
     world.style.filter = "none";
+    /* CARD BLUR: the progressive plane over the departing site. The GEOMETRY is free —
+     * #cardBlur is a child of #stage pinned to its bottom edge, so it inherits this same
+     * translate and scale and stays welded to the card boundary. Only opacity is written,
+     * and opacity is composited without repaint.
+     * ⚠︎ It must reach 0 at rest or it blurs the landing page: the stage fills the
+     * viewport when the card is closed. Position-derived off detailP() like everything
+     * else here, so a caught or reversed lerp keeps it exactly in step. */
+    if (CARD_BLUR && cardBlur) {
+      cardBlur.style.opacity = p > 0.001
+        ? Math.min(1, p / (CARD_BLUR_IN || 1)).toFixed(3)
+        : "0";
+    }
     // CARD: zooms --card-zoom-min → 1. Because (0.95 + 0.05p) >= p for all p <= 1, the
     // card's growing top edge stays tucked behind the rising stage edge the whole way,
     // and the two arrive on the 120px line together.
@@ -1528,6 +1546,12 @@ import { createTrace } from "../lib/trace.mjs";
     CARD_ZOOM  = cssNum("--card-zoom-min", 0.95);
     FADE_FLOOR = cssNum("--fade-floor", 0.2);
     BLUR_FLOOR = cssNum("--blur-floor", 0.4);
+    CARD_BLUR    = cssNum("--card-blur", 1);
+    CARD_BLUR_IN = cssNum("--card-blur-in", 0.45);
+    if (cardBlur) {
+      cardBlur.classList.toggle("off", !CARD_BLUR);
+      if (!CARD_BLUR) cardBlur.style.opacity = "0";
+    }
     GIVE_MAX   = cssNum("--give-max", 0.5);
     GIVE_EASE  = cssNum("--give-ease", 2);
     TOUCH_COMMIT = cssNum("--touch-commit", 0.3);

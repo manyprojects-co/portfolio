@@ -34,7 +34,12 @@
     --caption-gap: 12px;     /* image ↔ caption */
     --title-year-gap: 6px;
     --footer-gap: 40px;      /* between nav links */
-    --type-size: 14px;       /* [TUNE] base type. was 12 */
+    --type-size: 12.5px;     /* [TUNE] base type. 14 -> 12.5 on 2026-08-23 (JJ).
+                                ⚠︎ This REVERSES half of tuning round 1 (2026-08-08), which took
+                                everything 12/10 -> 14. Deliberate, not a regression — see hooks.md.
+                                ⚠︎ --caption-gap / --title-year-gap / --footer-gap are ABSOLUTE and
+                                do NOT follow the type down, so the spacing around text now reads
+                                ~11% looser relative to it. That is an artefact of this sweep. */
 
     /* ---- contact expander (v4) ---- */
     --contact-gap: 60px;     /* [TUNE] uniform gap: Contact ↔ Instagram ↔ Mail ↔ ✕, and the
@@ -50,7 +55,11 @@
     --square: 400px;
     --grid-col-gap: 100px;
     --row-gap: 32px;
-    --cap-size: 14px;        /* [TUNE] ART grid captions. was 10, and NOT grey — see TUNING note */
+    --cap-size: 10px;        /* [TUNE] ART grid captions. 14 -> 10 on 2026-08-23 (JJ), which puts
+                                these back exactly where they sat before tuning round 1.
+                                ⚠︎ These are BLACK, not grey — hooks.md is explicit that there has
+                                never been 10px grey text in this project. At 10px against a 12.5px
+                                base they read as deliberately quiet, not as fine print. */
 
     /* motion */
     --dur: 500ms;            /* landing↔tab lerp, detail open/close */
@@ -67,6 +76,22 @@
     --site-zoom-max: 1.1;    /* [TUNE] the departing site enlarges to this, anchored bottom-centre */
     --site-blur-max: 50px;   /* [TUNE] ...and blurs to this over the same lerp */
     --card-zoom-min: 0.95;   /* [TUNE] the card zooms from this up to 1 as it is revealed */
+
+    /* ---- progressive blur over the departing site (2026-08-23, JJ) ----
+       ⭐ THE CARD DOES NOT MOVE. #detail is fixed at --detail-top and only scales; the
+       SITE slides up and uncovers it. So "the region above the card" is always the strip
+       of #stage still on screen, and #stage's own bottom edge IS the card boundary.
+       That is why this plane lives INSIDE #stage pinned to its bottom: it rides the
+       reveal with zero JS geometry, and its mask never changes.
+       ⚠︎ This is variant B — ONE fixed-radius layer faded by a gradient mask, NOT a
+       radius ramp. At the clear end you are seeing a semi-transparent blur over sharp
+       content (a haze), not "less blurred". The iOS look needs stacked layers with
+       stepped radii; that is variant C, and this is the cheap stand-in that answers
+       whether the geometry is right. */
+    --card-blur: 1;          /* [TUNE] 1 = on. 0 = rollback, and the plane costs nothing */
+    --card-blur-max: 24px;   /* [TUNE] the radius at the card boundary */
+    --card-blur-in: 0.45;    /* [TUNE] blur reaches full strength at this much of the reveal */
+    --card-blur-from: 35%;   /* [TUNE] gradient starts here; above it the site is untouched */
     --fade-floor: 0.2;       /* [TUNE] tab contents hit opacity 0 at this reveal (0.2 = 80% home) */
     --blur-floor: 0.4;       /* [TUNE] site blur hits 0 at this reveal (0.4 = 60% through the exit) */
 
@@ -338,6 +363,49 @@
                                  layer for all tab content. The blur is applied dynamically,
                                  so let the browser promote only while it's actually on. */
   }
+
+  /* ===================== CARD BLUR: the progressive blur plane =====================
+     Pinned to #stage's bottom edge — which is the card boundary — and masked clear at
+     the top, opaque at the bottom. Because it is a child of #stage it inherits the
+     translate AND the scale, so the gradient stays welded to the boundary through the
+     whole reveal with nothing written per frame except opacity.
+
+     ⚠︎ OPACITY IS THE ONLY THING JS TOUCHES, and that is the point: it is composited
+     without repaint. The mask never changes and the plane never moves relative to its
+     own backdrop, which is what keeps this off the per-frame repaint path that got the
+     50px filter: blur() removed on 2026-08-18.
+
+     ⚠︎ At rest the stage fills the viewport, so without the opacity ramp this would blur
+     the landing page. It must start at 0 — JJ's rule was "below the fold, and it only
+     comes up when the card comes up". opacity 0 is how that is honoured.
+
+     ⚠︎ WEBKIT RISK, UNVERIFIED: backdrop-filter sampling a transformed, promoted ancestor
+     has a long history of painting nothing or sampling the wrong surface in Safari. If
+     this is invisible on Safari and correct on Chrome, that is the known failure — do not
+     go looking for a geometry bug. --card-blur: 0 disables it outright. */
+  #cardBlur {
+    position: absolute;
+    /* ⚠︎ NOT inset:0, AND THAT IS A PERFORMANCE FIX, not a layout preference.
+       backdrop-filter samples the element's WHOLE border box and blurs it, then the mask
+       throws the masked-out part away — so a full-viewport plane whose top 35% is masked
+       to transparent pays to blur that 35% every frame for nothing. Starting the box where
+       the gradient starts cuts the sampled area by --card-blur-from with zero visual
+       difference. Found when JJ saw frames drop in Low Power Mode, 2026-08-23. */
+    top: var(--card-blur-from);
+    left: 0; right: 0; bottom: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0;                    /* JS ramps this off detailP(); see applyStage */
+    backdrop-filter: blur(var(--card-blur-max));
+    -webkit-backdrop-filter: blur(var(--card-blur-max));
+    /* clear at the top of the plane, full at the card boundary. The plane now BEGINS at
+       --card-blur-from, so the ramp spans its whole height — same picture, less sampled. */
+    mask-image: linear-gradient(to bottom, transparent 0%, black 100%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 100%);
+  }
+  /* Rollback: --card-blur: 0 sets display:none from JS at init (and on retune), so the
+     layer is not merely transparent — a promoted-but-invisible surface still costs. */
+  #cardBlur.off { display: none; }
 
   /* ---- hero / landing carousel: 100vh minus the band ---- */
   .hero {
