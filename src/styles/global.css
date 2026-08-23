@@ -92,7 +92,12 @@
        --commit-vel in either direction. ⭐ Symmetric by construction, which is why touch
        answers the forward-vs-back asymmetry question without touching the two --commit-dist
        tokens above. */
-    --touch-commit: 0.5;     /* [TUNE] fraction of the traverse held at release that commits */
+    --touch-commit: 0.3;     /* [TUNE] fraction of the traverse held at release that commits */
+    /* ⚠︎ TOUCH'S OWN FLICK THRESHOLD — do not point this back at --commit-vel. That is 1.2px/ms
+       = 1200px/s, tuned for a wheel accumulator; a comfortable phone swipe is 0.5-2.5px/ms, so
+       borrowing it failed most deliberate swipes and fell back to demanding a third of the
+       screen. Lower = flicks commit more readily. */
+    --touch-vel: 0.5;        /* [TUNE] px/ms flick at release that commits, either direction */
 
     /* ⏪ EDGE-STRICT — ONE GESTURE, ONE ACTION, AT BOTH BOUNDARIES. A flick from mid-panel
        that scrolls to the top has had its action; arriving at the edge is not a second one,
