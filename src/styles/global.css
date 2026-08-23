@@ -92,7 +92,12 @@
        --commit-vel in either direction. ⭐ Symmetric by construction, which is why touch
        answers the forward-vs-back asymmetry question without touching the two --commit-dist
        tokens above. */
-    --touch-commit: 0.5;     /* [TUNE] fraction of the traverse held at release that commits */
+    --touch-commit: 0.3;     /* [TUNE] fraction of the traverse held at release that commits */
+    /* ⚠︎ TOUCH'S OWN FLICK THRESHOLD — do not point this back at --commit-vel. That is 1.2px/ms
+       = 1200px/s, tuned for a wheel accumulator; a comfortable phone swipe is 0.5-2.5px/ms, so
+       borrowing it failed most deliberate swipes and fell back to demanding a third of the
+       screen. Lower = flicks commit more readily. */
+    --touch-vel: 0.5;        /* [TUNE] px/ms flick at release that commits, either direction */
 
     /* ⏪ EDGE-STRICT — ONE GESTURE, ONE ACTION, AT BOTH BOUNDARIES. A flick from mid-panel
        that scrolls to the top has had its action; arriving at the edge is not a second one,
@@ -122,19 +127,44 @@
     --bounce-dist: 300px;    /* [TUNE] HOW LONG it takes to get there — px of pull */
 
 
-    /* ⏳ TUNING PASS OWED — every number in this block shipped as a DERIVATION, not a
-       measurement, and none has been felt on real hardware yet:
-         --give-max / --give-ease   D + E. Their product is the opening slope; at 0.5 x 2 the
-                                    give starts exactly 1:1 and stops dead at the commit
-                                    point. ⚠︎ --give-ease is the ONLY knob for the beat at the
-                                    handoff — at 1 the give arrives still moving, at 2 it
-                                    stops first. Do not touch the lerp.
-         --touch-commit             D2a. 0.5 because halfway is the obvious idiom, nothing more.
-         --commit-vel               reused as D2a's flick threshold. It was tuned for a WHEEL
-                                    accumulator; a thrown finger is a different distribution.
-       ⚠︎ D and E currently SHARE --give-max / --give-ease. If the card wants to be softer
-       than the tab, that is the moment to split them, and not before — one curve is the
-       stated design (§ G). */
+    /* ⏳ TUNING STATUS — 2026-08-18, after a full desktop + mobile pass with JJ.
+       Nine tokens shipped this session. NONE was measured; every one is a derivation. Some
+       have now been FELT, which is not the same as scored — `score-heuristic.mjs` still has
+       no capture to run against.
+
+       ── felt and settled, desktop + mobile ─────────────────────────────────────────────
+         --give-max / --give-ease   D + E. Their PRODUCT is the opening slope; at 0.5 x 2 the
+                                    give starts exactly 1:1 and stops dead at the commit.
+                                    ⚠︎ --give-ease is the ONLY knob for the beat at the
+                                    handoff — at 1 it arrives still moving, at 2 it stops
+                                    first. ⛔ Do not touch the lerp to change that.
+                                    ⚠︎ D and E SHARE these. Split only if the card should be
+                                    softer than the tab, and not before — one curve is the
+                                    stated design (§ G).
+         --bounce-max/-dist         the landing's dead end. FAR and HOW LONG, deliberately
+                                    independent (a dead end has no gate to stay locked to).
+         --touch-commit/-vel        0.3 / 0.5px/ms. Was 0.5 with --commit-vel borrowed at
+                                    1.2px/ms, i.e. a WHEEL number, and it read as "way too
+                                    strict" on a phone. ⛔ Never point --touch-vel back at
+                                    --commit-vel.
+
+       ── shipped UNSCORED, and this one wants a capture ────────────────────────────────
+         --coast-run                10 = ~83ms of clock-regular events before the flagless
+                                    path calls a coast. Chrome ignores it (momentum is
+                                    exact); Safari depends on it entirely. ⚠︎ Known symptom
+                                    at this value: Safari's give holds at the ceiling until
+                                    the coast dies. Lower = lets go sooner but may stop
+                                    responding mid-drag. THIS is what a capture would settle.
+
+       ── rollback switches, both live via retune() ─────────────────────────────────────
+         --landing-give: 0          drops the landing's give-down + bounce-up
+         --edge-strict: 0           drops the tab's spendOnNativeScroll and the conditional
+                                    preventDefault. ⛔ Does NOT touch the card's own
+                                    scrollSpent gate — that is Branch 1's, unconditional.
+
+       ⭐ LESSON, PAID FOR ONCE ALREADY: this block named --commit-vel as the wrong constant
+       for its second use, and it shipped that way anyway and came back as a bug report from
+       a phone. A tuning note that says a borrowed constant is wrong IS A BUG, not a to-do. */
     /* ONE GESTURE = ONE LERP. Not a time window — gestures are segmented from the wheel
        stream itself, so momentum can never carry into a second transition however long it
        runs, and a genuinely new scroll responds on its first event. */

@@ -98,7 +98,8 @@ import { createTrace } from "../lib/trace.mjs";
   // give (D) — see the GIVE section for what these two numbers mean geometrically
   let GIVE_MAX   = cssNum("--give-max", 0.5);
   let GIVE_EASE  = cssNum("--give-ease", 2);
-  let TOUCH_COMMIT = cssNum("--touch-commit", 0.5);   // D2: fraction of the traverse
+  let TOUCH_COMMIT = cssNum("--touch-commit", 0.3);   // D2: fraction of the traverse
+  let TOUCH_VEL    = cssNum("--touch-vel", 0.5);      // ...or this flick, px/ms
   // ⏪ ROLLBACK SWITCH — see "EDGE-STRICT" below. 0 restores the pre-2026-08-18 behaviour
   // exactly, at both boundaries. Live-tunable: flip it in global.css and retune() picks it up
   // without a reload, so it can be judged by feel A/B rather than by argument.
@@ -266,13 +267,50 @@ import { createTrace } from "../lib/trace.mjs";
   // nav active state = grey, lerped continuously with the horizontal swipe AND
   // ramped by reveal so every link reads black at landing.
   const NAV_FG = [0, 0, 0], NAV_SEL = [148, 148, 148];
+  /**
+   * ⚠︎ HOT PATH. `applyWorld` calls this, and applyWorld runs on every touchmove of a vertical
+   * drag and every frame of a tween. `tabW()` and `track.scrollLeft` are LAYOUT READS, taken
+   * immediately after `world.style.transform` was written — i.e. a forced synchronous layout,
+   * per event, plus a colour write per link.
+   *
+   * ⭐ WHY THE CACHE IS SAFE: during a vertical touch drag the horizontal axis is locked out
+   * (`tAxis === "y"` returns before `releaseTab()`), so neither the track's scroll position nor
+   * its width can change for the life of the gesture. Read once at axis lock, reuse, drop on
+   * release. ⛔ Never cache outside a locked vertical drag.
+   *
+   * ⚠︎ This is why the horizontal tab swipe feels smoother than the vertical drive and always
+   * will: the deck is native scroll-snap and runs on the compositor with no JS at all. The
+   * vertical axis is hand-rolled by design (`hooks.md § Motion audit`) — the gap can be
+   * narrowed, not closed.
+   */
+  let navCache = null;      // { w, pos } while a vertical touch drag owns the gesture
+  const navLast = new Int32Array(links.length).fill(-1);   // last colour written per link
+
   function paintNav() {
-    const w = tabW(), pos = w ? track.scrollLeft / w : 0, ramp = revealP();
-    links.forEach((a, i) => {
+    const w = navCache ? navCache.w : tabW();
+    const pos = navCache ? navCache.pos : (w ? track.scrollLeft / w : 0);
+    const ramp = revealP();
+    /**
+     * ⭐ SKIP THE WRITE, NOT THE MATH. This runs on every touchmove and every tween frame, and
+     * the expensive part is `a.style.color =` (a style invalidation per link), not the three
+     * multiplications. On a slow drag `revealP()` moves ~0.001 per event and the ROUNDED
+     * 8-bit channels are usually identical, so most of those writes changed nothing.
+     *
+     * ⛔ The first cut quantised the INPUTS (pos, ramp) instead and was wrong: `close` is
+     * their product, so a bucket that looks fine in isolation still straddles a rounding
+     * boundary — measured 28,783 visibly-different frames skipped across a ramp sweep.
+     * ⚠︎ Comparing the OUTPUT is exact by construction. There is no threshold to get wrong.
+     */
+    for (let i = 0; i < links.length; i++) {
       const close = (1 - Math.min(1, Math.abs(pos - i))) * ramp;
-      const c = NAV_FG.map((b, k) => Math.round(b + (NAV_SEL[k] - b) * close));
-      a.style.color = `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
-    });
+      const r = Math.round(NAV_FG[0] + (NAV_SEL[0] - NAV_FG[0]) * close);
+      const g = Math.round(NAV_FG[1] + (NAV_SEL[1] - NAV_FG[1]) * close);
+      const b = Math.round(NAV_FG[2] + (NAV_SEL[2] - NAV_FG[2]) * close);
+      const packed = (r << 16) | (g << 8) | b;
+      if (packed === navLast[i]) continue;
+      navLast[i] = packed;
+      links[i].style.color = `rgb(${r}, ${g}, ${b})`;
+    }
   }
 
   // tabs are LOCKED at landing and scroll internally in tab view
@@ -981,7 +1019,7 @@ import { createTrace } from "../lib/trace.mjs";
   const AXIS_LOCK = 8;              // px before the axis is decided
 
   /**
-   * ── D2a: THE LANDING → TAB TRAVERSE IS 1:1 ON TOUCH (2026-08-18, JJ) ──────────────
+   * ── D2: EVERY VERTICAL BOUNDARY IS 1:1 ON TOUCH (2026-08-18, JJ) ──────────────────
    *
    * ⭐ THE MODEL, SETTLED: "one vertical drag owns the whole axis. Through the middle it is
    * 1:1 — the finger is holding the landing. At the ends it gets heavy and stops."
@@ -1003,22 +1041,64 @@ import { createTrace } from "../lib/trace.mjs";
    * nothing to prevent. ⛔ tab → landing and card → site do NOT get this for free — both
    * fight a live native scroller. Do not assume this generalises when extending D2.
    */
-  let tDrag = false;                // is this touch driving the traverse?
-  let tBase = 0, tLockDy = 0;       // worldY when the axis locked, and the dy already spent
+  /**
+   * null   = not decided yet this gesture
+   * "none" = decided: the native scroller owns it, stay out of the way for the whole gesture
+   * "world" | "card" = we are driving that scalar
+   * ⚠︎ Three states, not a boolean, because "we already looked and the answer was no" has to
+   * be distinguishable from "we have not looked yet" — otherwise the decision gets re-made
+   * every event, which is the per-event-signal-as-state bug this file has now hit three times.
+   */
+  let tDrive = null;
+  let tBase = 0, tLockDy = 0;       // the scalar when the axis locked, and the dy already spent
   let tvY = 0, tPrevY = 0, tPrevT = 0;   // release velocity, px/ms, smoothed
+  let tRaf = 0, tPending = 0;            // see flushTouch
+
+  /**
+   * ⭐ ONE WRITE PER FRAME, NOT ONE PER EVENT.
+   *
+   * Phones report touches at 120Hz+ while they paint at 60, so up to half of every
+   * transform / opacity / colour write was being thrown away — and it happened INSIDE a
+   * `{ passive: false }` handler, so the wasted work landed directly on input latency before
+   * the compositor was released.
+   *
+   * touchmove now only records the target; this applies it. `applyWorld` / `applyStage` stay
+   * the single writers — this defers them, it does not add a second one.
+   * ⚠︎ Costs up to one frame of latency. That is the standard trade for coalescing, and it is
+   * strictly better than spending that frame on writes nobody sees.
+   */
+  const flushTouch = () => {
+    tRaf = 0;
+    if (tDrive === "world") {
+      // ⚠︎ Above the landing there is nothing, so reuse the wheel's dead-end curve rather than
+      // hard-stopping — otherwise touch and wheel disagree at the same edge.
+      applyWorld(tPending > 0 ? bounceOf(tPending) : Math.max(-LANDING_H, tPending));
+    } else if (tDrive === "card") {
+      applyStage(Math.min(0, Math.max(stageOpenY(), tPending)));
+    }
+  };
 
   window.addEventListener("touchstart", (e) => {
     const t = e.touches[0];
     tsX = t.clientX; tsY = t.clientY; tAxis = null; tDone = false;
     // ⚠︎ Only on a genuinely NEW touch. A second finger landing mid-drag also fires
-    // touchstart, and clearing tDrag there would strand worldY part-way with no release
+    // touchstart, and clearing tDrive there would strand the scalar part-way with no release
     // left to spring it back.
-    if (e.touches.length === 1) tDrag = false;
+    if (e.touches.length === 1) tDrive = null;
     // touchstart IS a gesture boundary — and it is also where this gesture stakes its claim,
     // from the finger's own landing point. Same rule as wheel, better signal.
     arb.beginGesture(t.clientY);
   }, { passive: true });
 
+  /**
+   * ⚠︎ `{ passive: false }` — REQUIRED, and it has a cost. Driving a scalar from touchmove at a
+   * boundary means preventing the scroller underneath, and a non-passive listener puts JS on
+   * the compositor's critical path for every touchmove. D2a got away with `passive: true`
+   * because nothing scrolls vertically at the landing; D2b/D2c do not, because `.sub` and
+   * `#detailScroll` are live scrollers.
+   * ⛔ SO KEEP THIS BODY SMALL. No measurement, no layout reads per event — the one
+   * `scrollTop` read happens ONCE, at axis lock, below.
+   */
   window.addEventListener("touchmove", (e) => {
     if (tDone) return;
     const t = e.touches[0];
@@ -1027,62 +1107,97 @@ import { createTrace } from "../lib/trace.mjs";
       if (Math.abs(dx) < AXIS_LOCK && Math.abs(dy) < AXIS_LOCK) return;
       tAxis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
     }
-    if (!tDrag && tAxis === "y" && view === "landing" && !detailOpen) {
-      // ⭐ DIRECT MANIPULATION OUTRANKS A LERP. Catching a transition mid-flight and taking
-      // it over is this project's defining property (see site.js's top note); on touch it is
-      // literal. Base off the LIVE worldY so a caught lerp continues from where it is, and
-      // subtract the 8px the axis lock has already consumed so the world does not jump.
-      if (worldTween) { worldTween.cancel(); worldTween = null; }
-      tDrag = true; tBase = worldY; tLockDy = dy;
-      tvY = 0; tPrevY = t.clientY; tPrevT = performance.now();
-    }
     if (tAxis === "x") { releaseTab(); return; }   // horizontal → native carousel / track
 
-    if (detailOpen) {
-      if (detailScroll.scrollTop <= 0 && dy > arb.config.commitDistBack && arb.gestureLive()) { tDone = true; closeDetail(); }
-      return;
-    }
-    if (view === "landing") {
-      if (tDrag) {
-        // ⚠︎ WRITE worldY AND NOTHING ELSE. No measurement, no layout read, no branching on
-        // geometry — this runs on every touchmove. applyWorld() already fans out to the fade
-        // and the nav tint, both position-derived, so they stay in step for free.
-        const now = performance.now(), ms = now - tPrevT;
-        if (ms > 0) tvY = tvY * 0.6 + ((t.clientY - tPrevY) / ms) * 0.4;   // EMA, px/ms
-        tPrevY = t.clientY; tPrevT = now;
-        // ⚠︎ Clamped at 0: pulling DOWN at the landing is a true dead-end and currently just
-        // stops. That is the one place give still belongs on touch — marked, not built.
-        applyWorld(Math.min(0, Math.max(-LANDING_H, tBase + (dy - tLockDy))));
+    /**
+     * ⭐ THE DECISION IS MADE ONCE, AT AXIS LOCK, AND NEVER RE-EXAMINED.
+     *
+     * ⛔ This is deliberate and it is the lesson of three separate bugs today (`consumed` at
+     * the deck's edge, `release()` in a flipping branch, `regRun`): A SIGNAL THAT IS CORRECT
+     * PER EVENT IS NOT CORRECT AS A STATE. `scrollTop <= 0` is exactly such a signal — testing
+     * it every event would hand the drive over the instant a mid-panel drag happened to reach
+     * the top, which is scroll-chaining, and would flicker at the boundary.
+     *
+     * ⭐ Deciding once also states edge-strict on touch: a drag that began mid-panel has the
+     * panel's action, and reaching the top is not a second one. Same rule as wheel.
+     * ⚠︎ And it is the performance fix — one `scrollTop` read per GESTURE, not per event.
+     */
+    if (tDrive === null) {
+      tDrive = "none";
+      const down = dy > 0;
+      if (detailOpen) {
+        if (down && detailScroll.scrollTop <= 0) { tDrive = "card"; tBase = stageY; }
+      } else if (view === "landing") {
+        tDrive = "world"; tBase = worldY;            // the traverse — either direction
+      } else if (down && subs[current].scrollTop <= 0) {
+        tDrive = "world"; tBase = worldY;            // tab → landing, from the panel's top
       }
-      return;
+      if (tDrive !== "none") {
+        // ⚠︎ DIRECT MANIPULATION OUTRANKS A LERP. Catching a transition mid-flight is this
+        // project's defining property; on touch it is literal. Base off the LIVE scalar.
+        if (tDrive === "world" && worldTween) { worldTween.cancel(); worldTween = null; }
+        if (tDrive === "card" && stageTween) { stageTween.cancel(); stageTween = null; }
+        // ⭐ ONE layout read for the whole gesture — see paintNav. The horizontal axis is
+        // locked out from here, so these two cannot change until the finger lifts.
+        const w = tabW();
+        navCache = { w, pos: w ? track.scrollLeft / w : 0 };
+        tLockDy = dy; tvY = 0; tPrevY = t.clientY; tPrevT = performance.now();
+      }
     }
-    if (subs[current].scrollTop <= 0 && dy > arb.config.commitDistBack && arb.gestureLive()) { tDone = true; goLanding(); }
-  }, { passive: true });
+    if (tDrive === "none") return;                   // the panel scrolls natively; leave it alone
+
+    e.preventDefault();
+    const now = performance.now(), ms = now - tPrevT;
+    if (ms > 0) tvY = tvY * 0.6 + ((t.clientY - tPrevY) / ms) * 0.4;   // EMA, px/ms
+    tPrevY = t.clientY; tPrevT = now;
+    // ⭐ LANDING AND TAB ARE THE SAME DRIVE. Both are worldY over the same span; only the
+    // starting point differs, and the clamp decides which way there is room. D2a and D2b are
+    // one mechanism, which is why they share a commit rule below.
+    // ⚠︎ RECORD ONLY — the write happens once per frame in flushTouch. Keeping style writes out
+    // of this handler is the point: it returns sooner, so the compositor is released sooner.
+    tPending = tBase + (dy - tLockDy);
+    if (!tRaf) tRaf = requestAnimationFrame(flushTouch);
+  }, { passive: false });
 
   /**
-   * ⭐ J, ARRIVING FREE. `touchend` is a REAL release — no momentum inference, no synthesised
-   * silence — so the commit stops being an accumulator and becomes the natural touch idiom:
-   * past halfway, or flicked hard. `motion-fork-brief.md § J` wanted exactly this and listed
-   * it as blocked on a release signal; touch simply has one.
-   *
-   * ⭐ And halfway is SYMMETRIC BY CONSTRUCTION, so touch answers `§ G`'s
-   * forward-vs-back asymmetry question inside its own domain without touching
-   * --commit-dist / --commit-dist-back at all.
-   *
-   * ⚠︎ A hard flick DOWN cancels even past halfway. Position alone would strand the user:
-   * they dragged far, changed their mind, and threw it back — honouring the position there
-   * would be the teleport complaint wearing a different hat.
+   * ⭐ J, ARRIVING FREE — at all three boundaries now. `touchend` is a REAL release, so commit
+   * is the natural touch idiom: past a fraction of the traverse, or flicked hard.
+   * ⭐ Halfway is SYMMETRIC BY CONSTRUCTION, so touch answers `§ G`'s forward-vs-back
+   * asymmetry question inside its own domain without touching either --commit-dist token.
+   * ⚠︎ A hard flick the OTHER WAY cancels even past halfway — position alone would strand a
+   * user who dragged far, changed their mind and threw it back, which is the teleport
+   * complaint wearing a different hat.
    */
   const endTouchDrag = () => {
-    if (!tDrag) return;
-    tDrag = false;
-    const p = LANDING_H ? -worldY / LANDING_H : 0;
-    const up = -tvY;                          // px/ms, positive = swiping up = toward tab
-    const V = arb.config.commitVel;
-    if (up >= V) goTab();                     // flicked up
-    else if (up <= -V) worldTo(0);            // flicked down — cancel regardless of position
-    else if (p >= TOUCH_COMMIT) goTab();
-    else worldTo(0);
+    // ⛔ FLUSH FIRST, and while tDrive is still set. The commit reads worldY/stageY, and a
+    // pending frame would leave them one event stale — enough to land the wrong side of
+    // --touch-commit on a fast release.
+    if (tRaf) { cancelAnimationFrame(tRaf); flushTouch(); }
+    const drive = tDrive;
+    tDrive = null;
+    navCache = null;        // ⛔ before any commit — the tweens below must read live values
+    if (drive !== "world" && drive !== "card") return;
+    /* ⚠︎ TOUCH HAS ITS OWN VELOCITY THRESHOLD, and borrowing --commit-vel was the bug.
+       1.2px/ms is 1200px/s — a number tuned for a WHEEL accumulator. A comfortable phone swipe
+       covers 150-400px in 150-300ms, i.e. 0.5-2.5px/ms, so a large share of deliberate swipes
+       failed the flick test and fell back to needing --touch-commit of the WHOLE traverse.
+       On a phone that is half the screen, which is why JJ's report was "way too strict". */
+    const V = TOUCH_VEL;
+    if (drive === "world") {
+      const p = LANDING_H ? -worldY / LANDING_H : 0;
+      const up = -tvY;                        // px/ms, positive = swiping up = toward the tab
+      const toTab = up >= V ? true : up <= -V ? false : p >= TOUCH_COMMIT;
+      // ⚠︎ goTab/goLanding early-return when already in that view, which would leave worldY
+      // displaced with nothing to put it back. Spring explicitly in that case.
+      if (toTab) { if (view === "tab") worldTo(-LANDING_H); else goTab(); }
+      else       { if (view === "landing") worldTo(0); else goLanding(); }
+    } else {
+      const open = stageOpenY();
+      const p = open ? stageY / open : 1;     // 1 = fully open, 0 = closed
+      const down = tvY;                       // positive = swiping down = closing
+      const close = down >= V ? true : down <= -V ? false : p <= 1 - TOUCH_COMMIT;
+      if (close) closeDetail(); else stageTo(open);
+    }
   };
   window.addEventListener("touchend", endTouchDrag, { passive: true });
   window.addEventListener("touchcancel", endTouchDrag, { passive: true });
@@ -1415,7 +1530,8 @@ import { createTrace } from "../lib/trace.mjs";
     BLUR_FLOOR = cssNum("--blur-floor", 0.4);
     GIVE_MAX   = cssNum("--give-max", 0.5);
     GIVE_EASE  = cssNum("--give-ease", 2);
-    TOUCH_COMMIT = cssNum("--touch-commit", 0.5);
+    TOUCH_COMMIT = cssNum("--touch-commit", 0.3);
+    TOUCH_VEL    = cssNum("--touch-vel", 0.5);
     EDGE_STRICT  = cssNum("--edge-strict", 1) === 1;
     BOUNCE_MAX   = cssNum("--bounce-max", 48);
     BOUNCE_DIST  = cssNum("--bounce-dist", 300);
@@ -1439,6 +1555,7 @@ import { createTrace } from "../lib/trace.mjs";
     // changes the MAPPING (zoom, fade floor) shows nothing until something re-applies it.
     // Without these two lines retune() would look broken for exactly the tokens you most
     // want to feel.
+    navLast.fill(-1);                   // force a repaint; the mapping may have changed
     measureGeom();
     applyWorld(worldY);
     applyStage(stageY);
