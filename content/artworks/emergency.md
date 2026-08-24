@@ -21,7 +21,8 @@ artistStatement: >-
   things come forth.”
 
 
-  EMERGE:NCY is the recipient of the CIRCA 2023 Public Vote Prize.
+  EMERGE:NCY was created in collaboration with Ruishuke Chen (cinematographer)
+  and Luling Wang (score).
 landingVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/artworks/emergency/emgc-ld.jpg
