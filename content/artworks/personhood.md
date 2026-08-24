@@ -30,6 +30,8 @@ artistStatement: >-
   there are people who believe that an internet teeming lush with life—non-human
   life—is a dead one.  
 
+
+
   Personhood (2024) is an interactive projection-mapped installation that
   represents the growing prevalence of AI through the shadows of absent people
   cast across an empty room by a lone spotlight. They stroll about in silence,
