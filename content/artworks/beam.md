@@ -8,23 +8,22 @@ size: 170 × 60 × 60 cm (66.9 × 23.6 × 23.6 in.) [Range of motion]
 duration: 1 min. animated loop
 featured: false
 premiereCity: London
-exhibitions: Interplay Kinetic Design Exhibition, Royal Society of Sculptors, 2023
+exhibitions: 2023 / [Royal Society of
+  Sculptors](https://agawen.com/news/royal-society-of-sculptors/) (London)
 artistStatement: >-
   BEAM is our jab at a current shape of technology that is anthropomorphically
-  narcissistic, designed to serve, and made to degrade. 
+  narcissistic, designed to serve, and made to degrade. We swapped the elbows
+  and knuckles of the human body for collinear joints hidden in a form common to
+  antlers and trees. In place of servitude, we introduce ambiguity—communication
+  is facilitated through body language and light, and is motivated in equal part
+  by human presence and more mysterious environmental stimuli. And where most
+  pieces of technology walk a line between graceful degradation or forced
+  obsolecense, we present a third path: form and intelligence that patina
+  beautifully over time. 
 
 
-  We swapped the elbows and knuckles of the human body for collinear joints
-  hidden in a form common to antlers and trees. In place of servitude, we
-  introduce ambiguity—communication is facilitated through body language and
-  light, and is motivated in equal part by human presence and more mysterious
-  environmental stimuli. And where most pieces of technology walk a line between
-  graceful degradation or forced obsolecense, we present a third path: form and
-  intelligence that patina beautifully over time. 
-
-
-  BEAM was conceptualized for the 2023 Interplay Kinetic Design Competition and
-  was awarded as a finalist.
+  BEAM was co-developed with Wei Zhang and Luling Wang. It was awarded as a
+  finalist at the 2023 Interplay Kinetic Design Competition.
 landingVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/artworks/beam/beam-ld.jpg
