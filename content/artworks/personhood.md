@@ -51,6 +51,23 @@ tabArtVisual:
 cardCoverVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/artworks/personhood/psh-card.jpg
+cardGallery:
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/personhood/psh-art1.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/personhood/psh-art2.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/personhood/psh-art3.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/personhood/psh-art4.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/personhood/psh-art5.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/personhood/psh-art6.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/personhood/psh-art7.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/personhood/psh-art8.jpg
 technicalTagline: "[Personhood Technical Tagline Placeholder]"
 technicalText: >-
   As a piece intended to comment on the feeling of co-existing with the impacts
