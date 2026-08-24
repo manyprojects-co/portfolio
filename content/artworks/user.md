@@ -9,7 +9,7 @@ duration: 00 min. 05 sec. automated motion cycle
 featured: true
 featureOrder: 4
 premiereCity: Stockholm
-exhibitions: Self—ish, Helix Art Space (Stockholm), 2026
+exhibitions: 2026 / [Helix Art Space](https://agawen.com/news/selfish/) (Stockholm)
 artistStatement: >-
   Today, free will is compromised not through the limiting of freedom, but by
   the manipulation of will. Byung-Chul Han’s Psychololitics asserts that our
