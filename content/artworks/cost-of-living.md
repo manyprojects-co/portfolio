@@ -53,4 +53,13 @@ technicalText: Cost of Living took a technique that we developed for Box Body
   it about while filming in slow-motion. Careful foley design brought the
   illusion to life, and a meandering score by Luling Wang tied each scene
   together. This piece has yet to debut on the screen it was envisioned for.
+technicalGallery:
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/cost-of-living/col-tech1.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/cost-of-living/col-tech2.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/cost-of-living/col-tech3.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/cost-of-living/col-tech4.jpg
 ---
