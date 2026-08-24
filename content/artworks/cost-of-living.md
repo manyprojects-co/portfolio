@@ -45,11 +45,12 @@ cardGallery:
     imageUrl: https://media.agawen.com/artworks/cost-of-living/col-art7.jpg
   - mediaType: image
     imageUrl: https://media.agawen.com/artworks/cost-of-living/col-art8.jpg
-technicalTagline: "[COL Technical Tagline Placeholder]"
-technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-  eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-  veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-  commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit
-  esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat
-  non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+technicalTagline: A volatile home
+technicalText: Cost of Living took a technique that we developed for Box Body
+  and Emerge:ncy and brought it to an unprecedented miniature scale. We began
+  with a tiny ~120:1 model of the Piccadilly Lights, filled it with store-bought
+  pieces of realistic dollhouse homeware, rigged cameras and lights, and flailed
+  it about while filming in slow-motion. Careful foley design brought the
+  illusion to life, and a meandering score by Luling Wang tied each scene
+  together. This piece has yet to debut on the screen it was envisioned for.
 ---
