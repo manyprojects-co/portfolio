@@ -30,11 +30,10 @@ tabArtVisual:
 cardCoverVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/artworks/non-moment/nmm-card.jpg
-technicalTagline: "[Non-moment Technical Tagline Placeholder]"
-technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-  eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-  veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-  commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit
-  esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat
-  non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+technicalTagline: Deliberate blur
+technicalText: In contrast to the visual richness common in our art practice,
+  Non-moment is a work that aims to isolate only the gestures that populate our
+  hours on screen. London's overcast sky was the diffused lightbox that
+  transformed a hand—tapping, swiping, scrolling behind a white sheet—into a
+  mass of shadows emerging from anonymous fog.
 ---
