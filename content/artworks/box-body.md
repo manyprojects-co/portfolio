@@ -10,8 +10,9 @@ featured: true
 featureOrder: 6
 premiereCity: Singapore
 exhibitions: |-
-  ART-ACT Festival, Singapore Art Week / Singapore, 2023  
-  Ars Electronica Festival / Linz, 2023
+  2023 / ART-ACT Festival (Singapore)
+
+  2023 / Ars Electronica Festival (Linz, Austria)
 artistStatement: What contemporary boxes have we trapped ourselves in? Box Body
   is a site-specific video artwork wrapped around the Ten Square billboard in
   Singapore, exploring the theme of constriction that defines many urban lives.
