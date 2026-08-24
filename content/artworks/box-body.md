@@ -25,8 +25,9 @@ artistStatement: >-
   entrapment and ours, too.
 
 
-  Box Body was developed in collaboration with Ahad Mahmood (DP), with support
-  from Erving Tan (videographer) for the live interactive performance.
+  Box Body was developed in collaboration with Ahad Mahmood (cinematographer),
+  with support from Erving Tan (videographer) for the live interactive
+  performance.
 institutionSupport: Special thanks to Gary Hong (Ten Square Singapore) and Ina
   Conradi (NTU’s School of Art Design and Media).
 landingVisual:
