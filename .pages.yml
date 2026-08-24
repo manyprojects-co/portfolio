@@ -29,7 +29,7 @@ content:
     type: collection
     path: content/artworks
     view:
-      fields: [featureOrder, title, productionDate, tagline, medium, size, duration, premiereCity, exhibitions, artistStatement, acknowledgements]
+      fields: [featureOrder, title, productionDate, tagline, medium, size, duration, premiereCity, exhibitions, artistStatement, institutionSupport]
     fields:
       # Title, Date, Art Tagline
       - { name: title, label: Title, type: string, required: true }
