@@ -10,11 +10,16 @@ duration: Real-time interactive loop
 featured: true
 featureOrder: 2
 premiereCity: San Francisco
-exhibitions: |-
-  Asian Art Museum (San Francisco), 2024  
-  Speculum Artium (Trbovlje, Slovenia), 2025  
-  Helix Art Space (Stockholm), 2026  
-  MVR Gallery (Ithaca, New York), 2026
+exhibitions: >-
+  2024 / [Asian Art Museum](https://agawen.com/news/proof-of-personhood/) (San
+  Francisco)  
+
+  2025 / [Speculum Artium](https://agawen.com/news/speculum-artium/)
+  (Trbovlje)  
+
+  2026 / [Helix Art Space](https://agawen.com/news/selfish/) (Stockholm)  
+
+  2026 / [MVR Gallery](https://agawen.com/news/personhood-iteration-4/) (Ithaca)
 artistStatement: >-
   We furnished the cave. Two thousand years after Plato imagined us chained to
   the rocks, we renovated the lights, decoupled the shadows from the reality
