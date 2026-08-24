@@ -31,7 +31,6 @@ artistStatement: >-
   life—is a dead one.  
 
 
-
   Personhood (2024) is an interactive projection-mapped installation that
   represents the growing prevalence of AI through the shadows of absent people
   cast across an empty room by a lone spotlight. They stroll about in silence,
@@ -53,10 +52,26 @@ cardCoverVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/artworks/personhood/psh-card.jpg
 technicalTagline: "[Personhood Technical Tagline Placeholder]"
-technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-  eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-  veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-  commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit
-  esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat
-  non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+technicalText: >-
+  As a piece intended to comment on the feeling of co-existing with the impacts
+  of technology, Personhood is a work that has evolved with the available
+  technology through the different iterations, while keeping the spotlight
+  illusion created by a physical lamp.
+
+
+  In the first version (2024) for the Asian Art Museum, the shadow movements are
+  generated live in Unity via mixing and matching motion-captured animations.
+  The soundscape is generated live in VCV Rack, a virtual modular synthesizer,
+  blending an ebbing-and-flowing layer of ambience and an abstraction of digital
+  chimes reminiscent of notification sounds.
+
+
+  In the latest version in MVR Gallery, Personhood (2026) relies on state-based
+  branching animation trees formed via AI animations that interpolate
+  strategically between pivotal keyframes. At every given moment, the artwork
+  “decides” which character animation to transition into next. Prior to recent
+  breakthroughs in video generation, branching a complex scene into several
+  alternate paths at this degree of seamlessness would have been close to
+  impossible. This iteration prioritizes human fidelity, and the shadow is
+  formed in the likeness of Xin.
 ---
