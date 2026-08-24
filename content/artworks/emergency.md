@@ -10,7 +10,7 @@ featured: true
 featureOrder: 3
 premiereCity: London
 exhibitions: |-
-  2023 / CIRCA2023 (London, Milan, and Berlin)
+  2023 / CIRCA2023 Screening (London, Milan, and Berlin)
 
   2023 / CIRCA Public Vote Prize Recipient
 artistStatement: >-
