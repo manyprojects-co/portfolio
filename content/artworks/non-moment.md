@@ -30,6 +30,19 @@ tabArtVisual:
 cardCoverVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/artworks/non-moment/nmm-card.jpg
+cardGallery:
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/non-moment/nmm-art1.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/non-moment/nmm-art2.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/non-moment/nmm-art3.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/non-moment/nmm-art4.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/non-moment/nmm-art5.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/non-moment/nmm-art6.jpg
 technicalTagline: Deliberate blur
 technicalText: In contrast to the visual richness common in our art practice,
   Non-moment is a work that aims to isolate only the gestures that populate our
