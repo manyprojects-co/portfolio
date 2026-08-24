@@ -70,10 +70,10 @@ cardGallery:
     imageUrl: https://media.agawen.com/artworks/personhood/psh-art8.jpg
 technicalTagline: An iterating work
 technicalText: >-
-  As a piece intended to comment on the feeling of co-existing with the impacts
-  of technology, Personhood is a work that has evolved with the available
-  technology through the different iterations, while keeping the spotlight
-  illusion created by a physical lamp.
+  As a piece that comments on our coexistence with the impacts of technology,
+  Personhood is a work that evolved with the available technology through the
+  different iterations, while keeping the spotlight illusion created by a
+  physical lamp.
 
 
   In the first version (2024) for the Asian Art Museum, the shadow movements are
