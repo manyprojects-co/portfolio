@@ -12,11 +12,12 @@ exhibitions: 2026 / [Helix Art Space](https://agawen.com/news/selfish) (Stockhol
 artistStatement: >-
   Screentime jabs at several poignant aspects of our digital lives: we are all
   constantly surveilled, we are all now more alone, and we are all made more
-  alike.
+  alike. The work places the viewer in a liminal space behind screens, offering
+  an intimate peek into the digital lives of strangers.
 
 
-  The work places the viewer in a liminal space behind screens, offering an
-  intimate peek into the digital lives of strangers.
+  A special thank you to our friends who made this work possible through their
+  performances.
 landingVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/artworks/screentime/sct-ld.jpg
@@ -26,11 +27,10 @@ tabArtVisual:
 cardCoverVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/artworks/screentime/sct-card.jpg
-technicalTagline: "[Screentime Technical Tagline Placeholder]"
-technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-  eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-  veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-  commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit
-  esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat
-  non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+technicalTagline: Behind the screens
+technicalText: We interviewed several friends on their nightly phone rituals,
+  which they then replicated out of habit on encased sheets of glass. Embedded
+  cameras recorded these fake digital interactions as though peering through
+  from behind each screen. We then created fake interfaces and animated them to
+  match each scene.
 ---
