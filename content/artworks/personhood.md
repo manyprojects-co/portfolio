@@ -71,7 +71,7 @@ cardGallery:
 technicalTagline: An iterating work
 technicalText: >-
   As a piece that comments on our coexistence with the impacts of technology,
-  Personhood is a work that evolved with the available technology through the
+  Personhood is a work that evolves with available technology through the
   different iterations, while keeping the spotlight illusion created by a
   physical lamp.
 
