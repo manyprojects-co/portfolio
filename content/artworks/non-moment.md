@@ -3,7 +3,7 @@ title: Non-moment
 productionDate: 2025-08-01
 tagline: Video
 medium: Single-channel video (color, silent)
-size: Dimensions variable (4:3 aspect ratio)
+size: Dimensions variable (3:4 P aspect ratio)
 duration: 01 min. 00 sec. loop
 featured: false
 premiereCity: Taoyuan City, Taiwan
@@ -26,7 +26,7 @@ landingVisual:
   imageUrl: https://media.agawen.com/artworks/non-moment/nmm-ld.jpg
 tabArtVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/artworks/non-moment/nmm-ld.jpg
+  imageUrl: https://media.agawen.com/artworks/non-moment/nmm-tab.png
 cardCoverVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/artworks/non-moment/nmm-card.jpg
