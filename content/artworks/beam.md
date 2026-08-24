@@ -23,7 +23,8 @@ artistStatement: >-
 
 
   BEAM was co-developed with Wei Zhang and Luling Wang. It was awarded as a
-  finalist at the 2023 Interplay Kinetic Design Competition.
+  finalist at the 2023 Interplay Kinetic Design Competition with 1k prize for
+  further development.
 landingVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/artworks/beam/beam-ld.jpg
