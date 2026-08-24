@@ -26,11 +26,11 @@ tabArtVisual:
 cardCoverVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/artworks/metadata/mtdt-card.jpg
-technicalTagline: "[Metadata Technical Tagline Placeholder]"
-technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-  eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-  veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-  commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit
-  esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat
-  non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+technicalTagline: Modern human nature
+technicalText: Digital media has hijacked our minds and bodies, and to best
+  evoke this we searched for a medical-grade anatomical model, stripped away all
+  of its flesh, and flooded its nervous and skeletal systems with ebbing clouds
+  of datapoints. Then, we projected these remains onto a translucent and
+  loosely-draped curtain to give the illusion of upright volume for the skeletal
+  form and evoke a domestic setting to match its mundane pose.
 ---
