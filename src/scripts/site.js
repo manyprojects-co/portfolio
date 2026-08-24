@@ -172,6 +172,14 @@ import { createTrace } from "../lib/trace.mjs";
     root.style.setProperty("--band", BAND + "px");
     root.style.setProperty("--landing-h", LANDING_H + "px");
     root.style.setProperty("--detail-top", DETAIL_TOP + "px");
+    /* ⭐ THE MEASURED viewport height, for layout that must reach the card's floor.
+     * The sticky art column sizes itself to end --frame-margin above the card's bottom
+     * edge, and `100vh` is the wrong number for that on iOS: it means the LARGEST
+     * viewport (URL bar collapsed) and does not change when the bar is showing, so the
+     * column would overhang. `dvh` moves constantly instead, which reflows mid-scroll.
+     * This is the same VH the gesture system uses, re-measured on exactly the same
+     * events — including the height-only resize K added for the iOS URL bar. */
+    root.style.setProperty("--vh-live", VH + "px");
     // ⭐ A: the deck's own height — the artwork band, not the hero.
     // ⚠︎ MEASURED HERE, ON PURPOSE, AND NOWHERE ELSE. The obvious implementation is a
     // getBoundingClientRect() in the wheel handler, and that is a forced layout read in a

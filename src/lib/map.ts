@@ -27,19 +27,42 @@ export type Media = { kind: "image" | "video"; src: string; caption?: string } |
  * this returns null for essentially all real content. Callers must render an empty state,
  * not assume a src. See `content.config.ts` note 1.
  */
+/**
+ * ⚠︎ A URL'S EXTENSION IS EVIDENCE, AND HERE IT OUTRANKS THE FIELD IT WAS PASTED INTO.
+ *
+ * 🐞 Found 2026-08-23. BEAM's `cardGallery` carries two videos, and neither reached the
+ * page as one:
+ *     - { mediaType: video, imageUrl: ….mp4 }   URL in the WRONG field, videoUrl empty
+ *     - {                   imageUrl: ….mp4 }   no mediaType at all
+ * The old rule was `mediaType === "video" && videoUrl`, so both fell through to the image
+ * branch and rendered as `<img src="….mp4">` — routed through the Cloudflare IMAGE
+ * transform, which cannot read an mp4. Broken, silently, on the only work that has video.
+ *
+ * ⭐ This is the same principle `media-origin.ts` already states: there is NO MEDIA PICKER,
+ * so a hand-typed field is a claim to be checked, not a fact. `.mp4` in `imageUrl` is not
+ * an ambiguous case — it is an unambiguous video in the wrong box.
+ */
+const VIDEO_EXT = /\.(mp4|webm|mov|m4v|ogv)(?:[?#]|$)/i;
+export const looksLikeVideo = (u: string): boolean => VIDEO_EXT.test(u);
+
 export function media(v: unknown): Media {
   if (!v) return null;
   if (typeof v === "string") {
     // legacy flat path (`/assets/…`). ⚠︎ That origin was DELETED on 2026-08-10 — these
     // resolve to nothing. Carried through so the report can count them, not because they work.
-    return v.trim() ? { kind: "image", src: v.trim() } : null;
+    const t = v.trim();
+    return t ? { kind: looksLikeVideo(t) ? "video" : "image", src: t } : null;
   }
   const o = v as Record<string, unknown>;
   const img = typeof o.imageUrl === "string" ? o.imageUrl.trim() : "";
   const vid = typeof o.videoUrl === "string" ? o.videoUrl.trim() : "";
   const caption = typeof o.caption === "string" && o.caption.trim() ? o.caption.trim() : undefined;
+  // declared video, URL in the right box
   if (o.mediaType === "video" && vid) return { kind: "video", src: vid, caption };
-  if (img) return { kind: "image", src: img, caption };
+  // declared video, URL pasted into imageUrl — believe the declaration
+  if (o.mediaType === "video" && img) return { kind: "video", src: img, caption };
+  // undeclared: the extension decides. Original precedence (image slot first) is kept.
+  if (img) return { kind: looksLikeVideo(img) ? "video" : "image", src: img, caption };
   if (vid) return { kind: "video", src: vid, caption };
   return null; // a row that exists but carries no URL — Xin has created several
 }
@@ -77,7 +100,13 @@ export function mapWork(e: CollectionEntry<"artworks">) {
     featured: d.featured,
     order: d.featureOrder ?? null,         // ← no synthetic 999; `featured` is the filter
     exhibitions: lines(d.exhibitions),
-    acknowledgements: lines(d.acknowledgements),
+    /* ⚠︎ NEW NAME FIRST, OLD NAME AS FALLBACK. `.pages.yml` renamed this to
+     * `institutionSupport`; the data has not migrated. Preferring the new key means the
+     * day Xin edits it in the CMS it just works, and until then the old key still renders.
+     * ⚠︎ `paragraphs`, not `lines`: this is PROSE ("In collaboration with … Commissioned
+     * by …"), not a list. It was rendered with bullets, which was wrong for the content
+     * and is now gone by design (JJ, 2026-08-23). */
+    acknowledgements: paragraphs(d.institutionSupport ?? d.acknowledgements),
     statement: paragraphs(d.artistStatement),
     technical: {
       tagline: d.technicalTagline ?? "",
