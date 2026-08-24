@@ -9,10 +9,13 @@ duration: 02 min. 30 sec.
 featured: true
 featureOrder: 3
 premiereCity: London
-exhibitions: |-
-  2023 / CIRCA2023 Screening (London, Milan, and Berlin)
+exhibitions: >-
+  2023 / [CIRCA2023 Screening](https://agawen.com/news/circa2023-screening/)
+  (London, Milan, and Berlin)
 
-  2023 / CIRCA Public Vote Prize Recipient
+
+  2023 / [CIRCA Public Vote
+  Prize](https://agawen.com/news/circa2023-public-vote-prize/) Recipient
 artistStatement: >-
   EMERGE:NCY is an embodied reaction to the encroaching structural determinism
   of city life within the systems and expectations that entrap us. It is a
