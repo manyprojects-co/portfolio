@@ -6,20 +6,34 @@ bio: "Xin Wen and JJ Agcaoili operate as **XJ**: a Chinese-American and Filipino
   is embodied in their expansive body of work across experimental video, kinetic
   sculpture, and immersive installation, which has been exhibited in Stockholm,
   San Francisco, Taiwan, Linz, Singapore, London, and more."
-exhibitionsAppearances: |-
-  2026 - Solo exhibition, MVR Gallery (Ithaca, New York)  
-  2026 - Solo exhibition, Helix Art Space (Stockholm)  
-  2026 - Artist Talk, Helix Art Space (Stockholm)  
-  2025 - Silent Interference, Turtle Chamber Projects (Taoyuan City, Taiwan)  
-  2025 - Alternative Roots, Hoxton Hall (London)  
+exhibitionsAppearances: >-
+  2026 - Solo exhibition, MVR Gallery (Ithaca, NY)  
+
+  2026 - Solo exhibition, Helix Art Space (Stockholm, Sweden)  
+
+  2026 - Artist Talk, Helix Art Space (Stockholm, Sweden)  
+
+  2025 - Silent Interference, Turtle Chamber Projects (Taoyuan, Taiwan)  
+
+  2025 - Alternative Roots, Hoxton Hall (London, UK)  
+
   2025 - Speculum Artium Festival (Trbovlje, Slovenia)  
-  2025 - Artist Talk, Cornell University (Ithaca, New York)  
+
+  2025 - Artist Talk, Cornell University (Ithaca, NY)  
+
   2024 - Solo exhibition, Asian Art Museum x RAD (San Francisco)  
-  2024 - Into the Future, Whitespace Gallery (Edinburgh)  
-  2024 - Artist Talk, Technarte Conference for Art and Technology (Bilbao)  
-  2023 - Royal Society of Sculptors (London)  
-  2023 - CIRCA2023, Piccadilly Lights (London; also: Berlin, Milan)  
-  2023 - Ars Electronica Festival 2023 (Linz)  
+
+  2024 - Into the Future, Whitespace Gallery (Edinburgh, UK)  
+
+  2024 - Artist Talk, Technarte Conference for Art and Technology (Bilbao,
+  Spain)  
+
+  2023 - Royal Society of Sculptors (London, UK)  
+
+  2023 - CIRCA2023, Piccadilly Lights (London, UK; also: Berlin, Milan)  
+
+  2023 - Ars Electronica Festival 2023 (Linz, Austria)  
+
   2023 - ART-ACT Festival, Singapore Art Week (Singapore)
 awardsCommissions: |-
   2025 - Kakilang Commission  
