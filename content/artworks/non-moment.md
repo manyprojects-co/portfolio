@@ -7,7 +7,8 @@ size: Dimensions variable (4:3 aspect ratio)
 duration: 01 min. 00 sec. loop
 featured: false
 premiereCity: Taoyuan City, Taiwan
-exhibitions: Silent Interference, Turtle Chamber Projects (Taiwan), 2025
+exhibitions: 2025 / [Turtle Chamber
+  Projects](https://agawen.com/news/silent-interference/) (Taoyuan)
 artistStatement: "“Several decades from now before I go, I want my eyes to
   flash: mom and the pillowfort she made to nest her playful toddler one yellow
   afternoon, dad's laugh at his own joke, the thick Manila rain that preceded
