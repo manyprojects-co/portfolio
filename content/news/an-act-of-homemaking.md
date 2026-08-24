@@ -13,4 +13,13 @@ statement: |-
 mainVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/news/bow-arts/bowa-tab.jpg
+gallery:
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/bow-arts/bowa-1.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/bow-arts/bowa-2.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/bow-arts/bowa-3.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/bow-arts/bowa-4.jpg
 ---
