@@ -49,4 +49,7 @@ technicalText: In contrast to the visual richness common in our art practice,
   hours on screen. London's overcast sky was the diffused lightbox that
   transformed a hand—tapping, swiping, scrolling behind a white sheet—into a
   mass of shadows emerging from anonymous fog.
+technicalGallery:
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/non-moment/nmm-tech1.jpg
 ---
