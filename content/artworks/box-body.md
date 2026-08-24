@@ -25,9 +25,10 @@ artistStatement: >-
   entrapment and ours, too.
 
 
-  Box Body was created in collaboration with Ahad Mahmood (DP), with support
-  from Erving Tan (Videographer) for . Special thanks to Gary Hong (Ten Square
-  Singapore) and Ina Conradi (NTU’s School of Art Design and Media).
+  Box Body was developed in collaboration with Ahad Mahmood (DP), with support
+  from Erving Tan (videographer) for the live interactive performance.
+institutionSupport: Special thanks to Gary Hong (Ten Square Singapore) and Ina
+  Conradi (NTU’s School of Art Design and Media).
 landingVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/artworks/box-body/bb-ld.jpg
