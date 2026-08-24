@@ -15,4 +15,20 @@ statement: 'About the festival: "On 8 November 2025, 18 artists and collectives
 mainVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/news/alternative-roots/aroots-tab.jpg
+gallery:
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/alternative-roots/aroots-1.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/alternative-roots/aroots-2.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/alternative-roots/aroots-3.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/alternative-roots/aroots-4.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/alternative-roots/aroots-5.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/alternative-roots/aroots-6.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/alternative-roots/aroots-7.jpg
+    caption: Alternative Roots Festival (Images from Ming Strike)
 ---
