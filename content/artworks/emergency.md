@@ -9,7 +9,7 @@ duration: 02 min. 30 sec.
 featured: true
 featureOrder: 3
 premiereCity: London
-exhibitions: CIRCA2023, London, Milan, and Berlin, 2023
+exhibitions: 2023 / CIRCA2023 (London, Milan, and Berlin)
 artistStatement: >-
   EMERGE:NCY is an embodied reaction to the encroaching structural determinism
   of city life within the systems and expectations that entrap us. It is a
@@ -18,11 +18,10 @@ artistStatement: >-
   struggles, tired and defeated and unrelenting—then a breakthrough: light
   floods the darkness. Its title comes from Rebecca Solnit’s ‘Hope in the Dark’,
   which argues: “Inside the word “emergency” is “emerge”; from an emergency new
-  things come forth.”  
+  things come forth.”
 
 
   EMERGE:NCY is the recipient of the CIRCA 2023 Public Vote Prize.
-acknowledgements: In collaboration with Ruishuke Chen (DP) and Luling Wang (Music).
 landingVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/artworks/emergency/emgc-ld.jpg
