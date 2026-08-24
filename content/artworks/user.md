@@ -30,11 +30,9 @@ tabArtVisual:
 cardCoverVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/artworks/user/user-card.jpg
-technicalTagline: Broken and made to scroll
-technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-  eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-  veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-  commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit
-  esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat
-  non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+technicalTagline: Made to scroll
+technicalText: The vast and complex human being is everyday subsumed into the
+  digital affordances of contemporary life. Gesturing to this, Xin's own hand is
+  plaster-cast, broken, and rigged to a machine, made to keep it scrolling on
+  Instagram forever.
 ---
