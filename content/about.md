@@ -14,7 +14,7 @@ exhibitionsAppearances: |-
   2025 - Alternative Roots, Hoxton Hall (London, UK)  
   2025 - Speculum Artium Festival (Trbovlje, Slovenia)  
   2025 - Artist Talk, Cornell University (Ithaca, NY, USA)  
-  2024 - Solo exhibition, Asian Art Museum x RAD (San Francisco, CA, USA)  
+  2024 - Solo exhibition, Asian Art Museum (San Francisco, CA, USA)  
   2024 - Into the Future, Whitespace Gallery (Edinburgh, UK)  
   2024 - Artist Talk, Technarte Conference (Bilbao, Spain)  
   2023 - Royal Society of Sculptors (London, UK)  
