@@ -42,4 +42,11 @@ technicalText: We interviewed several friends on their nightly phone rituals,
   cameras recorded these fake digital interactions as though peering through
   from behind each screen. We then created fake interfaces and animated them to
   match each scene.
+technicalGallery:
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/screentime/sct-tech1.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/screentime/sct-tech2.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/screentime/sct-tech3.jpg
 ---
