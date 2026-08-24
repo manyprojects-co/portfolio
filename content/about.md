@@ -36,9 +36,9 @@ exhibitionsAppearances: >-
 
   2023 - ART-ACT Festival, Singapore Art Week (Singapore)
 awardsCommissions: |-
-  2025 - Kakilang Commission  
+  2025 - Kakilang [Commission](https://www.kakilang.org.uk/2025-autumn-season)  
   2024 - Artsted 99 Future Blue-Chip Artists  
-  2023 - CIRCA 20:23 Public Vote Prize  
+  2023 - CIRCA 20:23 [Public Vote Prize](https://circa.art/press/press-release-circa-prize-2020-award-ceremony/)  
   2023 - Interplay Kinetic Design: Major Award & £1K Grant  
   2023 - Media Architecture Biennale 2023 Finalist
 pressMentions: |-
