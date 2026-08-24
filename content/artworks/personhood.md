@@ -68,7 +68,7 @@ cardGallery:
     imageUrl: https://media.agawen.com/artworks/personhood/psh-art7.jpg
   - mediaType: image
     imageUrl: https://media.agawen.com/artworks/personhood/psh-art8.jpg
-technicalTagline: "[Personhood Technical Tagline Placeholder]"
+technicalTagline: An iterating work
 technicalText: >-
   As a piece intended to comment on the feeling of co-existing with the impacts
   of technology, Personhood is a work that has evolved with the available
@@ -91,4 +91,19 @@ technicalText: >-
   alternate paths at this degree of seamlessness would have been close to
   impossible. This iteration prioritizes human fidelity, and the shadow is
   formed in the likeness of Xin.
+technicalGallery:
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/personhood/psh-tech1.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/personhood/psh-tech2.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/personhood/psh-tech3.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/personhood/psh-tech4.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/personhood/psh-tech5.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/personhood/psh-tech6.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/personhood/psh-tech7.jpg
 ---
