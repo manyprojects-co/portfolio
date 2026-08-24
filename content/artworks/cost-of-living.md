@@ -28,6 +28,23 @@ tabArtVisual:
 cardCoverVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/artworks/cost-of-living/col-card.jpg
+cardGallery:
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/cost-of-living/col-art1.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/cost-of-living/col-art2.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/cost-of-living/col-art3.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/cost-of-living/col-art4.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/cost-of-living/col-art5.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/cost-of-living/col-art6.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/cost-of-living/col-art7.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/cost-of-living/col-art8.jpg
 technicalTagline: "[COL Technical Tagline Placeholder]"
 technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
   eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
