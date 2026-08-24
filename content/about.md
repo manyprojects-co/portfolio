@@ -7,7 +7,7 @@ bio: "Xin Wen and JJ Agcaoili operate as **XJ**: a Chinese-American and Filipino
   sculpture, and immersive installation, which has been exhibited in Stockholm,
   San Francisco, Taiwan, Linz, Singapore, London, and more."
 exhibitionsAppearances: >-
-  2026 - Solo exhibition, MVR Gallery (Ithaca, NY)  
+  2026 - Solo exhibition, MVR Gallery (Ithaca, NY, USA)  
 
   2026 - Solo exhibition, Helix Art Space (Stockholm, Sweden)  
 
@@ -19,9 +19,9 @@ exhibitionsAppearances: >-
 
   2025 - Speculum Artium Festival (Trbovlje, Slovenia)  
 
-  2025 - Artist Talk, Cornell University (Ithaca, NY)  
+  2025 - Artist Talk, Cornell University (Ithaca, NY, USA)  
 
-  2024 - Solo exhibition, Asian Art Museum x RAD (San Francisco)  
+  2024 - Solo exhibition, Asian Art Museum x RAD (San Francisco, CA, USA)  
 
   2024 - Into the Future, Whitespace Gallery (Edinburgh, UK)  
 
