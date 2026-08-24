@@ -9,16 +9,25 @@ duration: 02 min. 00 sec.
 featured: true
 featureOrder: 6
 premiereCity: Singapore
-exhibitions: |-
-  2023 / ART-ACT Festival (Singapore)
+exhibitions: >-
+  2023 / [ART-ACT Festival](https://agawen.com/news/art-act-festival/)
+  (Singapore)
 
-  2023 / Ars Electronica Festival (Linz, Austria)
-artistStatement: What contemporary boxes have we trapped ourselves in? Box Body
-  is a site-specific video artwork wrapped around the Ten Square billboard in
+
+  2023 / [Ars Electronica Festival](https://agawen.com/news/ars-electronica)
+  (Linz)
+artistStatement: >-
+  What contemporary boxes have we trapped ourselves in? Box Body is a
+  site-specific video artwork wrapped around the Ten Square billboard in
   Singapore, exploring the theme of constriction that defines many urban lives.
   For a few nights in one of the busiest and fastest-growing metropolitan spaces
   in the world, a giant crouched, wedged in a building, contemplating their
   entrapment and ours, too.
+
+
+  Box Body was created in collaboration with Ahad Mahmood (DP), with support
+  from Erving Tan (Videographer) for . Special thanks to Gary Hong (Ten Square
+  Singapore) and Ina Conradi (NTU’s School of Art Design and Media).
 landingVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/artworks/box-body/bb-ld.jpg
