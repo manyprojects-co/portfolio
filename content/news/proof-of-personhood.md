@@ -18,22 +18,22 @@ statement: >-
   selves?
 mainVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/news/rad/rad-tab.jpg
+  mediaUrl: https://media.agawen.com/news/rad/rad-tab.jpg
 gallery:
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/rad/rad-1.jpg
+    mediaUrl: https://media.agawen.com/news/rad/rad-1.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/rad/rad-2.jpg
+    mediaUrl: https://media.agawen.com/news/rad/rad-2.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/rad/rad-3.jpg
+    mediaUrl: https://media.agawen.com/news/rad/rad-3.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/rad/rad-4.jpg
+    mediaUrl: https://media.agawen.com/news/rad/rad-4.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/rad/rad-5.jpg
+    mediaUrl: https://media.agawen.com/news/rad/rad-5.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/rad/rad-6.jpg
+    mediaUrl: https://media.agawen.com/news/rad/rad-6.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/rad/rad-7.jpg
+    mediaUrl: https://media.agawen.com/news/rad/rad-7.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/rad/rad-8.jpg
+    mediaUrl: https://media.agawen.com/news/rad/rad-8.jpg
 ---

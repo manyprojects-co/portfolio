@@ -14,12 +14,12 @@ statement: Established in 2008, the Speculum Artium Festival is an annual
   the post-industrial town of Trbovlje, Slovenia.
 mainVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/news/speculum/saf-tab.jpg
+  mediaUrl: https://media.agawen.com/news/speculum/saf-tab.jpg
 gallery:
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/speculum/saf-1.jpg
+    mediaUrl: https://media.agawen.com/news/speculum/saf-1.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/speculum/saf-2.jpg
+    mediaUrl: https://media.agawen.com/news/speculum/saf-2.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/speculum/saf-3.jpg
+    mediaUrl: https://media.agawen.com/news/speculum/saf-3.jpg
 ---

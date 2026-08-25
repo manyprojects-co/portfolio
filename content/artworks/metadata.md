@@ -19,22 +19,22 @@ artistStatement: "In this age of surveillance capitalism, user data is fracked
   act of phone-scrolling on the loo."
 landingVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/artworks/metadata/mtdt-ld.jpg
+  mediaUrl: https://media.agawen.com/artworks/metadata/mtdt-ld.jpg
 tabArtVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/artworks/metadata/mtdt-tab.png
+  mediaUrl: https://media.agawen.com/artworks/metadata/mtdt-tab.png
 cardCoverVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/artworks/metadata/mtdt-card.jpg
+  mediaUrl: https://media.agawen.com/artworks/metadata/mtdt-card.jpg
 cardGallery:
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/metadata/mtdt-art1.jpg
+    mediaUrl: https://media.agawen.com/artworks/metadata/mtdt-art1.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/metadata/mtdt-art2.jpg
+    mediaUrl: https://media.agawen.com/artworks/metadata/mtdt-art2.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/metadata/mtdt-art3.jpg
+    mediaUrl: https://media.agawen.com/artworks/metadata/mtdt-art3.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/metadata/mtdt-art4.jpg
+    mediaUrl: https://media.agawen.com/artworks/metadata/mtdt-art4.jpg
 technicalTagline: Modern human nature
 technicalText: Digital media has hijacked our minds and bodies, and to best
   evoke this we searched for a medical-grade anatomical model, stripped away all
@@ -44,9 +44,9 @@ technicalText: Digital media has hijacked our minds and bodies, and to best
   form and evoke a domestic setting to match its mundane pose.
 technicalGallery:
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/metadata/mtdt-tech1.jpg
+    mediaUrl: https://media.agawen.com/artworks/metadata/mtdt-tech1.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/metadata/mtdt-tech2.jpg
+    mediaUrl: https://media.agawen.com/artworks/metadata/mtdt-tech2.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/metadata/mtdt-tech3.jpg
+    mediaUrl: https://media.agawen.com/artworks/metadata/mtdt-tech3.jpg
 ---

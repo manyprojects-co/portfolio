@@ -23,13 +23,13 @@ artistStatement: >-
   rigged, and made to doom-scroll.
 landingVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/artworks/user/user-ld.jpg
+  mediaUrl: https://media.agawen.com/artworks/user/user-ld.jpg
 tabArtVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/artworks/user/user-tab.png
+  mediaUrl: https://media.agawen.com/artworks/user/user-tab.png
 cardCoverVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/artworks/user/user-card.jpg
+  mediaUrl: https://media.agawen.com/artworks/user/user-card.jpg
 technicalTagline: Made to scroll
 technicalText: The vast and complex human being is everyday subsumed into the
   digital affordances of contemporary life. Gesturing to this, Xin's own hand is

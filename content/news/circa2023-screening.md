@@ -40,28 +40,28 @@ statement: >-
   8pm GMT.
 mainVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/news/circa-screen/circa-s-tab.jpg
+  mediaUrl: https://media.agawen.com/news/circa-screen/circa-s-tab.jpg
 gallery:
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/circa-screen/circa-s1.jpg
+    mediaUrl: https://media.agawen.com/news/circa-screen/circa-s1.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/circa-screen/circa-s2.jpg
+    mediaUrl: https://media.agawen.com/news/circa-screen/circa-s2.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/circa-screen/circa-s3.jpg
+    mediaUrl: https://media.agawen.com/news/circa-screen/circa-s3.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/circa-screen/circa-s4.jpg
+    mediaUrl: https://media.agawen.com/news/circa-screen/circa-s4.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/circa-screen/circa-s5.jpg
+    mediaUrl: https://media.agawen.com/news/circa-screen/circa-s5.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/circa-screen/circa-s6.jpg
+    mediaUrl: https://media.agawen.com/news/circa-screen/circa-s6.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/circa-screen/circa-s7.jpg
+    mediaUrl: https://media.agawen.com/news/circa-screen/circa-s7.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/circa-screen/circa-s8.jpg
+    mediaUrl: https://media.agawen.com/news/circa-screen/circa-s8.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/circa-screen/circa-s9.jpg
+    mediaUrl: https://media.agawen.com/news/circa-screen/circa-s9.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/circa-screen/circa-s10.jpg
+    mediaUrl: https://media.agawen.com/news/circa-screen/circa-s10.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/circa-screen/circa-s11.jpg
+    mediaUrl: https://media.agawen.com/news/circa-screen/circa-s11.jpg
 ---

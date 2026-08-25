@@ -17,16 +17,16 @@ statement: Powered by Piccadilly Lights, JJ Agcaoili & Xin Wen received the most
   received an additional £10,000 to support their joint artistic practice.
 mainVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/news/circa-prize/circa-p-tab.jpg
+  mediaUrl: https://media.agawen.com/news/circa-prize/circa-p-tab.jpg
 gallery:
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/circa-prize/circa-p1.jpg
+    mediaUrl: https://media.agawen.com/news/circa-prize/circa-p1.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/circa-prize/circa-p2.jpg
+    mediaUrl: https://media.agawen.com/news/circa-prize/circa-p2.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/circa-prize/circa-p3.jpg
+    mediaUrl: https://media.agawen.com/news/circa-prize/circa-p3.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/circa-prize/circa-p4.jpg
+    mediaUrl: https://media.agawen.com/news/circa-prize/circa-p4.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/circa-prize/circa-p5.jpg
+    mediaUrl: https://media.agawen.com/news/circa-prize/circa-p5.jpg
 ---
