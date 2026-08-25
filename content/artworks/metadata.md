@@ -8,7 +8,7 @@ size: 110 x 80 cm (43.3 x 31.5 in.) [Projection scale]
 duration: 00 min. 09 sec. loop
 featured: true
 featureOrder: 5
-premiereCity: Stockholm
+premiereCity: Stockholm, Sweden
 exhibitions: 2026 / [Helix Art Space](https://agawen.com/news/selfish/) (Stockholm)
 artistStatement: "In this age of surveillance capitalism, user data is fracked
   by platforms through every swipe and scroll, processed into behavioral models,
