@@ -90,8 +90,7 @@ content:
         label: Art Gallery
         type: object
         list: true
-        # Dynamic preview label when collapsed:
-        label: "`[${item.mediaType || 'media'}] ${item.caption || item.mediaUrl || item.textContent || 'New Item'}`"
+        summary: "[{fields.mediaType}] {fields.caption}"
         fields:
           - name: mediaType
             label: Media Type
