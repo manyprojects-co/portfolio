@@ -26,12 +26,6 @@ gallery:
     mediaUrl: https://media.agawen.com/news/silent-inteference/si-1.jpg
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/silent-inteference/si-2.jpg
-  - mediaType: image
-    mediaUrl: https://media.agawen.com/news/silent-inteference/si-3.jpg
-  - mediaType: image
-    mediaUrl: https://media.agawen.com/news/silent-inteference/si-4.jpg
-  - mediaType: image
-    mediaUrl: https://media.agawen.com/news/silent-inteference/si-5.jpg
   - mediaType: text
     textContent: >-
       Non-moment (2025) is a video art piece depicting the volumetric silhouette
@@ -44,4 +38,10 @@ gallery:
       The work was exhibited as a part of Turtle Chambers Projects' exhibition,
       Silent Interference (靜噪), amongst 27 works selected from over 150
       submissions across 48 countries and regions.
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/silent-inteference/si-3.jpg
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/silent-inteference/si-4.jpg
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/silent-inteference/si-5.jpg
 ---
