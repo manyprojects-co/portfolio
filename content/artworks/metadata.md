@@ -42,4 +42,11 @@ technicalText: Digital media has hijacked our minds and bodies, and to best
   of datapoints. Then, we projected these remains onto a translucent and
   loosely-draped curtain to give the illusion of upright volume for the skeletal
   form and evoke a domestic setting to match its mundane pose.
+technicalGallery:
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/metadata/mtdt-tech1.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/metadata/mtdt-tech2.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/metadata/mtdt-tech3.jpg
 ---
