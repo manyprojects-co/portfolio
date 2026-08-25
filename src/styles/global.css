@@ -353,15 +353,66 @@
                                     see the .about-bio rule before changing either. */
 
     /* news panel */
+    /* ⚠︎ --news-h is UNUSED — it was never applied to a normal row; only the deleted
+       `special` path set a height, via --news-h-special. Left as the record of an
+       intended row height that the layout never actually enforced. */
     --news-h: 180px;
-    --news-h-special: 200px;
     --news-gap: 32px;
-    --news-img-w: 220px;
-    --news-img-gap: 16px;
-    --news-text-w: 400px;
-    --news-row-w: calc(var(--news-img-w) + var(--news-img-gap) + var(--news-text-w));  /* 636 */
+    /* ---- the list row, brought onto the shared column system (2026-08-23, JJ) ----
+       ⭐ BREAKING THE SQUARE IS WHAT MADE THIS FREE. The row was 220 + 16 + 400 = 636 with a
+       1:1 thumbnail, so its WIDTH and its HEIGHT were the same number: widening the image
+       to the shared 300 track would have made every row 300px tall and the list ~36%
+       longer. At 4:3 a 300px thumbnail is 225 tall — within 5px of the old 220 — so the row
+       joins the 812 system at unchanged density. The aspect ratio was load-bearing and
+       nobody had noticed.
+       ⚠︎ THE TRACKS ARE THE ART CARD'S, not a parallel set: --art-side-w and --art-col-gap,
+       total --art-body-w. A news row and the card it opens now share both outer edges and
+       their inner seam. */
+    --news-img-gap: var(--art-col-gap);
+    /* [TUNE] the text column as a MULTIPLE OF THE IMAGE (JJ, 2026-08-23), so the row's
+       proportion is stated once and the width falls out of it rather than the reverse. */
+    --news-text-scale: 1.5;
+    --news-text-w: calc(var(--news-img-w) * var(--news-text-scale));
+    /* ⚠︎ THE ROW IS NO LONGER --art-body-w, AND THAT REVERSES PART OF TODAY'S UNIFICATION.
+       It is now img + gap + text = 240 + 32 + 360 = 632, so the list is ~180px narrower
+       than the card it opens and their OUTER EDGES NO LONGER REGISTER. Earlier today the
+       row was widened to 812 specifically to make them align; JJ then set the image to 80%
+       and the text to 1.5x, and those two ratios TOGETHER determine the width — you cannot
+       hold all three. The proportions won.
+       ⭐ What survives is the thing that mattered: the row is still expressed as FORMULAS
+       off --art-side-w, so it tracks the shared column rather than being a parallel set of
+       magic numbers. It is derived from the system without being flush with it.
+       ⚠︎ Near-coincidence worth not misreading: 632 is within 4px of the ORIGINAL 636
+       (220 + 16 + 400). The row has come back to almost exactly its old width by a
+       completely different route — different image, different gap, different proportion.
+       Do not take the match as evidence that nothing changed. */
+    --news-row-w: calc(var(--news-img-w) + var(--news-img-gap) + var(--news-text-w));
+    /* [TUNE] The thumbnail as a FRACTION of the shared column, not a free number — a
+       formula off its input, so retuning --art-side-w carries the row with it.
+           0.8 x 300 = 240 wide, and at 4:3 that is 180 tall (was 225, before that 220).
+       ⚠︎ THE OUTER EDGES STILL REGISTER, THE INNER SEAM NO LONGER DOES. The row is still
+       --art-body-w wide, so it lines up with the card it opens on both sides — but its
+       image/text boundary now sits at 240 while the card's column seam sits at 300. That
+       is the deliberate trade for a lighter list: a row is a scanning object, a card is a
+       reading one, and they no longer have to break at the same place. */
+    --news-img-scale: 0.8;
+    --news-img-w: calc(var(--art-side-w) * var(--news-img-scale));
+    --news-img-ratio: 4 / 3;   /* [TUNE] 4/3 = 180px tall at 240 wide (was 1/1 at 220).
+                                  16/9 gives 169 — lighter, more editorial. Change BOTH this
+                                  and the `ratio` prop in NewsList.astro; the prop shapes the
+                                  empty placeholder, this shapes the real image. */
     --news-el-gap: 12px;
-    --news-special-inset: 16px;
+    /* [TUNE] subheading grey. Sits on the site's grey scale between the body colour and
+       the caption grey — quiet against a bold title, but a full sentence of real content,
+       so never as faint as a caption.
+           #000000  body            #5A5A5A  first pass, too heavy
+           #7A7A7A  here            #949494  --muted, captions and meta
+           #B3B3B3  --about-year, the faintest thing on the site */
+    --news-sub: #7A7A7A;
+    --news-clamp: 5;         /* [TUNE] max lines for title + subheading, then … */
+    /* ⛔ --card-fill was the deleted `special` row's panel. Nothing reads it now; kept
+       for one moment only because it is the single off-white on the site and the next
+       thing that wants a raised surface will want exactly this value. */
     --card-fill: #FBFBFB;
   }
 
@@ -806,19 +857,23 @@
     gap: var(--news-gap);
   }
   .news-item { position: relative; width: min(var(--news-row-w), 100%); }
+  /* ⚠︎ GRID, NOT PROPORTIONAL FLEX. This was `flex: 220 1 0` / `flex: 400 1 0` — a ratio
+     that held as the row shrank but never resolved to the actual token widths, and the only
+     place on the site still sizing columns that way. Grid tracks match every other surface. */
   .ni-inner {
     position: relative;
     z-index: 1;
-    display: flex;
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: var(--news-img-w) 1fr;
+    align-items: start;
     gap: var(--news-img-gap);
     width: 100%;
     cursor: pointer;
   }
   .ni-img {
-    flex: 220 1 0;
+    width: 100%;
     min-width: 0;
-    aspect-ratio: 1 / 1;
+    aspect-ratio: var(--news-img-ratio);
     height: auto;
     object-fit: cover;
     display: block;
@@ -827,26 +882,49 @@
     display: flex;
     flex-direction: column;
     gap: var(--news-el-gap);
-    flex: 400 1 0;
     min-width: 0;
   }
   .ni-meta { font-size: var(--type-size); line-height: 1; color: var(--muted); }
   .ni-sep  { margin: 0 6px; }
-  .ni-heading { margin: 0; font-size: var(--type-size); line-height: 1.4; }
-  .ni-title   { font-weight: 400; color: var(--fg); }
-  .ni-sub     { color: var(--muted); }
+  /* ⭐ CLAMPED TO --news-clamp LINES, THEN AN ELLIPSIS (JJ, 2026-08-23). Title and
+     subheading share one <p>, so the clamp counts them TOGETHER — a long title eats into
+     the subheading's allowance rather than each getting its own budget, which is what
+     keeps every row the same height regardless of how the text divides.
 
-  /* installations / exhibitions — DISABLED (SPECIAL_TYPES empty); CSS retained */
-  .news-item.special .ni-inner { height: var(--news-h-special); }
-  .news-item.special .ni-text  { font-weight: 700; }
-  .news-item.special .ni-title { font-weight: 700; }
-  .news-item.special::before {
-    content: "";
-    position: absolute;
-    inset: calc(-1 * var(--news-special-inset));
-    background: var(--card-fill);
-    z-index: 0;
+     ⚠︎ `display: -webkit-box` IS REQUIRED for line-clamp and is not a legacy artefact —
+     the standard `line-clamp` shorthand still resolves through the same box model, and
+     Safari needs the prefixed pair. All three are declared: the modern property last so
+     it wins where supported.
+     ⚠︎ The element is a flex child of .ni-text; -webkit-box behaves normally there.
+     ⚠︎ The ellipsis only appears on actual overflow, so short rows are untouched. */
+  .ni-heading {
+    margin: 0;
+    font-size: var(--type-size);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: var(--news-clamp);
+    line-clamp: var(--news-clamp);
+    overflow: hidden;
   }
+  /* Title BOLD, subheading a DARK grey, both on one line (JJ, 2026-08-23). The pair reads
+     as "headline: gloss" — the weight carries the hierarchy, the colour carries the aside. */
+  .ni-title   { font-weight: 700; color: var(--fg); }
+  /* ⚠︎ NOT --muted (#949494). JJ asked for DARK grey, and --muted is the site's
+     lighter-but-legible grey used for captions, spec lines and the news meta. A subheading
+     is a full sentence carrying real content, so it sits much closer to the body colour —
+     quiet against a bold title, not faded like a caption. */
+  .ni-sub     { color: var(--news-sub); }
+
+  /* ⛔ THE `special` TREATMENT IS DELETED (2026-08-23, JJ). It was a taller row, bold text
+     and a --card-fill panel inset behind the item, keyed off eventType. It had been
+     switched off for some time, and against the real content it would have matched
+     EXACTLY ONE item — Award x1, Press x0, out of 7 Group exhibition / 3 Solo / 3 Artist
+     Talk / 1 Screening. Built, disabled, and unselective: deleted rather than left as
+     unreachable CSS pretending to be a feature.
+     ⚠︎ --news-h-special, --news-special-inset and --card-fill went with it. The mechanism
+     is in git if a real "featured item" distinction ever wants it back — but it should key
+     off a deliberate flag, not off a category that happens to be rare. */
 
   /* ===================== ART-NEWS DETAIL VIEW =====================
      Sits BENEATH the stage, already in place. No chrome: no rounding, no
@@ -1035,9 +1113,19 @@
   }
   .detail-ack p { margin: 0 0 1em; }
   .detail-ack p:last-child { margin-bottom: 0; }
-  .detail-statement { line-height: 1.5; }
-  .detail-statement p { margin: 0 0 1em; }
-  .detail-statement p:last-child { margin-bottom: 0; }
+  /* ⭐ ONE RULE, TWO CALLERS, IDENTICAL BY CONSTRUCTION (JJ, 2026-08-23).
+     `.detail-statement` is the artwork's artist statement and the technical section's body;
+     `.media-text` is a gallery row whose mediaType is `text`. JJ: a text row "shouldn't
+     really deviate much from the existing art statement treatment" — so rather than two
+     rules holding the same values, they share one selector list and CANNOT drift.
+     ⚠︎ That is the lesson from the bio and the art card, which grew apart into 350/400 and
+     240/480 precisely because they were two rules that merely happened to agree. */
+  .detail-statement,
+  .media-text { line-height: 1.5; }
+  .detail-statement p,
+  .media-text p { margin: 0 0 1em; }
+  .detail-statement p:last-child,
+  .media-text p:last-child { margin-bottom: 0; }
 
   /* ---- STACKED. One column, one gap, and an order that is NOT the source order. ----
      `display: contents` dissolves both column wrappers so every leaf becomes a direct
@@ -1089,7 +1177,22 @@
   /* ===================== NEWS CARD (reworked 2026-08-23, JJ) =====================
      The art sheet's grid without a cover photo, so .news-grid is the first thing in the
      card and needs no top margin. Everything else comes from .art-grid / .art-side. */
-  .news-grid { margin-top: 0; }
+  .news-grid {
+    margin-top: 0;
+    /* ⭐ NEWS PINS AT THE FRAME MARGIN, NOT AT 32 (JJ, 2026-08-23) — so the sticky column
+       lands on the same 60px line as every other inset on the site. The artwork sheet
+       keeps 32 because its column starts under a cover photo and a tighter pin reads as
+       deliberate there; news has nothing above it, so anything but 60 reads as a mistake.
+
+       ⭐ ONE LINE DOES IT, and that is the payoff for keeping .art-side's `top` and
+       `height` as FORMULAS off this token rather than as numbers. Overriding the custom
+       property here cascades into both:
+           top    = 60 - 60            = 0   → pins 60 from the card's top edge
+           height = VH - 120 - 60 - 60       → still ends --frame-margin above the floor
+       ⚠︎ So do NOT "simplify" .art-side by inlining either calc(). The scroller-padding
+       correction has to stay inside the formula or this override silently double-counts. */
+    --art-sticky-top: var(--frame-margin);
+  }
 
   /* ⚠︎ BLACK, NOT --muted, AND THAT IS THE POINT. The artwork sheet's spec line is grey
      because it is secondary to the picture; news has no picture at the top, so its meta
@@ -1116,12 +1219,6 @@
   .detail-body .dn-sub { line-height: 1.5; }
   .detail-body .dn-sub p { margin: 0 0 1em; }
   .detail-body .dn-sub p:last-child { margin-bottom: 0; }
-
-  /* A TEXT ROW inside a gallery — prose where a picture would be. Body size, so it reads
-     as content rather than as a caption. */
-  .media-text { line-height: 1.5; }
-  .media-text p { margin: 0 0 1em; }
-  .media-text p:last-child { margin-bottom: 0; }
 
   /* ⛔ RETIRED with the rework: .detail-col / .detail-news were the old single-column news
      card (a 400px text column, then a full-bleed gallery). NewsItem.astro no longer emits
@@ -1383,7 +1480,7 @@
 /* the carousel and grid size by height, so the empty box must too */
 .card .media-empty { height: var(--card-h); max-height: calc(var(--landing-h) - 80px); width: auto; }
 .gcard .media-empty { width: 100%; height: auto; }
-.ni-img.media-empty { --media-empty-ratio: 1 / 1; }
+.ni-img.media-empty { --media-empty-ratio: var(--news-img-ratio); }
 .detail-hero.media-empty { width: 100%; --media-empty-ratio: 16 / 9; }
 .detail-figs .media-empty, .tech-figs .media-empty { width: 100%; }
 

@@ -28,7 +28,7 @@
  * ============================================================================
  */
 import Media from "./Media.astro";
-import { titleCase, typeLabel, timeElapsed } from "../lib/format";
+import { titleCase, typeLabel, longDate, dateRange } from "../lib/format";
 interface Props { item: any }
 const { item } = Astro.props;
 
@@ -37,14 +37,14 @@ const { item } = Astro.props;
    already use — "Hoxton Hall (London)" — so the two surfaces read the same way. */
 const place = [item.location, item.city && `(${item.city})`].filter(Boolean).join(" ");
 
-/* ⚠︎ isDateRange + endDate have also never rendered. A range collapses to one line; a
-   single date stays as the elapsed string site.js keeps live. */
-const iso = (d: any) => (d?.toISOString?.().slice(0, 10) ?? d ?? "");
-const fmt = (d: any) =>
-  d ? new Date(d).toLocaleDateString("en-GB", { month: "short", year: "numeric" }) : "";
-const dateLine = item.isDateRange && item.endDate
-  ? `${fmt(item.date)} – ${fmt(item.endDate)}`
-  : null;
+/* ⚠︎ isDateRange + endDate had never rendered before today. A range only renders when the
+   FLAG IS SET AND an endDate exists — confirmed correct by JJ, and it is load-bearing
+   rather than defensive: 7 of the 15 items carry an endDate with isDateRange false, so
+   trusting endDate alone would print seven ranges nobody authored. */
+const dateLine =
+  item.isDateRange && item.endDate ? dateRange(new Date(item.date), new Date(item.endDate))
+  : item.date ? longDate(new Date(item.date))
+  : "";
 
 const figs = item.gallery?.length ? item.gallery : item.image ? [item.image] : [];
 ---
@@ -55,11 +55,10 @@ const figs = item.gallery?.length ? item.gallery : item.image ? [item.image] : [
       <div class="dn-meta">
         {item.eventType && <div>{typeLabel(item.eventType)}</div>}
         {place && <div>{place}</div>}
-        {dateLine
-          ? <div>{dateLine}</div>
-          : item.date && (
-              <div data-elapsed={iso(item.date)}>{timeElapsed(new Date(item.date))}</div>
-            )}
+        {/* ⚠︎ NO `data-elapsed` HERE ANY MORE. site.js rewrites elements carrying that
+            attribute into a live "3 months ago" string; the card now shows an absolute
+            date, and leaving the hook in would have had site.js quietly overwrite it. */}
+        {dateLine && <div>{dateLine}</div>}
       </div>
 
       <p class="dn-title">{titleCase(item.title)}</p>
