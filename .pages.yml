@@ -85,13 +85,11 @@ content:
               values: [image, video]
           - { name: imageUrl, label: Cloudflare URL, type: string }
 
-# Art Gallery (Intersperse Images, Videos, & Text)
+  # Art Gallery (Intersperse Images, Videos, & Text)
       - name: cardGallery
         label: Art Gallery
         type: object
-        list:
-          collapsible: true
-          summary: "[{mediaType}] {caption}"
+        list: true
         fields:
           - name: mediaType
             label: Media Type
