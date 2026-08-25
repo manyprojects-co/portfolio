@@ -80,3 +80,44 @@ export function aboutItem(line: string): string {
   const m = line.match(/^\s*(\d{4})\s*-\s*(.*)$/);
   return m ? yearItem(m[1], m[2]) : plainItem(line);
 }
+
+/**
+ * News dates, long form: "August 15, 2026".
+ *
+ * ⚠︎ UTC EXPLICITLY, EVERY TIME. `new Date("2023-09-06")` parses as UTC midnight, and
+ * formatting that in any timezone behind UTC prints the 5th. The site is authored in
+ * Manila (UTC+8) and read anywhere, so a local-time format would show different dates to
+ * different visitors. `map.ts` already takes this care with getUTCFullYear(); same rule.
+ *
+ * ⚠︎ NEWS DATES ARE DAY-PRECISE, ARTWORK DATES ARE NOT. All 15 news `date` values carry a
+ * real day (not one is day-01); all 11 artwork `productionDate` values are day-01, i.e.
+ * month precision. So the day is always shown here and never for an artwork year.
+ * ⛔ AND "SHOW THE DAY IF PRESENT" CANNOT BE IMPLEMENTED — an ISO date cannot distinguish
+ * "the 1st" from "no day given". A heuristic that hid the day on the 1st would silently
+ * drop it for a genuine first-of-the-month event. Always show it.
+ */
+const D = (d: Date, opts: Intl.DateTimeFormatOptions) =>
+  d.toLocaleDateString("en-US", { timeZone: "UTC", ...opts });
+
+const MONTH_DAY = { month: "long", day: "numeric" } as const;
+const FULL = { month: "long", day: "numeric", year: "numeric" } as const;
+
+export const longDate = (d: Date): string => D(d, FULL);
+
+/**
+ * A date range with the repetition collapsed. Writing both ends out in full gives
+ * "November 28, 2023 – December 5, 2023", which repeats the year, and within one month it
+ * repeats the month too. Every real range in the content today is short, so the redundancy
+ * is the common case rather than the edge one.
+ *
+ *   same month  ->  September 6–10, 2023        (tight dash: it reads as one span)
+ *   same year   ->  November 28 – December 5, 2023
+ *   crosses years ->  December 28, 2025 – January 4, 2026
+ */
+export function dateRange(start: Date, end: Date): string {
+  const sameYear = start.getUTCFullYear() === end.getUTCFullYear();
+  const sameMonth = sameYear && start.getUTCMonth() === end.getUTCMonth();
+  if (sameMonth) return `${D(start, MONTH_DAY)}–${D(end, { day: "numeric" })}, ${end.getUTCFullYear()}`;
+  if (sameYear) return `${D(start, MONTH_DAY)} – ${D(end, MONTH_DAY)}, ${end.getUTCFullYear()}`;
+  return `${D(start, FULL)} – ${D(end, FULL)}`;
+}
