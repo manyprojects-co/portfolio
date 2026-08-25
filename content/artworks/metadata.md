@@ -26,6 +26,15 @@ tabArtVisual:
 cardCoverVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/artworks/metadata/mtdt-card.jpg
+cardGallery:
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/metadata/mtdt-art1.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/metadata/mtdt-art2.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/metadata/mtdt-art3.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/artworks/metadata/mtdt-art4.jpg
 technicalTagline: Modern human nature
 technicalText: Digital media has hijacked our minds and bodies, and to best
   evoke this we searched for a medical-grade anatomical model, stripped away all
