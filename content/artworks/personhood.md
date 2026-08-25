@@ -55,12 +55,19 @@ cardGallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/personhood/psh-art1.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/personhood/psh-art2.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/personhood/psh-art3.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/personhood/psh-art4.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/personhood/psh-art5.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/personhood/psh-art6.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/personhood/psh-art7.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/personhood/psh-art8.jpg
 technicalTagline: An iterating work
 technicalText: >-
   As a piece that comments on our coexistence with the impacts of technology,
