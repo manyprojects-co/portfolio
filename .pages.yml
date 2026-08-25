@@ -165,7 +165,6 @@ content:
             type: select
             options:
               values: [image, video, text]
-          - { name: imageUrl, label: Cloudflare Image URL, type: string }
-          - { name: videoUrl, label: Cloudflare Video URL, type: string }
+          - { name: mediaUrl, label: Cloudflare Media URL, type: string }
           - { name: caption, label: Image/Video Caption, type: string }
           - { name: textContent, label: Text Block Content, type: rich-text }
