@@ -1,7 +1,8 @@
 ---
 title: Self—ish
-subheading: Our first multi-work solo exhibition, featuring old and new works
-  across kinetic sculpture, video art, and projection-mapped installations.
+subheading: Our first multi-work international solo exhibition, featuring old
+  and new works across kinetic sculpture, video art, and projection-mapped
+  installations.
 isDateRange: true
 date: 2026-03-07
 endDate: 2026-03-19
