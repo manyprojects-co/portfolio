@@ -26,4 +26,6 @@ statement: >-
 mainVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/news/mvr/mvr-tab.jpg
+gallery:
+  - {}
 ---
