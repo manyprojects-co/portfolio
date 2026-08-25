@@ -15,4 +15,9 @@ statement: We shared our perspective on the deliberate usage of AI as an art
 mainVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/news/has-breakfast/hascb-tab.jpg
+gallery:
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/has-breakfast/hascb-1.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/has-breakfast/hascb-2.jpg
 ---
