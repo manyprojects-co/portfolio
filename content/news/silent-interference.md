@@ -5,7 +5,7 @@ subheading: Our new video artwork, Non-moment (2025), was exhibited at Silent
 isDateRange: false
 date: 2025-11-28
 endDate: 2025-11-30
-location: Fengling Commercial Building
+location: Screen on Fengling Commercial Building
 city: Taoyuan, Taiwan
 eventType: Group exhibition
 statement: >-
