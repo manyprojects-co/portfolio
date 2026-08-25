@@ -1,5 +1,7 @@
 ---
-title: "Personhood: a more personal iteration"
+title: "Personhood: Iteration 4"
+subheading: A new iteration of the projection-mapped interactive installation
+  exploring the boundaries of presence and identity in the age of AI.
 isDateRange: true
 date: 2026-04-25
 endDate: 2026-05-14
