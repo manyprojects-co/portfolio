@@ -37,7 +37,7 @@ tabArtVisual:
   mediaUrl: https://media.agawen.com/artworks/emergency/emgc-tab.png
 cardCoverVisual:
   mediaType: image
-  mediaUrl: https://media.agawen.com/artworks/emergency/emgc-ld.jpg
+  mediaUrl: https://media.agawen.com/artworks/emergency/emgc-card.jpg
 cardGallery:
   - mediaType: image
   - mediaType: image
