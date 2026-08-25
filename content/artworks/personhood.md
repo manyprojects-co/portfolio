@@ -9,7 +9,7 @@ size: "Installation footprint variable. Reference: 370 × 868 × 585 cm (12.1 ×
 duration: Real-time interactive loop
 featured: true
 featureOrder: 2
-premiereCity: San Francisco
+premiereCity: San Francisco, USA
 exhibitions: >-
   2024 / [Asian Art Museum](https://agawen.com/news/proof-of-personhood/) (San
   Francisco)  
