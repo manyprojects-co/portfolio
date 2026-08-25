@@ -20,22 +20,18 @@ artistStatement: >-
   performances.
 landingVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/artworks/screentime/sct-ld.jpg
+  mediaUrl: https://media.agawen.com/artworks/screentime/sct-ld.jpg
 tabArtVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/artworks/screentime/sct-tab.png
+  mediaUrl: https://media.agawen.com/artworks/screentime/sct-tab.png
 cardCoverVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/artworks/screentime/sct-card.jpg
+  mediaUrl: https://media.agawen.com/artworks/screentime/sct-card.jpg
 cardGallery:
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/screentime/sct-art1.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/screentime/sct-art2.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/screentime/sct-art3.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/screentime/sct-art4.jpg
 technicalTagline: Behind the screens
 technicalText: We interviewed several friends on their nightly phone rituals,
   which they then replicated out of habit on encased sheets of glass. Embedded
@@ -44,9 +40,6 @@ technicalText: We interviewed several friends on their nightly phone rituals,
   match each scene.
 technicalGallery:
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/screentime/sct-tech1.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/screentime/sct-tech2.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/screentime/sct-tech3.jpg
 ---
