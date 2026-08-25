@@ -40,7 +40,9 @@ cardCoverVisual:
   mediaUrl: https://media.agawen.com/artworks/emergency/emgc-card.jpg
 cardGallery:
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/emergency/emgc-art1.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/emergency/emgc-art2.jpg
   - mediaType: image
   - mediaType: image
   - mediaType: image
