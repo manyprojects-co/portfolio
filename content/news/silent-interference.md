@@ -1,5 +1,5 @@
 ---
-title: Non-moment / Silent Interference (靜噪)
+title: Silent Interference (靜噪)
 subheading: Our new video artwork, Non-moment (2025), was exhibited at Silent
   Interference (靜噪).
 isDateRange: true
