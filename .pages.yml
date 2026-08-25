@@ -93,7 +93,6 @@ content:
         # Dynamic preview label when collapsed:
         label: "`[${item.mediaType || 'media'}] ${item.caption || item.mediaUrl || item.textContent || 'New Item'}`"
         fields:
-        fields:
           - name: mediaType
             label: Media Type
             type: select
