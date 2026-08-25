@@ -8,7 +8,7 @@ size: 17.56 × 44.62 m (57.6 × 146.4 ft)
 duration: 02 min. 30 sec.
 featured: true
 featureOrder: 3
-premiereCity: London
+premiereCity: London, UK
 exhibitions: >-
   2023 / [CIRCA2023 Screening](https://agawen.com/news/circa2023-screening/)
   (London, Milan, and Berlin)
