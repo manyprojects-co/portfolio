@@ -53,8 +53,10 @@ technicalText: Anamorphic illusions are a centuries-old perspective trick, and
   entirely novel concept.
 technicalGallery:
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/box-body/ bb-tech1.jpg
     caption: Film set
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/box-body/ bb-tech2.jpg
     caption: Test footage depicted in daylight
   - mediaType: image
     caption: Skewed test footage for display
