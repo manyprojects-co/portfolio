@@ -5,16 +5,24 @@
  */
 import Media from "./Media.astro";
 import { titleCase, typeLabel, timeElapsed } from "../lib/format";
-interface Props { news: any[]; specialTypes?: string[] }
-const { news, specialTypes = ["Award", "Press"] } = Astro.props;
+/* ⛔ `specialTypes` REMOVED (2026-08-23, JJ) — see the note in global.css. The prop drove a
+   raised-panel treatment that had been switched off and would have matched one item. */
+interface Props { news: any[] }
+const { news } = Astro.props;
 ---
 <div class="sub" id="news">
   <div class="news-list" id="newsList">
     {news.map((item) => (
-      <article class={"news-item" + (specialTypes.includes(item.eventType) ? " special" : "")}>
+      <article class="news-item">
         <a class="ni-inner" href={`/news/${item.slug}`} data-detail={`news/${item.slug}`}>
+          {/* ⚠︎ `ratio` SHAPES THE EMPTY PLACEHOLDER ONLY — the real image is shaped by
+              `.ni-img`'s aspect-ratio. Keep this in step with --news-img-ratio in
+              global.css or an empty row is a different shape from a filled one.
+              ⚠︎ `sizes` tracks --news-img-w (0.8 x --art-side-w = 240). It said "200px"
+              when the thumbnail was 220, so the browser had been picking one candidate too
+              small and upscaling it all along. */}
           <Media media={item.image} alt={item.title} class="ni-img"
-                 widths={[200, 400, 600]} sizes="200px" ratio={[1, 1]} />
+                 widths={[240, 480, 720]} sizes="240px" ratio={[4, 3]} />
           <div class="ni-text">
             <div class="ni-meta">
               <span>{typeLabel(item.eventType)}</span>
