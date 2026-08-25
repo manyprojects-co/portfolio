@@ -44,6 +44,7 @@ cardGallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/emergency/emgc-art2.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/emergency/emgc-art3.jpg
   - mediaType: image
   - mediaType: image
   - mediaType: image
