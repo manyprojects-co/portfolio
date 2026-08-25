@@ -59,8 +59,10 @@ technicalGallery:
     mediaUrl: https://media.agawen.com/artworks/box-body/ bb-tech2.jpg
     caption: Test footage depicted in daylight
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/box-body/ bb-tech3.jpg
     caption: Skewed test footage for display
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/box-body/ bb-tech4.jpg
     caption: Night time interaction testing. Waving back in real time was proven
       possible.
 ---
