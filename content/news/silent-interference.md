@@ -16,8 +16,8 @@ statement: >-
 
 
   The work was exhibited as a part of Turtle Chambers Projects' exhibition,
-  Silent Interference (靜噪), amongst 27 works selected from over 150 submissions,
-  48 countries and regions.
+  Silent Interference (靜噪), amongst 27 works selected from over 150 submissions
+  across 48 countries and regions.
 mainVisual:
   mediaType: image
   mediaUrl: https://media.agawen.com/news/silent-inteference/si-tab.jpg
