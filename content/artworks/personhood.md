@@ -93,7 +93,9 @@ technicalText: >-
   formed in the likeness of Xin.
 technicalGallery:
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/personhood/psh-tech1.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/personhood/psh-tech2.jpg
   - mediaType: image
   - mediaType: image
   - mediaType: image
