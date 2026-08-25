@@ -44,10 +44,13 @@ institutionSupport: Personhood (originally "Proof of Personhood") was first
   developed for various spaces around the world.
 landingVisual:
   mediaType: image
+  mediaUrl: https://media.agawen.com/artworks/personhood/psh-ld.jpg
 tabArtVisual:
   mediaType: image
+  mediaUrl: https://media.agawen.com/artworks/personhood/psh-tab.png
 cardCoverVisual:
   mediaType: image
+  mediaUrl: https://media.agawen.com/artworks/personhood/psh-card.jpg
 cardGallery:
   - mediaType: image
   - mediaType: image
