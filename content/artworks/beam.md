@@ -39,7 +39,9 @@ cardGallery:
     mediaUrl: https://media.agawen.com/artworks/beam/beam-art-v1.mp4
   - mediaUrl: https://media.agawen.com/artworks/beam/beam-art-v2.mp4
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/beam/beam-art1.mp4
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/beam/beam-art2.mp4
   - mediaType: image
   - mediaType: image
   - mediaType: image
