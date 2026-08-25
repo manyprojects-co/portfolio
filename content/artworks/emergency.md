@@ -31,26 +31,19 @@ artistStatement: >-
   and Luling Wang (score).
 landingVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/artworks/emergency/emgc-ld.jpg
+  mediaUrl: https://media.agawen.com/artworks/emergency/emgc-ld.jpg
 tabArtVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/artworks/emergency/emgc-tab.png
+  mediaUrl: https://media.agawen.com/artworks/emergency/emgc-tab.png
 cardCoverVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/artworks/emergency/emgc-card.jpg
 cardGallery:
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/emergency/emgc-art1.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/emergency/emgc-art2.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/emergency/emgc-art3.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/emergency/emgc-art4.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/emergency/emgc-art5.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/emergency/emgc-art6.jpg
 technicalTagline: Light beyond the dark
 technicalText: "This award-winning artwork was made in the shared basement
   entertainment room of an east london flat complex. It builds on a technique
@@ -60,9 +53,7 @@ technicalText: "This award-winning artwork was made in the shared basement
   beyond the confines of the screen. "
 technicalGallery:
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/emergency/emgc-tech1.jpg
     caption: Film set
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/emergency/emgc-tech2.jpg
     caption: Frames from the final film (skewed for Piccadilly Lights)
 ---
