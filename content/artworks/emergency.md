@@ -60,7 +60,9 @@ technicalText: "This award-winning artwork was made in the shared basement
   beyond the confines of the screen. "
 technicalGallery:
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/emergency/emgc-tech1.jpg
     caption: Film set
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/emergency/emgc-tech2.jpg
     caption: Frames from the final film (skewed for Piccadilly Lights)
 ---
