@@ -32,18 +32,18 @@ institutionSupport: Special thanks to Gary Hong (Ten Square Singapore) and Ina
   Conradi (NTU’s School of Art Design and Media).
 landingVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/artworks/box-body/bb-ld.jpg
+  mediaUrl: https://media.agawen.com/artworks/box-body/bb-ld.jpg
 tabArtVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/artworks/box-body/bb-tab.png
+  mediaUrl: https://media.agawen.com/artworks/box-body/bb-tab.png
 cardCoverVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/artworks/box-body/bb-card.jpg
+  mediaUrl: https://media.agawen.com/artworks/box-body/bb-card.jpg
 cardGallery:
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/box-body/bb-art1.jpg
+    mediaUrl: https://media.agawen.com/artworks/box-body/ bb-art1.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/box-body/bb-art2.jpg
+    mediaUrl: https://media.agawen.com/artworks/box-body/ bb-art2.jpg
 technicalTagline: A Living Screen
 technicalText: Anamorphic illusions are a centuries-old perspective trick, and
   the shinjuku crossings and times squares of modern-day had adapted them for
@@ -53,16 +53,12 @@ technicalText: Anamorphic illusions are a centuries-old perspective trick, and
   entirely novel concept.
 technicalGallery:
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/box-body/bb-tech1.jpg
     caption: Film set
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/box-body/bb-tech2.jpg
     caption: Test footage depicted in daylight
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/box-body/bb-tech3.jpg
     caption: Skewed test footage for display
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/box-body/bb-tech4.jpg
     caption: Night time interaction testing. Waving back in real time was proven
       possible.
 ---
