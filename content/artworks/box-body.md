@@ -16,18 +16,12 @@ exhibitions: >-
 
   2023 / [Ars Electronica Festival](https://agawen.com/news/ars-electronica)
   (Linz)
-artistStatement: >-
-  What contemporary boxes have we trapped ourselves in? Box Body is a
-  site-specific video artwork wrapped around the Ten Square billboard in
+artistStatement: What contemporary boxes have we trapped ourselves in? Box Body
+  is a site-specific video artwork wrapped around the Ten Square billboard in
   Singapore, exploring the theme of constriction that defines many urban lives.
   For a few nights in one of the busiest and fastest-growing metropolitan spaces
   in the world, a giant crouched, wedged in a building, contemplating their
   entrapment and ours, too.
-
-
-  Box Body was developed in collaboration with Ahad Mahmood (cinematographer),
-  with support from Erving Tan (videographer) for the live interactive
-  performance.
 institutionSupport: Special thanks to Gary Hong (Ten Square Singapore) and Ina
   Conradi (NTU’s School of Art Design and Media).
 landingVisual:
@@ -44,6 +38,10 @@ cardGallery:
     mediaUrl: https://media.agawen.com/artworks/box-body/ bb-art1.jpg
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/box-body/ bb-art2.jpg
+  - mediaType: text
+    textContent: Box Body was developed in collaboration with Ahad Mahmood
+      (cinematographer), with support from Erving Tan (videographer) for the
+      live interactive performance.
 technicalTagline: A Living Screen
 technicalText: Anamorphic illusions are a centuries-old perspective trick, and
   the shinjuku crossings and times squares of modern-day had adapted them for
