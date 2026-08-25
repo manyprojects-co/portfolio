@@ -35,9 +35,9 @@ cardCoverVisual:
   mediaUrl: https://media.agawen.com/artworks/box-body/bb-card.jpg
 cardGallery:
   - mediaType: image
-    mediaUrl: https://media.agawen.com/artworks/box-body/ bb-art1.jpg
+    mediaUrl: https://media.agawen.com/artworks/box-body/bb-art1.jpg
   - mediaType: image
-    mediaUrl: https://media.agawen.com/artworks/box-body/ bb-art2.jpg
+    mediaUrl: https://media.agawen.com/artworks/box-body/bb-art2.jpg
   - mediaType: text
     textContent: Box Body was developed in collaboration with Ahad Mahmood
       (cinematographer), with support from Erving Tan (videographer) for the
@@ -51,16 +51,16 @@ technicalText: Anamorphic illusions are a centuries-old perspective trick, and
   entirely novel concept.
 technicalGallery:
   - mediaType: image
-    mediaUrl: https://media.agawen.com/artworks/box-body/ bb-tech1.jpg
+    mediaUrl: https://media.agawen.com/artworks/box-body/bb-tech1.jpg
     caption: Film set
   - mediaType: image
-    mediaUrl: https://media.agawen.com/artworks/box-body/ bb-tech2.jpg
+    mediaUrl: https://media.agawen.com/artworks/box-body/bb-tech2.jpg
     caption: Test footage depicted in daylight
   - mediaType: image
-    mediaUrl: https://media.agawen.com/artworks/box-body/ bb-tech3.jpg
+    mediaUrl: https://media.agawen.com/artworks/box-body/bb-tech3.jpg
     caption: Skewed test footage for display
   - mediaType: image
-    mediaUrl: https://media.agawen.com/artworks/box-body/ bb-tech4.jpg
+    mediaUrl: https://media.agawen.com/artworks/box-body/bb-tech4.jpg
     caption: Night time interaction testing. Waving back in real time was proven
       possible.
 ---
