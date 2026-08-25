@@ -21,4 +21,15 @@ statement: >-
 mainVisual:
   mediaType: image
   imageUrl: https://media.agawen.com/news/silent-inteference/si-tab.jpg
+gallery:
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/silent-inteference/si-1.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/silent-inteference/si-2.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/silent-inteference/si-3.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/silent-inteference/si-4.jpg
+  - mediaType: image
+    imageUrl: https://media.agawen.com/news/silent-inteference/si-5.jpg
 ---
