@@ -26,7 +26,22 @@ import { glob } from "astro/loaders";
 /** A visual slot: image or video, both optional, the whole object optional. */
 const visual = z
   .object({
+    /* ⚠︎ NO `text` HERE, AND THAT MATCHES `.pages.yml` (checked against origin/main,
+     * 2026-08-23). `text` is offered on the GALLERIES only — cardGallery, technicalGallery
+     * and the news gallery — never on a single-visual slot, because a landing image, a tab
+     * image or a card cover cannot be prose. Keeping the enum narrow here means a text row
+     * pasted into a cover slot fails the build instead of rendering as an empty box. */
     mediaType: z.enum(["image", "video"]).optional(),
+    /* ⚠︎ TWO NAMES FOR THE URL, AND BOTH MUST PARSE. The CMS renamed `imageUrl` ->
+     * `mediaUrl`, and the rename is a CORRECTION: `.pages.yml` has never offered a
+     * `videoUrl` field at all, so this one string has always carried videos too — which is
+     * why BEAM's .mp4s live in it. The data has not migrated.
+     * ⛔ THIS IS THE `institutionSupport` BUG WITH A FAR BIGGER BLAST RADIUS: that was one
+     * field on four files; this one carries EVERY visual on the site. Without both names
+     * here, the first save through Pages CMS writes `mediaUrl`, Astro drops the unknown
+     * key, and the image silently becomes a placeholder with no error anywhere.
+     * map.ts prefers the new name and falls back to the old. */
+    mediaUrl: z.string().optional(),
     imageUrl: z.string().optional(),
     videoUrl: z.string().optional(),
   })
@@ -36,10 +51,15 @@ const visual = z
 /** A gallery row. `caption` is the first caption anywhere on the site (v5 opened this). */
 const galleryRow = z
   .object({
-    mediaType: z.enum(["image", "video"]).optional(),
+    mediaType: z.enum(["image", "video", "text"]).optional(),
+    mediaUrl: z.string().optional(),   // see the note on `visual` above — both names parse
     imageUrl: z.string().optional(),
     videoUrl: z.string().optional(),
     caption: z.string().optional(),
+    /* ⚠︎ WHERE A TEXT ROW'S PROSE LIVES IS NOT YET KNOWN. The local `.pages.yml` predates
+     * the change, so both a dedicated `text` field and re-use of `caption` are accepted
+     * and map.ts takes whichever is present. Narrow this once the real schema is pulled. */
+    text: z.string().optional(),
   })
   .partial();
 
@@ -121,6 +141,8 @@ const about = defineCollection({
     pressMentions: z.string().optional(),
     // renamed from `image` on 2026-08-10; absent from the file today, so no profile picture
     // renders anywhere. Was already true before the rename — flagged in v4-cms-audit §3.
+    // ⚠︎ and possibly renamed again to `mediaUrl` — both accepted, same reason as `visual`.
+    mediaUrl: z.string().optional(),
     imageUrl: z.string().optional(),
   }),
 });
