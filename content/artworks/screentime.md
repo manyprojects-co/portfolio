@@ -44,6 +44,9 @@ technicalText: We interviewed several friends on their nightly phone rituals,
   match each scene.
 technicalGallery:
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/screentime/sct-tech1.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/screentime/sct-tech2.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/screentime/sct-tech3.jpg
 ---
