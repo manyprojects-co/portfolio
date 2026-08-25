@@ -8,18 +8,20 @@ endDate: 2026-08-15
 location: Hoxton Hall
 city: London, UK
 eventType: Group exhibition
-statement: 'About the festival: "On 8 November 2025, 18 artists and collectives
-  from the East and Southeast Asian (ESEA) diaspora gathered at Hoxton Hall for
-  Alternative Roots: Festival of ESEA Performances and Communities. Curated by
-  Ming Strike in partnership with Kakilang, the day unfolded across multiple
-  rooms, with audiences moving freely between live performance, film, sound
-  works, workshops, conversation and a bustling marketplace."'
 mainVisual:
   mediaType: image
   mediaUrl: https://media.agawen.com/news/alternative-roots/aroots-tab.jpg
 gallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/alternative-roots/aroots-1.jpg
+  - mediaType: text
+    textContent: 'About the festival: "On 8 November 2025, 18 artists and
+      collectives from the East and Southeast Asian (ESEA) diaspora gathered at
+      Hoxton Hall for Alternative Roots: Festival of ESEA Performances and
+      Communities. Curated by Ming Strike in partnership with Kakilang, the day
+      unfolded across multiple rooms, with audiences moving freely between live
+      performance, film, sound works, workshops, conversation and a bustling
+      marketplace."'
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/alternative-roots/aroots-2.jpg
   - mediaType: image
