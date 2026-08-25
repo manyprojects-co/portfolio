@@ -96,10 +96,8 @@ content:
             type: select
             options:
               values: [image, video, text]
-          - { name: imageUrl, label: Cloudflare Image URL, type: string }
-          - { name: videoUrl, label: Cloudflare Video URL, type: string }
-          - { name: caption, label: Image/Video Caption, type: string }
-          - { name: textContent, label: Text Block Content, type: rich-text }
+          - { name: imageUrl, label: Cloudflare URL, type: string }
+          - { name: caption, label: Caption, type: string }
 
       # Technical Tagline & Text
       - { name: technicalTagline, label: Technical Tagline, type: string }
@@ -116,8 +114,10 @@ content:
             type: select
             options:
               values: [image, video, text]
-          - { name: imageUrl, label: Cloudflare URL, type: string }
-          - { name: caption, label: Caption, type: string }
+          - { name: imageUrl, label: Cloudflare Image URL, type: string }
+          - { name: videoUrl, label: Cloudflare Video URL, type: string }
+          - { name: caption, label: Image/Video Caption, type: string }
+          - { name: textContent, label: Text Block Content, type: rich-text }
 
 ########################  NEWS  ########################
 
