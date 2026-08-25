@@ -47,10 +47,32 @@ mainVisual:
   mediaType: image
   mediaUrl: https://media.agawen.com/news/selfish/sf-tab.jpg
 gallery:
-  - {}
-  - {}
-  - {}
-  - {}
-  - {}
-  - {}
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/selfish/sf-1.jpg
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/selfish/sf-2.jpg
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/selfish/sf-3.jpg
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/selfish/sf-4.jpg
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/selfish/sf-5.jpg
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/selfish/sf-6.jpg
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/selfish/sf-7.jpg
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/selfish/sf-8.jpg
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/selfish/sf-9.jpg
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/selfish/sf-10.jpg
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/selfish/sf-11.jpg
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/selfish/sf-12.jpg
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/selfish/sf-13.jpg
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/selfish/sf-14.jpg
 ---
