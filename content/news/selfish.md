@@ -43,7 +43,7 @@ statement: >-
   Daniel Daboczy.
 mainVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/news/selfish/sf-tab.jpg
+  mediaUrl: https://media.agawen.com/news/selfish/sf-tab.jpg
 gallery:
   - {}
   - {}

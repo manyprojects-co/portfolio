@@ -3,32 +3,79 @@
  * NewsItem.astro — the news sheet's inner content. Same two consumers as Work.astro.
  * News never ends in the black technical section, so it never sets `.tech-tail`.
  *
- * ✅ `statement` renders here (13/15 populated). v6 fell back to `subheading`, which is
- * populated 2/15 — v4-cms-audit.md called that the largest content-to-site gap.
+ * ============================================================================
+ * LAYOUT (JJ, 2026-08-23) — the art card's structure, WITHOUT the cover photo.
+ *
+ *   │ 300px sticky            │ 32 │  360–480 scrolling  │
+ *   │ category                │    │  gallery:           │
+ *   │ location (city)         │    │    image            │
+ *   │ date / duration         │    │    text             │
+ *   │        ↕ 32             │    │    video            │
+ *   │ title (14px)            │    │      ⋮              │
+ *   │        ↕ 32             │    │                     │
+ *   │ subheading              │    │                     │
+ *
+ * ⚠︎ THREE DELIBERATE DEPARTURES FROM THE ART SHEET, all JJ's:
+ *   1. NO COVER. The grid is the first thing in the card, so there is nothing above it.
+ *   2. The meta lines are BLACK, not grey. The artwork sheet's spec line uses --muted;
+ *      this one does not, so it does not read as secondary.
+ *   3. The title is 14px — LARGER than --type-size (12.5) and larger than the artwork
+ *      sheet's title, which sits at the base size. News leads with its title; an artwork
+ *      leads with its picture.
+ *
+ * ⚠︎ The right column is gallery ONLY. `statement` renders as a TEXT ROW inside that
+ *    gallery when the CMS carries one — it is no longer a separate block above it.
+ * ============================================================================
  */
 import Media from "./Media.astro";
 import { titleCase, typeLabel, timeElapsed } from "../lib/format";
 interface Props { item: any }
 const { item } = Astro.props;
+
+/* Location and city are BOTH populated 15/15 and rendered NOWHERE until now (map.ts has
+   said so since the port). "Venue (City)" matches the convention the artwork exhibitions
+   already use — "Hoxton Hall (London)" — so the two surfaces read the same way. */
+const place = [item.location, item.city && `(${item.city})`].filter(Boolean).join(" ");
+
+/* ⚠︎ isDateRange + endDate have also never rendered. A range collapses to one line; a
+   single date stays as the elapsed string site.js keeps live. */
+const iso = (d: any) => (d?.toISOString?.().slice(0, 10) ?? d ?? "");
+const fmt = (d: any) =>
+  d ? new Date(d).toLocaleDateString("en-GB", { month: "short", year: "numeric" }) : "";
+const dateLine = item.isDateRange && item.endDate
+  ? `${fmt(item.date)} – ${fmt(item.endDate)}`
+  : null;
+
 const figs = item.gallery?.length ? item.gallery : item.image ? [item.image] : [];
 ---
-<div class="detail-body">
-  <div class="detail-col detail-news">
-    <div class="dn-meta">
-      <span>{typeLabel(item.eventType)}</span>
-      <span class="ni-sep">·</span>
-      <span>{item.city}</span>
-      <span class="ni-sep">·</span>
-      <span data-elapsed={item.date?.toISOString?.().slice(0, 10) ?? item.date}>
-        {item.date ? timeElapsed(new Date(item.date)) : ""}
-      </span>
+<div class="detail-body art-body">
+  {/* No cover photo — the grid IS the top of the card. */}
+  <div class="art-grid news-grid">
+    <div class="art-side">
+      <div class="dn-meta">
+        {item.eventType && <div>{typeLabel(item.eventType)}</div>}
+        {place && <div>{place}</div>}
+        {dateLine
+          ? <div>{dateLine}</div>
+          : item.date && (
+              <div data-elapsed={iso(item.date)}>{timeElapsed(new Date(item.date))}</div>
+            )}
+      </div>
+
+      <p class="dn-title">{titleCase(item.title)}</p>
+
+      {item.subheading && <div class="dn-sub">{item.subheading}</div>}
     </div>
-    <p class="dn-title">{titleCase(item.title)}</p>
-    {item.statement?.length > 0
-      ? item.statement.map((p: string) => <p class="dn-body">{p}</p>)
-      : item.subheading && <p class="dn-body">{item.subheading}</p>}
-  </div>
-  <div class="detail-figs">
-    {figs.map((g: any) => <Media media={g} alt={item.title} widths={[900, 1400, 1920]} />)}
+
+    <div class="art-main">
+      {figs.length > 0 && (
+        <div class="detail-figs">
+          {figs.map((g: any) => (
+            <Media media={g} alt={item.title} widths={[900, 1400, 1920]}
+                   sizes="min(480px, 100vw)" />
+          ))}
+        </div>
+      )}
+    </div>
   </div>
 </div>

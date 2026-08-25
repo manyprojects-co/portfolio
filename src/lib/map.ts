@@ -19,7 +19,10 @@
 import type { CollectionEntry } from "astro:content";
 
 /** A gallery row is either a legacy path string or a (possibly empty) new-shape object. */
-export type Media = { kind: "image" | "video"; src: string; caption?: string } | null;
+export type Media =
+  | { kind: "image" | "video"; src: string; caption?: string }
+  | { kind: "text"; src: ""; text: string; caption?: string }
+  | null;
 
 /**
  * Normalise ONE visual slot to a single shape, or null.
@@ -54,9 +57,23 @@ export function media(v: unknown): Media {
     return t ? { kind: looksLikeVideo(t) ? "video" : "image", src: t } : null;
   }
   const o = v as Record<string, unknown>;
-  const img = typeof o.imageUrl === "string" ? o.imageUrl.trim() : "";
-  const vid = typeof o.videoUrl === "string" ? o.videoUrl.trim() : "";
-  const caption = typeof o.caption === "string" && o.caption.trim() ? o.caption.trim() : undefined;
+  const str = (k: string) => (typeof o[k] === "string" ? (o[k] as string).trim() : "");
+  /* ⚠︎ `mediaUrl` FIRST, `imageUrl` AS FALLBACK. The CMS renamed the field and the data has
+   * not migrated, so both names are live at once. Preferring the new one means the day an
+   * editor saves through Pages CMS it simply works; the fallback keeps all 11 existing
+   * files rendering until then. Same shape as institutionSupport -> acknowledgements.
+   * ⛔ Do NOT drop the fallback until `npm run data:report` shows zero `imageUrl` rows. */
+  const img = str("mediaUrl") || str("imageUrl");
+  const vid = str("videoUrl");
+  const caption = str("caption") || undefined;
+
+  /* A TEXT ROW carries prose instead of a picture. Where that prose lives is not settled —
+   * a dedicated `text` field and a re-used `caption` are both accepted; whichever is
+   * present wins. A text row with no prose is dropped like any other empty row. */
+  if (o.mediaType === "text") {
+    const body = str("text") || str("caption");
+    return body ? { kind: "text", src: "", text: body } : null;
+  }
   // declared video, URL in the right box
   if (o.mediaType === "video" && vid) return { kind: "video", src: vid, caption };
   // declared video, URL pasted into imageUrl — believe the declaration

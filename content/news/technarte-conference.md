@@ -37,16 +37,16 @@ statement: >-
   together, and to everyone who made Technarte possible.
 mainVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/news/technarte/tnt-tab.jpg
+  mediaUrl: https://media.agawen.com/news/technarte/tnt-tab.jpg
 gallery:
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/technarte/tnt-1.jpg
+    mediaUrl: https://media.agawen.com/news/technarte/tnt-1.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/technarte/tnt-2.jpg
+    mediaUrl: https://media.agawen.com/news/technarte/tnt-2.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/technarte/tnt-3.jpg
+    mediaUrl: https://media.agawen.com/news/technarte/tnt-3.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/technarte/tnt-4.jpg
+    mediaUrl: https://media.agawen.com/news/technarte/tnt-4.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/technarte/tnt-5.jpg
+    mediaUrl: https://media.agawen.com/news/technarte/tnt-5.jpg
 ---

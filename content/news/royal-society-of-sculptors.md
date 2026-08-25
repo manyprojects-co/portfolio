@@ -16,16 +16,16 @@ statement: A first prototype of BEAM (2023) was exhibited at the Royal Society
   Development Prize.
 mainVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/news/rss/rss-tab.jpg
+  mediaUrl: https://media.agawen.com/news/rss/rss-tab.jpg
 gallery:
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/rss/rss-1.jpg
+    mediaUrl: https://media.agawen.com/news/rss/rss-1.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/rss/rss-2.jpg
+    mediaUrl: https://media.agawen.com/news/rss/rss-2.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/rss/rss-3.jpg
+    mediaUrl: https://media.agawen.com/news/rss/rss-3.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/rss/rss-4.jpg
+    mediaUrl: https://media.agawen.com/news/rss/rss-4.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/rss/rss-5.jpg
+    mediaUrl: https://media.agawen.com/news/rss/rss-5.jpg
 ---

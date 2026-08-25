@@ -191,6 +191,11 @@ import { createTrace } from "../lib/trace.mjs";
     // so on a short viewport the band depends on the value set two lines above.
     DECK_H = carousel ? carousel.getBoundingClientRect().height : 0;
     measureBioStack();
+    // ⚠︎ the contact extras' width is cached, and THIS is one of the two places it is
+    // refreshed (the other is pinContact). A genuine resize also runs setContact(false),
+    // so a stale value can never be used to re-aim — but it would be used by the NEXT
+    // open, which is exactly the case this line covers.
+    measureContact();
   }
 
   /**
@@ -1300,6 +1305,7 @@ import { createTrace } from "../lib/trace.mjs";
   // cannot change the extras' width. All this has to do is re-aim an already-open
   // track when the measurement changes (font swap, resize).
   function pinContact() {
+    measureContact();   // ⚠︎ re-measure HERE, never in the click path — see measureContact
     if (cxOpen) navTrack.style.transform = `translateX(${-cxShift()}px)`;
   }
 
@@ -1307,11 +1313,45 @@ import { createTrace } from "../lib/trace.mjs";
   // right edge, so sliding by (their width + that gap) lands their RIGHT edge exactly
   // on the track's right edge — i.e. the same 60 line the rest of the frame uses.
   // The gap term MUST match the CSS `left` offset; both read --contact-gap so they
-  // cannot drift. Measured live on every open, which absorbs font load, resize and
-  // label changes. A translate does not change getBoundingClientRect().width, so
-  // measuring mid-lerp is safe.
+  // cannot drift. ⚠︎ NO LONGER measured live on every open — see measureContact() below
+  // for why that moved and what it was costing. A translate does not change
+  // getBoundingClientRect().width, so measuring mid-lerp is still safe.
   const CX_GAP = parseFloat(getComputedStyle(root).getPropertyValue("--contact-gap")) || 60;
-  const cxShift = () => cxExtras.getBoundingClientRect().width + CX_GAP;
+
+  /**
+   * ⭐ THE EXTRAS' WIDTH IS MEASURED ON A SCHEDULE, NOT ON EVERY OPEN (2026-08-23, JJ).
+   *
+   * 🐞 THE BUG THIS IS AIMED AT: the contact dim is instant on OPEN and gradual on CLOSE,
+   * on Safari only (`safari-fork-brief § 1`). ⛔ That brief's test 1 — `will-change:
+   * transform` on `.nav-track` — HAS BEEN SHIPPED THE WHOLE TIME and the bug survives it,
+   * so compositing promotion of the track is not the cause. The asymmetry was always
+   * evidence against it: promotion would misbehave in both directions.
+   *
+   * ⭐ WHAT IS ACTUALLY ASYMMETRIC IS THIS CODE. setContact() used to run
+   * `cxShift()` — a getBoundingClientRect(), i.e. a FORCED SYNCHRONOUS LAYOUT — on the
+   * OPEN path and never on the close path, one statement before the class toggle that
+   * drives the dim. A code-level asymmetry sitting exactly under a bug-level asymmetry is
+   * a far better lead than an engine quirk that ought to be symmetric.
+   *
+   * ⚠︎ WORTH DOING EVEN IF IT DOES NOT FIX SAFARI. A forced layout in a click handler that
+   * also writes style is layout thrash on a user interaction; the same reasoning already
+   * keeps DECK_H out of the wheel handler. So this is a real improvement first and a
+   * hypothesis test second — which is why it was made rather than only probed.
+   *
+   * ⚠︎ THE WIDTH ONLY CHANGES ON THINGS THAT ALREADY RE-MEASURE. Font swap and resize both
+   * land in measureGeom(); init and fonts.ready both call pinContact(). Nothing else can
+   * move it — the "Copied!" label is an absolutely-positioned overlay precisely so it
+   * cannot change the extras' width, and a translate does not change a border-box width.
+   *
+   * ⚠︎ IF THE DIM STILL CUTS ON OPEN after this, our code is CLEARED and the next suspect
+   * is `var()` inside the `transition` shorthand — expand the four to longhands. Do that
+   * as its own change, not bundled here, or neither result means anything.
+   */
+  let CX_W = 0;
+  function measureContact() {
+    if (cxExtras) CX_W = cxExtras.getBoundingClientRect().width;
+  }
+  const cxShift = () => CX_W + CX_GAP;
 
   function setContact(open) {
     if (open === cxOpen) return;

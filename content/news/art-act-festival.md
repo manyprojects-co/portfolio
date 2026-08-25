@@ -29,18 +29,18 @@ statement: >-
   to reinforce their call to action.
 mainVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/news/art-act/aact-tab.jpg
+  mediaUrl: https://media.agawen.com/news/art-act/aact-tab.jpg
 gallery:
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/art-act/aact-1.jpg
+    mediaUrl: https://media.agawen.com/news/art-act/aact-1.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/art-act/aact-2.jpg
+    mediaUrl: https://media.agawen.com/news/art-act/aact-2.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/art-act/aact-3.jpg
+    mediaUrl: https://media.agawen.com/news/art-act/aact-3.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/art-act/aact-4.jpg
+    mediaUrl: https://media.agawen.com/news/art-act/aact-4.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/art-act/aact-5.jpg
+    mediaUrl: https://media.agawen.com/news/art-act/aact-5.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/art-act/aact-6.jpg
+    mediaUrl: https://media.agawen.com/news/art-act/aact-6.jpg
 ---

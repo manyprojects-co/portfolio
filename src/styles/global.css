@@ -608,7 +608,9 @@
     justify-content: space-between;
     align-items: center;          /* one line of identical type; center == baseline here */
     transform: translateX(0);
-    transition: transform var(--dur) var(--ease);
+    transition-property: transform;
+    transition-duration: var(--dur);
+    transition-timing-function: var(--ease);
     will-change: transform;
   }
   /* pointer-events:auto on the GROUP, not just its anchors — the group box is
@@ -639,7 +641,49 @@
   /* Art/News/Bio AND Contact all dim on the same lerp as the slide. Opacity, not
      colour: paintNav owns `color` and rewrites it inline every scroll frame, so the
      two never contend for the same property and paintNav stays identical to v3. */
-  .nav-left a, .cx-toggle { transition: opacity var(--dur) var(--ease); }
+  /* ⚠︎ LONGHANDS, NOT THE SHORTHAND — all four contact transitions (2026-08-23).
+     WebKit has a long history of dropping a `transition` shorthand that contains `var()`,
+     and every transition in this file used to be exactly that. `safari-fork-brief § 1`
+     called expanding them "worth doing regardless", and it is: the risk is real, the
+     tokens stay live either way, and the expansion costs nothing.
+     ⚠︎ IT IS NOT, ON ITS OWN, A LIKELY EXPLANATION OF THE INGRESS BLINK. A dropped
+     shorthand snaps in BOTH directions, and the close fades correctly. This removes a
+     known hazard so it can stop being a candidate — it is not the answer yet. */
+  .nav-left a, .cx-toggle {
+    transition-property: opacity;
+    transition-duration: var(--dur);
+    transition-timing-function: var(--ease);
+    /* ⭐⭐ THE CONTACT DIM FIX — AND IT IS A PAINT BUG, NOT A TRANSITION BUG (2026-08-23).
+       Safari held these BLACK through the whole 500ms slide and then snapped them grey
+       when the track landed. Chrome was always correct.
+
+       ⛔ THREE HYPOTHESES DIED FIRST. Do not re-test any of them:
+         1. `will-change: transform` on .nav-track — the briefs' "cheapest test, hypothesis
+            and fix in one". It had been shipped the entire time; the bug survived it.
+         2. cxShift()'s forced synchronous layout on the open path only — a real code-level
+            asymmetry, cached out on 2026-08-23. The bug survived that too.
+         3. `var()` inside the `transition` shorthand — expanded to longhands here. Worth
+            doing, but it could never have been it: a dropped shorthand snaps BOTH ways.
+
+       ⭐ WHAT SETTLED IT: an on-page probe sampling computed opacity every frame reported
+       a clean RAMP — 30 distinct values, 1.00 → 0.20, with transitionrun/start/end all
+       firing — while the eye saw a late snap. THE DISAGREEMENT WAS THE EVIDENCE. The
+       transition was always running; the pixels were not being updated. .cx-toggle lives
+       inside .nav-track, which is permanently composited (will-change: transform), and
+       WebKit renders that layer from a cached texture while its transform animates — so a
+       descendant's opacity change does not surface until the animation ends.
+
+       `will-change: opacity` gives each link its own layer, so its opacity is a compositor
+       property animated independently of the parent's transform.
+
+       ⚠︎ ALL FOUR, not just Contact. Art/News/Bio slide off-screen on open so JJ could not
+       see them misbehave, but they are in the same rule and the same layer.
+       ⚠︎ Permanent promotion is fine HERE and would not be everywhere: these are four
+       short text links. #world's comment explains why a full-size layer is refused.
+       ⚠︎ Promoting text can switch Safari to greyscale antialiasing — if the nav suddenly
+       reads slightly thinner, that is this line, and it is the trade. */
+    will-change: opacity;
+  }
   .nav.cx-open .nav-left a,
   .nav.cx-open .cx-toggle { opacity: var(--cx-dim); }
 
@@ -651,7 +695,11 @@
      Centred on Mail via left:50% + translateX(-50%); the rise composes into the same
      transform, so one property animates both. */
   .cx-mail-wrap { position: relative; display: inline-block; }
-  #cxMail { transition: opacity var(--cx-copied-in) var(--ease); }
+  #cxMail {
+    transition-property: opacity;
+    transition-duration: var(--cx-copied-in);
+    transition-timing-function: var(--ease);
+  }
   .cx-mail-wrap.copied #cxMail { opacity: 0; }
 
   .cx-copied {
@@ -662,8 +710,9 @@
     pointer-events: none;
     opacity: 0;
     transform: translate(-50%, var(--cx-copied-rise));
-    transition: opacity var(--cx-copied-in) var(--ease),
-                transform var(--cx-copied-in) var(--ease);
+    transition-property: opacity, transform;
+    transition-duration: var(--cx-copied-in);
+    transition-timing-function: var(--ease);
   }
   .cx-mail-wrap.copied .cx-copied {
     opacity: var(--cx-copied-op);
@@ -1018,13 +1067,6 @@
     .detail-figs    { margin-top: 0; }
   }
 
-  /* the text column: 400px until the 60px margins start cutting into it, then it
-     shrinks with them (min() against the already-padded content box) */
-  .detail-col {
-    width: min(400px, 100%);
-    margin-inline: auto;
-  }
-
   /* ---- the sticky column's own rhythm (JJ, 2026-08-23) ----
      title -> 16 -> metadata -> 32 -> exhibitions -> (grows) -> acknowledgements.
      ⚠︎ The gaps are plain margins now. They used to be 48 on the heading with
@@ -1044,15 +1086,52 @@
   }
   .detail-ack { margin-bottom: 0; font-size: var(--cap-size); }
 
-  .detail-news .dn-meta { font-size: var(--type-size); line-height: 1; color: var(--muted); margin-bottom: 12px; }
-  .detail-news .dn-title { font-size: 16px; line-height: 1.2; margin: 0 0 12px; }
-  .detail-news .dn-body { line-height: 1.5; margin: 0; }
+  /* ===================== NEWS CARD (reworked 2026-08-23, JJ) =====================
+     The art sheet's grid without a cover photo, so .news-grid is the first thing in the
+     card and needs no top margin. Everything else comes from .art-grid / .art-side. */
+  .news-grid { margin-top: 0; }
+
+  /* ⚠︎ BLACK, NOT --muted, AND THAT IS THE POINT. The artwork sheet's spec line is grey
+     because it is secondary to the picture; news has no picture at the top, so its meta
+     IS the entry point and reads at full strength. One line each: category, venue (city),
+     date or duration. --cap-size, i.e. the same 10px as the ART grid captions. */
+  .detail-body .dn-meta {
+    font-size: var(--cap-size);
+    line-height: 1.5;
+    color: var(--fg);
+    margin: 0 0 var(--art-col-gap);       /* 32 to the title */
+  }
+
+  /* ⚠︎ 14px — LARGER than --type-size (12.5) and larger than the artwork title, which sits
+     at the base size. Deliberate: news leads with its title, an artwork leads with its
+     image. A [TUNE] token rather than a literal, since it is the one size on the site that
+     is bigger than the base and will be the first thing questioned. */
+  :root { --news-title-size: 14px; }      /* [TUNE] */
+  .detail-body .dn-title {
+    font-size: var(--news-title-size);
+    line-height: 1.2;
+    font-weight: 700;
+    margin: 0 0 var(--art-col-gap);       /* 32 to the subheading */
+  }
+  .detail-body .dn-sub { line-height: 1.5; }
+  .detail-body .dn-sub p { margin: 0 0 1em; }
+  .detail-body .dn-sub p:last-child { margin-bottom: 0; }
+
+  /* A TEXT ROW inside a gallery — prose where a picture would be. Body size, so it reads
+     as content rather than as a caption. */
+  .media-text { line-height: 1.5; }
+  .media-text p { margin: 0 0 1em; }
+  .media-text p:last-child { margin-bottom: 0; }
+
+  /* ⛔ RETIRED with the rework: .detail-col / .detail-news were the old single-column news
+     card (a 400px text column, then a full-bleed gallery). NewsItem.astro no longer emits
+     either class. Kept out of the file rather than left as dead selectors. */
 
   /* the gallery: single column, stacked, scrolls with the card (sizing above) */
   .detail-figs { margin-top: 0; display: flex; flex-direction: column; gap: var(--card-gap); }
-  /* ⚠︎ NEWS still wants the old 48 above its gallery — .detail-figs is shared. Only the
-     artwork sheet drives its rhythm from .art-main below. */
-  .detail-body:not(.art-body) .detail-figs { margin-top: 48px; }
+  /* ⛔ The `:not(.art-body)` exception that lived here is GONE: news adopted the art
+     card's grid on 2026-08-23, so BOTH sheets now carry .art-body and there is no
+     non-art .detail-body left to special-case. .art-main drives the rhythm for both. */
   /* one rule for the whole right column: statement -> lead image -> the rest, evenly */
   .art-main > * + * { margin-top: var(--card-gap); }
 

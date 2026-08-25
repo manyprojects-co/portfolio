@@ -26,7 +26,7 @@
 import { normaliseMediaUrl, TRANSFORM_HOST } from "../lib/media-origin";
 
 interface Props {
-  media?: { kind: "image" | "video"; src: string; caption?: string } | null;
+  media?: { kind: "image" | "video" | "text"; src: string; text?: string; caption?: string } | null;
   alt?: string;
   widths?: number[];
   sizes?: string;
@@ -85,7 +85,13 @@ const emptyStyle = ratio ? `aspect-ratio:${ratio[0]}/${ratio[1]}` : undefined;
 ---
 
 {
-  !ok ? (
+  /* ⚠︎ A TEXT ROW IS CHECKED FIRST, BEFORE THE `ok` GUARD. It has no src by definition, so
+     the empty-state branch below would swallow it and render a grey placeholder box. */
+  media?.kind === "text" ? (
+    <div class={`media-text ${cls}`}>
+      {(media.text ?? "").split(/\n\s*\n/).map((para) => <p>{para.trim()}</p>)}
+    </div>
+  ) : !ok ? (
     /* No source. Renders the same box the real media will occupy, so layout is honest. */
     <div class={`media-empty ${cls}`} style={emptyStyle} role="img" aria-label={alt || "Image pending"} />
   ) : media!.kind === "video" ? (

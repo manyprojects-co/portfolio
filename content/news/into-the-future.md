@@ -37,16 +37,16 @@ statement: >-
   Jiarong Yu.
 mainVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/news/into-the-future/itf-tab.jpg
+  mediaUrl: https://media.agawen.com/news/into-the-future/itf-tab.jpg
 gallery:
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/into-the-future/itf-1.jpg
+    mediaUrl: https://media.agawen.com/news/into-the-future/itf-1.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/into-the-future/itf-2.jpg
+    mediaUrl: https://media.agawen.com/news/into-the-future/itf-2.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/into-the-future/itf-3.jpg
+    mediaUrl: https://media.agawen.com/news/into-the-future/itf-3.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/into-the-future/itf-4.jpg
+    mediaUrl: https://media.agawen.com/news/into-the-future/itf-4.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/news/into-the-future/itf-5.jpg
+    mediaUrl: https://media.agawen.com/news/into-the-future/itf-5.jpg
 ---
