@@ -27,27 +27,21 @@ artistStatement: >-
   further development.
 landingVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/artworks/beam/beam-ld.jpg
+  mediaUrl: https://media.agawen.com/artworks/beam/beam-ld.jpg
 tabArtVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/artworks/beam/beam-tab.png
+  mediaUrl: https://media.agawen.com/artworks/beam/beam-tab.png
 cardCoverVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/artworks/beam/beam-card.jpg
+  mediaUrl: https://media.agawen.com/artworks/beam/beam-card.jpg
 cardGallery:
   - mediaType: video
-    imageUrl: https://media.agawen.com/artworks/beam/beam-art-v1.mp4
-  - imageUrl: https://media.agawen.com/artworks/beam/beam-art-v2.mp4
+  - {}
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/beam/beam-art1.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/beam/beam-art2.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/beam/beam-art3.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/beam/beam-art4.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/beam/beam-art5.jpg
 technicalTagline: A lamp that feels alive
 technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
   eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
@@ -57,9 +51,6 @@ technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
   non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
 technicalGallery:
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/beam/beam-tech1.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/beam/beam-tech2.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/beam/beam-tech3.jpg
 ---
