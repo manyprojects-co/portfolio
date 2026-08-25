@@ -97,8 +97,11 @@ technicalGallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/personhood/psh-tech2.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/personhood/psh-tech3.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/personhood/psh-tech4.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/personhood/psh-tech5.jpg
   - mediaType: image
   - mediaType: image
 ---
