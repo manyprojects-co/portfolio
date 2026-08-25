@@ -1,5 +1,7 @@
 ---
-title: 2025PCM / Alternative Roots Festival
+title: Alternative Roots Festival
+subheading: A rough-cut screening of our new projection-mapped short film,
+  2025PCM, for the day-long festival at Hoxton Hall.
 isDateRange: false
 date: 2025-11-08
 endDate: 2026-08-15
