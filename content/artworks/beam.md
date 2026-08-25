@@ -7,7 +7,7 @@ medium: 3D-printed structure, programmed LED lights, stepper motors, and Arduino
 size: 170 × 60 × 60 cm (66.9 × 23.6 × 23.6 in.) [Range of motion]
 duration: 1 min. animated loop
 featured: false
-premiereCity: London
+premiereCity: London, UK
 exhibitions: 2023 / [Royal Society of
   Sculptors](https://agawen.com/news/royal-society-of-sculptors/) (London)
 artistStatement: >-
