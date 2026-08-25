@@ -104,7 +104,7 @@ content:
       - { name: technicalTagline, label: Technical Tagline, type: string }
       - { name: technicalText, label: Technical Text, type: rich-text }
 
-      # Technical Gallery (100% Cloudflare Hosted)
+      # Technical Gallery (Intersperse Images, Videos, & Text)
       - name: technicalGallery
         label: Technical Gallery
         type: object
@@ -142,7 +142,7 @@ content:
           values: [Award, Screening, Solo exhibition, Group exhibition, Artist Talk, Press]
       - { name: statement, label: Statement, type: rich-text }
 
-      # Main News Visual (100% Cloudflare Hosted)
+      # Main News Visual
       - name: mainVisual
         label: Main Cover Visual
         type: object
@@ -154,7 +154,7 @@ content:
               values: [image, video]
           - { name: imageUrl, label: Cloudflare URL, type: string }
 
-      # News Gallery (100% Cloudflare Hosted)
+      # News Gallery (Intersperse Images, Videos, & Text)
       - name: gallery
         label: News Gallery
         type: object
