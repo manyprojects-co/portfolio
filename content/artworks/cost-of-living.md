@@ -30,7 +30,9 @@ cardCoverVisual:
   mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-card.jpg
 cardGallery:
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-art1.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-art2.jpg
   - mediaType: image
   - mediaType: image
   - mediaType: image
