@@ -7,7 +7,7 @@ medium: 4-channel synchronized video (color, silent), phone frames, phone glass
 size: Four displays, each 68.5 × 121.5 cm (27.0 × 47.8 in.)
 duration: 03 min. 00 sec. loop
 featured: false
-premiereCity: Stockholm
+premiereCity: Stockholm, Sweden
 exhibitions: 2026 / [Helix Art Space](https://agawen.com/news/selfish) (Stockholm)
 artistStatement: >-
   Screentime jabs at several poignant aspects of our digital lives: we are all
