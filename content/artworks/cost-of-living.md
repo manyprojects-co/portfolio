@@ -55,7 +55,11 @@ technicalText: Cost of Living took a technique that we developed for Box Body
   together. This piece has yet to debut on the screen it was envisioned for.
 technicalGallery:
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-tech1.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-tech2.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-tech3.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-tech4.jpg
 ---
