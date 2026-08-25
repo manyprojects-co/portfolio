@@ -129,7 +129,7 @@ content:
       fields: [title, date, endDate, location, city, eventType]
     fields:
       - { name: title, label: Title, type: string, required: true }
-      - { name: subheading, label: Subheading, type: rich-text }
+      - { name: subheading, label: Subheading (180 cha ideal), type: rich-text }
       - { name: isDateRange, label: Date Range?, type: boolean, default: false }
       - { name: date, label: Date / Start Date, type: date }
       - { name: endDate, label: End Date, type: date }
