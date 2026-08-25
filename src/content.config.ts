@@ -68,7 +68,15 @@ const artworks = defineCollection({
     premiereCity: z.string().optional(),
     exhibitions: z.string().optional(),
     artistStatement: z.string().optional(),
+    /* ⚠︎ TWO NAMES FOR ONE FIELD, AND BOTH MUST PARSE (2026-08-23).
+     * `.pages.yml` offers `institutionSupport`; all 11 content files still carry
+     * `acknowledgements`; ZERO carry `institutionSupport`. So the CMS was renamed and the
+     * data was never migrated — and because the schema knew only the old name, the first
+     * time anyone edited that field in Pages CMS the value would have been written under
+     * the new key and SILENTLY DROPPED by Astro. No error, no empty state, just gone.
+     * Both are accepted; `map.ts` prefers the new name and falls back to the old. */
     acknowledgements: z.string().optional(),
+    institutionSupport: z.string().optional(),
     technicalTagline: z.string().optional(),
     technicalText: z.string().optional(),
     landingVisual: visual,

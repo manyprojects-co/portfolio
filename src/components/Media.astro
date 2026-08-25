@@ -4,8 +4,14 @@
  * Every image and video goes through this. Origin changes are a one-line swap here.
  *
  * DELIVERY (research-notes §5, LOCKED; amended 2026-08-13 for R2):
- *   prod -> /cdn-cgi/image/width=W,format=auto/<src>   transformed at Cloudflare's edge
+ *   prod -> https://<TRANSFORM_HOST>/cdn-cgi/image/width=W,format=auto/<src>
  *   dev  -> <src> raw                                  /cdn-cgi/image only exists on CF
+ *
+ * ⚠︎ THE TRANSFORM URL IS ABSOLUTE, AND THAT IS DELIBERATE (2026-08-23). A RELATIVE
+ * `/cdn-cgi/image/...` only resolves on the zone, so every branch PREVIEW URL rendered
+ * a page with no pictures — which made design review on a preview impossible, the exact
+ * thing preview URLs exist for. Pinning the host costs nothing on the live site (same
+ * zone, same edge) and makes previews work. Open question 6 in `motion-fork-brief.md`.
  *
  * ⚠︎ THE EMPTY STATE IS THE DEFAULT CASE, NOT THE EDGE CASE. Every visual field is
  * empty in all 26 content files as of 2026-08-13 — the repo's images were deleted on
@@ -17,7 +23,7 @@
  * requires `*.agawen.com` under Images -> Transformations -> Sources; a root domain does
  * NOT cover its subdomains. And `r2.dev` can never work here — it is outside the zone.
  */
-import { normaliseMediaUrl } from "../lib/media-origin";
+import { normaliseMediaUrl, TRANSFORM_HOST } from "../lib/media-origin";
 
 interface Props {
   media?: { kind: "image" | "video"; src: string; caption?: string } | null;
@@ -58,7 +64,7 @@ const {
  */
 function tx(src: string, w: number) {
   if (!import.meta.env.PROD || !transformable) return src;
-  return `/cdn-cgi/image/width=${w},format=auto/${src}`;
+  return `https://${TRANSFORM_HOST}/cdn-cgi/image/width=${w},format=auto/${src}`;
 }
 
 /**

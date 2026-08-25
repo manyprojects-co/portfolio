@@ -1,8 +1,8 @@
 ---
 /**
  * Work.astro — the artwork sheet's inner content. ONE component, TWO consumers:
- *   /art/[slug].astro          inlines it (cold load, SEO, no-JS)
- *   /art/[slug]/_content.astro serves it bare (fetched on an in-site click)
+ *   /art/[slug].astro         inlines it (cold load, SEO, no-JS)
+ *   /art/[slug]/content.astro serves it bare (fetched on an in-site click)
  *
  * ⭐ That sharing is the point. hooks.md: "the fetched markup is identical to what the
  * route inlines." Two renderers would drift, and the drift would only show up as the
@@ -11,8 +11,28 @@
  * ⚠︎ NOTHING HERE MAY BE TRANSPARENT. #detail carries a hard-stop grey->black gradient
  * and a card background does not scroll with its content, so every full-bleed section
  * paints its own ground (.art-ground, .tech) or the card goes half black.
+ *
+ * ============================================================================
+ * LAYOUT (JJ, 2026-08-23) — cover, then a STICKY 240 left column beside a scrolling right
+ *
+ *   ┌──────────── cover, spans both columns ────────────┐
+ *   │ 240px sticky        │ 32 │  360–480 scrolling      │
+ *   │ title (year)        │    │  artist statement       │
+ *   │ metadata            │    │  gallery                │
+ *   │ exhibitions         │    │    ⋮                    │
+ *   │ ⋮ (grows to fill)   │    │    ⋮                    │
+ *   │ acknowledgements ───┴────┴─ pinned --frame-margin from the floor
+ *
+ * ⚠︎ THE STACK IS NOT THE SOURCE ORDER, and that is deliberate. Below the breakpoint the
+ * lead gallery image moves ABOVE the statement, and exhibitions/acknowledgements move to
+ * the bottom. That is why the gallery is split into `figLead` / `figRest` here rather than
+ * rendered as one list: CSS `order` can move a block, but it cannot split one.
+ * `.art-side` / `.art-main` become `display: contents` at the breakpoint so every leaf
+ * becomes a direct grid item and `order` can interleave the two columns freely.
+ * ============================================================================
  */
 import Media from "./Media.astro";
+import { exhibitionItem } from "../lib/format";
 interface Props { work: any }
 const { work: wk } = Astro.props;
 
@@ -20,14 +40,22 @@ const t = wk.technical ?? {};
 const hasTech = !!(t.tagline || t.text?.length || t.gallery?.length);
 // medium / size / duration — grey under the title (JJ, 2026-08-13). 11/11 in the CMS.
 const spec = [wk.medium, wk.size, wk.duration].filter(Boolean);
+
+/* ⚠︎ Split, not sliced at render time: the stacked order interleaves the first gallery
+   item between the metadata and the statement, so it has to be its own block. */
+const figLead = wk.gallery?.length ? wk.gallery[0] : null;
+const figRest = wk.gallery?.length > 1 ? wk.gallery.slice(1) : [];
+const GAL_W = [900, 1400, 1920];
 ---
 <div class:list={["art-ground", hasTech && "has-tech"]}>
-  <div class="detail-body">
+  <div class="detail-body art-body">
     <Media media={wk.visuals.cardCover ?? wk.visuals.landing} alt={wk.title}
-           class="detail-hero" widths={[900, 1400, 1920]} sizes="min(900px, 100vw)"
+           class="detail-hero" widths={GAL_W} sizes="min(812px, 100vw)"
            ratio={[16, 9]} loading="eager" />
-    <div class="art-info">
-      <div class="art-col">
+
+    <div class="art-grid">
+      {/* LEFT — sticky. Its height is set in CSS so acknowledgements land on the floor. */}
+      <div class="art-side">
         <p class="detail-heading">
           <span class="title">{wk.title}</span><span class="year">({wk.year})</span>
         </p>
@@ -35,59 +63,74 @@ const spec = [wk.medium, wk.size, wk.duration].filter(Boolean);
           <div class="detail-spec">{spec.map((s) => <div>{s}</div>)}</div>
         )}
         {wk.exhibitions?.length > 0 && (
-          <div class="detail-block detail-exh">
-            {wk.exhibitions.map((x: string) => <div>·&nbsp;{x}</div>)}
-          </div>
+          <div class="detail-exh about-list"
+               set:html={wk.exhibitions.map(exhibitionItem).join("")} />
         )}
         {wk.acknowledgements?.length > 0 && (
-          <div class="detail-block detail-ack">
-            {wk.acknowledgements.map((x: string) => <div>·&nbsp;{x}</div>)}
+          <div class="detail-ack">
+            {wk.acknowledgements.map((p: string) => <p>{p}</p>)}
           </div>
         )}
       </div>
-      {wk.statement?.length > 0 && (
-        <div class="art-col">
-          <div class="detail-block">
-            {wk.statement.map((p: string) => <p style="margin:0 0 1em">{p}</p>)}
+
+      {/* RIGHT — scrolls normally. */}
+      <div class="art-main">
+        {wk.statement?.length > 0 && (
+          <div class="detail-statement">
+            {wk.statement.map((p: string) => <p>{p}</p>)}
           </div>
-        </div>
-      )}
-    </div>
-    {wk.gallery?.length > 0 && (
-      <div class="detail-figs">
-        {wk.gallery.map((g: any) => <Media media={g} alt={wk.title} widths={[900, 1400, 1920]} />)}
+        )}
+        {figLead && (
+          <div class="detail-figs fig-lead">
+            <Media media={figLead} alt={wk.title} widths={GAL_W} sizes="min(480px, 100vw)" />
+          </div>
+        )}
+        {figRest.length > 0 && (
+          <div class="detail-figs fig-rest">
+            {figRest.map((g: any) => (
+              <Media media={g} alt={wk.title} widths={GAL_W} sizes="min(480px, 100vw)" />
+            ))}
+          </div>
+        )}
       </div>
-    )}
+    </div>
   </div>
 </div>
 
 {/* TECHNICAL — a SIBLING of .detail-body, never a child: its negative inline margin has
     to break out of #detailScroll's padding to reach the card edge, and inside .detail-body
-    it would only reach the 900px content column. Reads the real CMS fields; v5's standalone
-    TECH placeholder map is deleted. */}
+    it would only reach the content column.
+
+    ⚠︎ MIRRORED, and the sticky column does NOT continue here — JJ: "both columns will
+    scroll up when it comes." `.art-side`'s sticky lives inside `.art-grid`, and this is a
+    different grid in a different section, so that falls out for free rather than needing
+    a rule to switch it off. */}
 {hasTech && (
   <section class="tech">
     <div class="tech-inner">
-      {(t.tagline || t.text?.length) && (
-        <div class="art-info">
-          {t.tagline && <div class="art-col"><p class="tech-tagline">{t.tagline}</p></div>}
-          {t.text?.length > 0 && (
-            <div class="art-col">
-              <div class="detail-block">
-                {t.text.map((p: string) => <p style="margin:0 0 1em">{p}</p>)}
+      {(t.tagline || t.text?.length || t.gallery?.length) && (
+        <div class="tech-grid">
+          {/* LEFT — images and captions */}
+          {/* ⚠︎ caption FIRST — JJ wants it above the image, and doing it in document order
+              rather than with CSS keeps the read order and the visual order the same.
+              <figcaption> is valid as either the first or last child of a <figure>. */}
+          <div class="tech-figs">
+            {t.gallery?.length > 0 && t.gallery.map((g: any) => (
+              <figure>
+                {g.caption && <figcaption>{g.caption}</figcaption>}
+                <Media media={g} alt={wk.title} widths={[900, 1400]} sizes="min(480px, 100vw)" />
+              </figure>
+            ))}
+          </div>
+          {/* RIGHT — text. Stacked, this comes FIRST (JJ). */}
+          <div class="tech-text">
+            {t.tagline && <p class="tech-tagline">{t.tagline}</p>}
+            {t.text?.length > 0 && (
+              <div class="detail-statement">
+                {t.text.map((p: string) => <p>{p}</p>)}
               </div>
-            </div>
-          )}
-        </div>
-      )}
-      {t.gallery?.length > 0 && (
-        <div class="tech-figs">
-          {t.gallery.map((g: any) => (
-            <figure>
-              <Media media={g} alt={wk.title} widths={[900, 1400]} />
-              {g.caption && <figcaption>{g.caption}</figcaption>}
-            </figure>
-          ))}
+            )}
+          </div>
         </div>
       )}
     </div>

@@ -95,6 +95,10 @@ import { createTrace } from "../lib/trace.mjs";
   let CARD_ZOOM  = cssNum("--card-zoom-min", 0.95);
   let FADE_FLOOR = cssNum("--fade-floor", 0.2);
   let BLUR_FLOOR = cssNum("--blur-floor", 0.4);
+  let CARD_BLUR    = cssNum("--card-blur", 1);
+  let CARD_BLUR_IN = cssNum("--card-blur-in", 0.45);
+  let VEIL_MODE    = cssNum("--card-veil-mode", 1);
+  let VEIL_OP      = cssNum("--card-veil-op", 0.9);
   // give (D) — see the GIVE section for what these two numbers mean geometrically
   let GIVE_MAX   = cssNum("--give-max", 0.5);
   let GIVE_EASE  = cssNum("--give-ease", 2);
@@ -133,6 +137,11 @@ import { createTrace } from "../lib/trace.mjs";
 
   const stage = document.getElementById("stage");
   const world = document.getElementById("world");
+  const cardBlur = document.getElementById("cardBlur");
+  // Rollback at init, not just on retune(): --card-blur: 0 must cost nothing on a cold
+  // load too, and a promoted-but-transparent layer is not nothing.
+  if (cardBlur && !cssNum("--card-blur", 1)) cardBlur.classList.add("off");
+  if (cardBlur && !cssNum("--card-veil-mode", 1)) cardBlur.classList.add("solid");
   const nav = document.getElementById("nav");
   // hoisted above applyStage, which drives all three layers together
   const detailEl = document.getElementById("detail");
@@ -163,6 +172,14 @@ import { createTrace } from "../lib/trace.mjs";
     root.style.setProperty("--band", BAND + "px");
     root.style.setProperty("--landing-h", LANDING_H + "px");
     root.style.setProperty("--detail-top", DETAIL_TOP + "px");
+    /* ⭐ THE MEASURED viewport height, for layout that must reach the card's floor.
+     * The sticky art column sizes itself to end --frame-margin above the card's bottom
+     * edge, and `100vh` is the wrong number for that on iOS: it means the LARGEST
+     * viewport (URL bar collapsed) and does not change when the bar is showing, so the
+     * column would overhang. `dvh` moves constantly instead, which reflows mid-scroll.
+     * This is the same VH the gesture system uses, re-measured on exactly the same
+     * events — including the height-only resize K added for the iOS URL bar. */
+    root.style.setProperty("--vh-live", VH + "px");
     // ⭐ A: the deck's own height — the artwork band, not the hero.
     // ⚠︎ MEASURED HERE, ON PURPOSE, AND NOWHERE ELSE. The obvious implementation is a
     // getBoundingClientRect() in the wheel handler, and that is a forced layout read in a
@@ -173,6 +190,45 @@ import { createTrace } from "../lib/trace.mjs";
     // ⚠︎ Read AFTER --landing-h is set: `.artwork` has `max-height: calc(--landing-h - 80px)`,
     // so on a short viewport the band depends on the value set two lines above.
     DECK_H = carousel ? carousel.getBoundingClientRect().height : 0;
+    measureBioStack();
+  }
+
+  /**
+   * ⭐ THE BIO'S BREAKPOINT IS MEASURED, NOT DECLARED (JJ, 2026-08-23).
+   *
+   * JJ: "have the bio breakpoint adjust to the measurement of the longest entry instead of
+   * shrinking the column width — I'd like to avoid multi-line entries."
+   *
+   * ⛔ A MEDIA QUERY CANNOT DO THIS. It knows the viewport; it cannot know how wide the
+   * longest exhibitions row wants to be. That width depends on the content, the font and
+   * the type size, so the threshold has to be computed from the rendered text — which is
+   * exactly what this file already does for --band (measures the nav) and --vh-live.
+   * So the bio stacks on a CLASS this function sets, not on a `@media` rule.
+   *
+   * ⚠︎ THE READ IS A FORCED LAYOUT, AND IT BELONGS HERE AND NOWHERE ELSE. Same rule as
+   * DECK_H above: measureGeom() runs on load, on resize and on `document.fonts.ready` —
+   * every event that can change the answer — so the cost is paid a handful of times rather
+   * than per frame. Never move this into a scroll or wheel path.
+   *
+   * ⚠︎ `max-width: none` MATTERS. .about-col2's track is fit-content(--art-main-max), so
+   * without lifting the cap this would measure 480 forever and the threshold would never
+   * move. We want the width the content WANTS, not the width it is allowed.
+   */
+  function measureBioStack() {
+    const col2 = document.querySelector(".about-col2");
+    if (!col2) return;
+    const prevW = col2.style.width, prevMax = col2.style.maxWidth;
+    col2.style.width = "max-content";
+    col2.style.maxWidth = "none";
+    const listW = Math.ceil(col2.getBoundingClientRect().width);
+    col2.style.width = prevW;
+    col2.style.maxWidth = prevMax;
+    // the two-column layout needs: sticky column + gap + the longest entry + both margins
+    const sideW = cssNum("--art-side-w", 300);
+    const gap = cssNum("--art-col-gap", 32);
+    const need = sideW + gap + listW + FRAME * 2;
+    root.style.setProperty("--bio-list-w", listW + "px");
+    root.classList.toggle("bio-stacked", window.innerWidth < need);
   }
 
   /**
@@ -258,6 +314,23 @@ import { createTrace } from "../lib/trace.mjs";
     // ⚠︎ Still written every frame, and it must be: the property is inline, so a stale
     // blur() from a previous build or a hot reload would otherwise never be cleared.
     world.style.filter = "none";
+    /* CARD BLUR: the progressive plane over the departing site. The GEOMETRY is free —
+     * #cardBlur is a child of #stage pinned to its bottom edge, so it inherits this same
+     * translate and scale and stays welded to the card boundary. Only opacity is written,
+     * and opacity is composited without repaint.
+     * ⚠︎ It must reach 0 at rest or it blurs the landing page: the stage fills the
+     * viewport when the card is closed. Position-derived off detailP() like everything
+     * else here, so a caught or reversed lerp keeps it exactly in step. */
+    if (CARD_BLUR && cardBlur) {
+      /* One ramp, two modes. The blur runs to full strength; the solid scrim tops out at
+       * --card-veil-op so the site never quite disappears into the ground. Same curve,
+       * same position-derived source, so switching modes cannot change the TIMING — only
+       * what is painted. That is what makes the two comparable. */
+      const ceil = VEIL_MODE ? 1 : VEIL_OP;
+      cardBlur.style.opacity = p > 0.001
+        ? (Math.min(1, p / (CARD_BLUR_IN || 1)) * ceil).toFixed(3)
+        : "0";
+    }
     // CARD: zooms --card-zoom-min → 1. Because (0.95 + 0.05p) >= p for all p <= 1, the
     // card's growing top edge stays tucked behind the rising stage edge the whole way,
     // and the two arrive on the 120px line together.
@@ -1318,9 +1391,28 @@ import { createTrace } from "../lib/trace.mjs";
     }
   }));
 
-  // tapping the sliver of landing/tab in the 120px gap → back to the previous state
+  /* Tapping the sliver of landing/tab in the 120px gap → back to the previous state.
+   *
+   * 🐞 preventDefault() IS NOT OPTIONAL, AND stopPropagation() ALONE NEVER COVERED IT
+   * (JJ, 2026-08-23: "clicking outside the card sometimes clicks into elements there").
+   * stopPropagation() stops LISTENERS. It does nothing to a DEFAULT ACTION, and the
+   * carousel and grid cards are real anchors — `<a class="card" href="/art/slug">`, kept
+   * that way on purpose so cmd-click and "open in new tab" work normally. So a click on
+   * the sliver over a card was cancelled as far as every listener could see, and then the
+   * browser navigated anyway. A full page load, which is why it read as "sometimes": it
+   * only happened where an anchor sat under the sliver.
+   *
+   * ⚠︎ This also cancels cmd/middle-click on those anchors WHILE A CARD IS OPEN, and that
+   * is intended: the sliver is a close affordance, not a link surface. The same anchors
+   * behave completely normally the moment the card is shut.
+   *
+   * ⛔ NOT SOLVED WITH pointer-events: none ON #world, which is the tidier-looking fix.
+   * pointer-events changes HIT TESTING, and hit testing is what routes wheel and touch
+   * events to a region — so it would reach straight into the most heavily tested subsystem
+   * in the project to fix a click bug. Two lines here beat that. */
   stage.addEventListener("click", (e) => {
     if (!detailOpen) return;
+    e.preventDefault();
     e.stopPropagation();
     closeDetail();
   }, true);
@@ -1528,6 +1620,15 @@ import { createTrace } from "../lib/trace.mjs";
     CARD_ZOOM  = cssNum("--card-zoom-min", 0.95);
     FADE_FLOOR = cssNum("--fade-floor", 0.2);
     BLUR_FLOOR = cssNum("--blur-floor", 0.4);
+    CARD_BLUR    = cssNum("--card-blur", 1);
+    CARD_BLUR_IN = cssNum("--card-blur-in", 0.45);
+    VEIL_MODE    = cssNum("--card-veil-mode", 1);
+    VEIL_OP      = cssNum("--card-veil-op", 0.9);
+    if (cardBlur) {
+      cardBlur.classList.toggle("off", !CARD_BLUR);
+      cardBlur.classList.toggle("solid", !VEIL_MODE);
+      if (!CARD_BLUR) cardBlur.style.opacity = "0";
+    }
     GIVE_MAX   = cssNum("--give-max", 0.5);
     GIVE_EASE  = cssNum("--give-ease", 2);
     TOUCH_COMMIT = cssNum("--touch-commit", 0.3);

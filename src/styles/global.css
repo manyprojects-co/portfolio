@@ -34,7 +34,12 @@
     --caption-gap: 12px;     /* image ↔ caption */
     --title-year-gap: 6px;
     --footer-gap: 40px;      /* between nav links */
-    --type-size: 14px;       /* [TUNE] base type. was 12 */
+    --type-size: 12.5px;     /* [TUNE] base type. 14 -> 12.5 on 2026-08-23 (JJ).
+                                ⚠︎ This REVERSES half of tuning round 1 (2026-08-08), which took
+                                everything 12/10 -> 14. Deliberate, not a regression — see hooks.md.
+                                ⚠︎ --caption-gap / --title-year-gap / --footer-gap are ABSOLUTE and
+                                do NOT follow the type down, so the spacing around text now reads
+                                ~11% looser relative to it. That is an artefact of this sweep. */
 
     /* ---- contact expander (v4) ---- */
     --contact-gap: 60px;     /* [TUNE] uniform gap: Contact ↔ Instagram ↔ Mail ↔ ✕, and the
@@ -50,7 +55,11 @@
     --square: 400px;
     --grid-col-gap: 100px;
     --row-gap: 32px;
-    --cap-size: 14px;        /* [TUNE] ART grid captions. was 10, and NOT grey — see TUNING note */
+    --cap-size: 10px;        /* [TUNE] ART grid captions. 14 -> 10 on 2026-08-23 (JJ), which puts
+                                these back exactly where they sat before tuning round 1.
+                                ⚠︎ These are BLACK, not grey — hooks.md is explicit that there has
+                                never been 10px grey text in this project. At 10px against a 12.5px
+                                base they read as deliberately quiet, not as fine print. */
 
     /* motion */
     --dur: 500ms;            /* landing↔tab lerp, detail open/close */
@@ -67,6 +76,40 @@
     --site-zoom-max: 1.1;    /* [TUNE] the departing site enlarges to this, anchored bottom-centre */
     --site-blur-max: 50px;   /* [TUNE] ...and blurs to this over the same lerp */
     --card-zoom-min: 0.95;   /* [TUNE] the card zooms from this up to 1 as it is revealed */
+
+    /* ---- progressive blur over the departing site (2026-08-23, JJ) ----
+       ⭐ THE CARD DOES NOT MOVE. #detail is fixed at --detail-top and only scales; the
+       SITE slides up and uncovers it. So "the region above the card" is always the strip
+       of #stage still on screen, and #stage's own bottom edge IS the card boundary.
+       That is why this plane lives INSIDE #stage pinned to its bottom: it rides the
+       reveal with zero JS geometry, and its mask never changes.
+       ⚠︎ This is variant B — ONE fixed-radius layer faded by a gradient mask, NOT a
+       radius ramp. At the clear end you are seeing a semi-transparent blur over sharp
+       content (a haze), not "less blurred". The iOS look needs stacked layers with
+       stepped radii; that is variant C, and this is the cheap stand-in that answers
+       whether the geometry is right. */
+    --card-blur: 1;          /* [TUNE] 1 = on. 0 = rollback, and the plane costs nothing */
+    /* [TUNE] WHAT THE PLANE PAINTS. 1 = progressive blur (backdrop sampling, the expensive
+       one). 0 = a solid scrim in --bg, same gradient, same geometry, same ramp.
+       ⭐ THE FALLBACK IS NOT A DEGRADED BLUR, IT IS A DIFFERENT IDEA: the site DISSOLVES
+       into the ground colour instead of going soft. Judge it as its own thing.
+       ⚠︎ Mode 0 cannot stutter. A gradient in a solid colour plus an opacity ramp is pure
+       compositing — no sampling, no repaint, nothing that scales with viewport area or
+       GPU throttling. It is the floor on cost, which is why it is the mobile answer if
+       the knobs do not get there. */
+    --card-veil-mode: 1;
+    --card-veil-op: 0.9;     /* [TUNE] mode 0 only: peak opacity of the grey. 1 = opaque */
+    /* [TUNE] mode 0 only: what the scrim fades TO.
+       ⚠︎ --bg (#E7E7E7) and --detail-bg (#EFEFEF) are one step apart, so fading the site
+       to --bg makes the strip above the card nearly the SAME grey as the card. The blur's
+       job was separation of planes; a scrim in --bg arguably removes it instead. If mode 0
+       reads flat, this is the knob — go DARKER than the card (#D8D8D8, #CFCFCF) so the
+       strip recedes rather than merging. Left at --bg because that is the honest default,
+       not because it is the best answer. */
+    --card-veil-color: var(--bg);
+    --card-blur-max: 24px;   /* [TUNE] the radius at the card boundary */
+    --card-blur-in: 0.45;    /* [TUNE] blur reaches full strength at this much of the reveal */
+    --card-blur-from: 35%;   /* [TUNE] gradient starts here; above it the site is untouched */
     --fade-floor: 0.2;       /* [TUNE] tab contents hit opacity 0 at this reveal (0.2 = 80% home) */
     --blur-floor: 0.4;       /* [TUNE] site blur hits 0 at this reveal (0.4 = 60% through the exit) */
 
@@ -250,13 +293,59 @@
     /* every horizontal inset inside the card is measured from the VIEWPORT edge, so the
        bleed rides along with the 60px frame margin */
     --detail-pad-x: calc(var(--frame-margin) + var(--detail-bleed));
-    --art-col-w: 400px;      /* [TUNE] each art info column */
+    --art-col-w: 400px;      /* [TUNE] legacy — news still uses it; the art card does not */
     --art-col-gap: 32px;     /* [TUNE] between the two art info columns */
 
+    /* ---- art card, two-column rework (2026-08-23, JJ) ----
+       ⭐ THE THREE WIDTHS ARE ONE SUM, so keep them as a formula. Content width is
+       --art-side-w + --art-col-gap + right, and the right column is whatever is left —
+       which makes it 360 at the breakpoint and 480 at the cap, exactly as specified,
+       with no second rule to keep in sync.
+           812 = 300 + 32 + 480   (cap)
+           692 = 300 + 32 + 360   (minimum two-column content width)
+       ⚠︎ THE CAP AND THE BREAKPOINT ARE THE SAME NUMBER BY COINCIDENCE, NOT BY DESIGN.
+       --art-body-w uses the MAX right column; --art-stack-at uses the MIN plus the two
+       margins. They coincide only because (--art-main-max - --art-main-min) happens to
+       equal 2 x --frame-margin (480 - 360 = 120). Change the 360/480 range and they
+       diverge — do not assume one number serves both.
+       ⚠︎ THE BREAKPOINT IS DERIVED, NEVER PICKED. JJ's first number was 616, which would
+       have left a band where the layout is two-column and the right column sits under its
+       own stated minimum. It has since moved twice — to 752, then to 812 when the sticky
+       column went 240 -> 300 — and each time it followed from the widths rather than being
+       chosen. Recompute it; do not nudge it. */
+    --art-side-w: 300px;     /* [TUNE] the sticky column. STRICT — never flexes */
+    --art-main-min: 360px;   /* [TUNE] right column at the breakpoint */
+    --art-main-max: 480px;   /* [TUNE] right column at the cap */
+    --art-body-w: calc(var(--art-side-w) + var(--art-col-gap) + var(--art-main-max));
+    /* ⚠︎ DOCUMENTATION, NOT A LIVE VALUE. A media query cannot read a custom property, so
+       the TWO `@media (max-width: 812px)` blocks hardcode this number — the art sheet and
+       its technical section. ⚠︎ The BIO no longer uses it: it stacks on the measured
+       `.bio-stacked` class instead, because its right column hugs its longest entry and
+       only JS can know how wide that is. This token is here
+       so the arithmetic that PRODUCES it is written down next to its inputs — if any of
+       the three widths or --frame-margin change, recompute and update BOTH queries. */
+    --art-stack-at: calc(var(--art-side-w) + var(--art-col-gap) + var(--art-main-min)
+                         + 2 * var(--frame-margin));   /* = 812px */
+    --art-sticky-top: 32px;  /* [TUNE] where the left column pins, from the CARD's top edge */
+    --art-stack-gap: 16px;   /* [TUNE] the single gap between every block when stacked */
+
     /* ---- technical section (v5): the inverse of the site ---- */
-    --tech-bg: #000000;      /* [TUNE] */
-    --tech-fg: var(--bg);    /* the site's own grey, inverted onto black */
-    --tech-muted: #949494;   /* [TUNE] gallery captions on black */
+    /* [TUNE] Dark grey, not black (JJ, 2026-08-23 — "let's try a dark gray").
+       ⭐ #detail.tech-tail's hard-stop gradient reads THIS TOKEN, so the card's overscroll
+       ground follows automatically. That matters: the gradient exists so a rubber-band
+       past the card's bottom reveals the technical ground rather than the grey card, and
+       a hardcoded black here would have put a black shelf under a grey section.
+       Reference points, since "dark grey" is a range: #141414 the current pick, heavy
+       but not black · #1F1F1F · #262626 clearly grey · #2E2E2E soft, and about where
+       --tech-fg starts to feel too bright against it. */
+    --tech-bg: #141414;
+    --tech-fg: var(--bg);    /* the site's own grey, inverted onto the dark ground */
+    /* [TUNE] Technical gallery captions. ⚠︎ RENAMED FROM --tech-muted (2026-08-23): it is
+       WHITE now, and a token called "muted" holding #FFF is the kind of name that misleads
+       whoever reads it next. It is also BRIGHTER than --tech-fg (#E7E7E7), which is
+       deliberate and the opposite of the usual caption treatment — at --cap-size the extra
+       contrast is buying back legibility that the size gives away. */
+    --tech-cap: #FFFFFF;
     --tech-top: 60px;        /* [TUNE] gap between the gallery above and the black */
     --tech-pad: 60px;        /* [TUNE] inner inset — matches the frame margin */
     --bio-pin-top: var(--band);  /* [TUNE] where bio column 1 pins. = exactly where it loads,
@@ -314,6 +403,16 @@
     inset: 0;
     z-index: 2;
     overflow: hidden;
+    /* 🐞 BACKDROP ROOT (2026-08-23, JJ: "the blurred region flickers on internal card
+       scroll while at rest"). #cardBlur's backdrop is everything painted BEHIND it, and a
+       transform does NOT create a Backdrop Root — only filter/opacity/mask/isolation do.
+       So the plane's backdrop root was the DOCUMENT, which includes #detail sitting at
+       z-index 1 underneath. Scrolling the card invalidated the plane's backdrop and forced
+       a re-sample every scroll frame, even though #stage's opaque background means #detail
+       can never actually be seen through it.
+       `isolation: isolate` makes #stage its own backdrop root, so the plane samples #stage
+       and nothing else. The card can then scroll without touching it at all. */
+    isolation: isolate;
     background: var(--bg);
     will-change: transform;
     /* Scale about the bottom edge, middle. Scaling around that point cannot move it, so
@@ -338,6 +437,76 @@
                                  layer for all tab content. The blur is applied dynamically,
                                  so let the browser promote only while it's actually on. */
   }
+
+  /* ===================== CARD BLUR: the progressive blur plane =====================
+     Pinned to #stage's bottom edge — which is the card boundary — and masked clear at
+     the top, opaque at the bottom. Because it is a child of #stage it inherits the
+     translate AND the scale, so the gradient stays welded to the boundary through the
+     whole reveal with nothing written per frame except opacity.
+
+     ⚠︎ OPACITY IS THE ONLY THING JS TOUCHES, and that is the point: it is composited
+     without repaint. The mask never changes and the plane never moves relative to its
+     own backdrop, which is what keeps this off the per-frame repaint path that got the
+     50px filter: blur() removed on 2026-08-18.
+
+     ⚠︎ At rest the stage fills the viewport, so without the opacity ramp this would blur
+     the landing page. It must start at 0 — JJ's rule was "below the fold, and it only
+     comes up when the card comes up". opacity 0 is how that is honoured.
+
+     ⚠︎ WEBKIT RISK, UNVERIFIED: backdrop-filter sampling a transformed, promoted ancestor
+     has a long history of painting nothing or sampling the wrong surface in Safari. If
+     this is invisible on Safari and correct on Chrome, that is the known failure — do not
+     go looking for a geometry bug. --card-blur: 0 disables it outright. */
+  #cardBlur {
+    position: absolute;
+    /* ⚠︎ NOT inset:0, AND THAT IS A PERFORMANCE FIX, not a layout preference.
+       backdrop-filter samples the element's WHOLE border box and blurs it, then the mask
+       throws the masked-out part away — so a full-viewport plane whose top 35% is masked
+       to transparent pays to blur that 35% every frame for nothing. Starting the box where
+       the gradient starts cuts the sampled area by --card-blur-from with zero visual
+       difference. Found when JJ saw frames drop in Low Power Mode, 2026-08-23. */
+    top: var(--card-blur-from);
+    left: 0; right: 0;
+    /* ⚠︎ OVERSHOOT THE BOUNDARY, DO NOT MEET IT (2026-08-23, JJ saw a sliver of
+       un-blurred site right above the card on Chrome).
+       A backdrop-filter samples pixels AROUND each output pixel. At the plane's own bottom
+       edge there is nothing below to sample, so the last band of output is mixed from a
+       clamped, one-sided neighbourhood — under-blurred, and it reads as a sharp sliver
+       exactly where the blur is supposed to be strongest.
+       Extending the box past #stage's bottom edge gives those pixels a full neighbourhood.
+       ⭐ The overshoot cannot paint onto the card: #stage is overflow:hidden, so everything
+       past its bottom edge is clipped. It only changes what the LAST VISIBLE ROW is
+       averaged from. Roughly one blur radius is enough; keep it a formula off the radius
+       so retuning one cannot silently break the other. */
+    bottom: calc(-1 * var(--card-blur-max));
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0;                    /* JS ramps this off detailP(); see applyStage */
+    backdrop-filter: blur(var(--card-blur-max));
+    -webkit-backdrop-filter: blur(var(--card-blur-max));
+    /* Clear at the top of the plane, full AT THE CARD BOUNDARY — which is no longer the
+       plane's own bottom, because of the overshoot above. The boundary sits exactly
+       --card-blur-max short of it, so the ramp must reach black there and stay black
+       through the clipped overshoot. Getting this wrong is subtle: the blur would peak
+       just below the visible edge and read very slightly soft AT it. */
+    mask-image: linear-gradient(to bottom,
+      transparent 0%, black calc(100% - var(--card-blur-max)));
+    -webkit-mask-image: linear-gradient(to bottom,
+      transparent 0%, black calc(100% - var(--card-blur-max)));
+  }
+  /* ⚠︎ MODE 0 MUST REMOVE backdrop-filter, NOT SET IT TO blur(0). A zero-radius
+     backdrop-filter still establishes a backdrop root and can still cost a sample per
+     frame — the whole point of this mode is that nothing is sampled at all. Hence a
+     class that sets it to `none`, driven from JS at init and on retune(). */
+  #cardBlur.solid {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: linear-gradient(to bottom, transparent 0%, var(--card-veil-color) 100%);
+  }
+
+  /* Rollback: --card-blur: 0 sets display:none from JS at init (and on retune), so the
+     layer is not merely transparent — a promoted-but-invisible surface still costs. */
+  #cardBlur.off { display: none; }
 
   /* ---- hero / landing carousel: 100vh minus the band ---- */
   .hero {
@@ -747,10 +916,8 @@
     display: block;
   }
 
-  /* ART info: two columns while they fit, collapsing to one stacked column below.
-     flex-wrap does the breakpoint arithmetic itself — two 400s + a 32 gap need 832,
-     so they wrap exactly when the content column can no longer hold them. No media
-     query to keep in sync with the token values. Left-aligned, never centred. */
+  /* ART info: kept for NEWS, which still uses the old flex pair. The art card no longer
+     renders .art-info at all — see .art-grid below. */
   .art-info {
     margin-top: 48px;
     display: flex;
@@ -760,6 +927,97 @@
   }
   .art-col { width: min(var(--art-col-w), 100%); }
 
+  /* ===================== ART CARD: sticky column + scrolling column =====================
+     ⚠︎ SCOPED TO .art-body, NOT .detail-body. NewsItem uses .detail-body too and must keep
+     the 900px column; only the artwork sheet uses --art-body-w. */
+  .art-body { width: min(var(--art-body-w), 100%); }
+
+  .art-grid {
+    margin-top: var(--card-gap);              /* 32 under the cover */
+    display: grid;
+    grid-template-columns: var(--art-side-w) 1fr;
+    gap: var(--art-col-gap);
+    align-items: start;                       /* ⚠︎ REQUIRED: a stretched item cannot stick */
+  }
+
+  /* ⭐ THE STICKY COLUMN, AND ITS HEIGHT IS THE WHOLE TRICK.
+     JJ: acknowledgements sit --frame-margin from the floor, and "this arrangement
+     determines the overall vertical dimensions of the left column, so that at max scroll
+     it basically occupies the whole vertical." So the column is sized to end exactly
+     --frame-margin above the card's bottom edge, and `margin-top: auto` on the last block
+     pushes it there. Nothing is positioned by hand.
+
+     ⚠︎ --vh-live, NOT 100vh. site.js writes the MEASURED window.innerHeight on load and on
+     resize — the same number the gesture system uses. `100vh` on iOS means the URL-bar-
+     collapsed height and never updates, so the column would hang past the card's floor;
+     `dvh` updates continuously and would reflow the column mid-scroll.
+
+     🐞 THE BIO PAIR TRAP, WALKED INTO AGAIN (2026-08-23, JJ). #detailScroll carries
+     `padding-top: --frame-margin`, and THE SCROLLER'S PADDING ADDS TO THE STICKY OFFSET —
+     `hooks.md § v6 fork` records exactly this, and the first cut of this rule used a bare
+     `top: var(--art-sticky-top)` anyway.
+
+     ⭐ IT SHOWED UP AS TWO SYMPTOMS WITH ONE CAUSE, which is how it was confirmed rather
+     than guessed. JJ: "bigger sticky top margin than intended... that forces the bottom
+     acknowledgements to meet view bottom directly, without its own margin."
+         pin      = 60 + 32          = 92   (wanted 32)
+         bottom   = 92 + (VH - 212)  = VH - 120 = the scrollport floor exactly (wanted -60)
+     One error, both numbers. If a future change makes only ONE of those wrong, the cause
+     is something else.
+
+     So `top` is the intended distance from the card's top edge MINUS the padding the
+     browser will add back. Written as a formula off both inputs, never as -28px, so
+     retuning either --art-sticky-top or --frame-margin stays correct.
+     ⚠︎ A negative computed `top` is correct and legal here. Do not "correct" it. */
+  .art-side {
+    position: sticky;
+    top: calc(var(--art-sticky-top) - var(--frame-margin));
+    height: calc(var(--vh-live, 100vh) - var(--detail-top)
+                 - var(--art-sticky-top) - var(--frame-margin));
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .art-main { min-width: 0; }                 /* ⚠︎ or a wide image blows the 1fr track out */
+
+  .detail-ack {
+    margin-top: auto;                         /* ⭐ pinned to the column's floor */
+    line-height: 1.5;
+  }
+  .detail-ack p { margin: 0 0 1em; }
+  .detail-ack p:last-child { margin-bottom: 0; }
+  .detail-statement { line-height: 1.5; }
+  .detail-statement p { margin: 0 0 1em; }
+  .detail-statement p:last-child { margin-bottom: 0; }
+
+  /* ---- STACKED. One column, one gap, and an order that is NOT the source order. ----
+     `display: contents` dissolves both column wrappers so every leaf becomes a direct
+     grid item — which is the only way the lead gallery image can rise above the statement
+     while exhibitions and acknowledgements fall to the bottom. */
+  @media (max-width: 812px) {
+    .art-grid {
+      grid-template-columns: 1fr;
+      gap: var(--art-stack-gap);
+      margin-top: var(--art-stack-gap);
+    }
+    .art-side, .art-main { display: contents; }
+    .art-side { height: auto; }               /* belt: the sticky sizing must not survive */
+
+    .detail-heading    { order: 1; }
+    .detail-spec       { order: 2; }
+    .fig-lead          { order: 3; }
+    .detail-statement  { order: 4; }
+    .fig-rest          { order: 5; }
+    .detail-exh        { order: 6; }
+    .detail-ack        { order: 7; margin-top: 0; }   /* no floor to pin to when stacked */
+
+    /* every block is separated by the one grid gap; kill the rhythm margins that the
+       two-column layout uses, or they add to it */
+    .detail-heading { margin-bottom: 0; }
+    .detail-spec    { margin: 0; }
+    .detail-figs    { margin-top: 0; }
+  }
+
   /* the text column: 400px until the 60px margins start cutting into it, then it
      shrinks with them (min() against the already-padded content box) */
   .detail-col {
@@ -767,19 +1025,36 @@
     margin-inline: auto;
   }
 
-  .detail-heading { line-height: 1; margin: 0 0 48px; }
+  /* ---- the sticky column's own rhythm (JJ, 2026-08-23) ----
+     title -> 16 -> metadata -> 32 -> exhibitions -> (grows) -> acknowledgements.
+     ⚠︎ The gaps are plain margins now. They used to be 48 on the heading with
+     `.detail-spec { margin-top: -32px }` pulling back to 16 — two numbers that had to be
+     subtracted to find the one that mattered. One number each. */
+  .detail-heading { line-height: 1.2; margin: 0 0 var(--art-stack-gap); }
   .detail-heading .title { font-style: italic; font-weight: 700; }
-  .detail-heading .year  { margin-left: var(--title-year-gap); font-weight: 400; }
+  /* ⚠︎ the year is BOLD too (JJ) — it was 400, which read as a different voice */
+  .detail-heading .year  { margin-left: var(--title-year-gap); font-weight: 700; }
   .detail-block { line-height: 1.5; }
-  .detail-exh { margin-bottom: 12px; }
-  .detail-ack { margin-bottom: 0; }         /* the statement is its own column now; gap handles it */
+  /* metadata and exhibitions both drop to --cap-size; exhibitions reuse the bio list's
+     .about-item / .yr, so the grey year is the same grey as the bio page */
+  .detail-exh {
+    font-size: var(--cap-size);
+    line-height: 1.5;
+    margin-bottom: 0;
+  }
+  .detail-ack { margin-bottom: 0; font-size: var(--cap-size); }
 
   .detail-news .dn-meta { font-size: var(--type-size); line-height: 1; color: var(--muted); margin-bottom: 12px; }
   .detail-news .dn-title { font-size: 16px; line-height: 1.2; margin: 0 0 12px; }
   .detail-news .dn-body { line-height: 1.5; margin: 0; }
 
   /* the gallery: single column, stacked, scrolls with the card (sizing above) */
-  .detail-figs { margin-top: 48px; display: flex; flex-direction: column; gap: var(--card-gap); }
+  .detail-figs { margin-top: 0; display: flex; flex-direction: column; gap: var(--card-gap); }
+  /* ⚠︎ NEWS still wants the old 48 above its gallery — .detail-figs is shared. Only the
+     artwork sheet drives its rhythm from .art-main below. */
+  .detail-body:not(.art-body) .detail-figs { margin-top: 48px; }
+  /* one rule for the whole right column: statement -> lead image -> the rest, evenly */
+  .art-main > * + * { margin-top: var(--card-gap); }
 
   /* ===================== TECHNICAL section (v5) =====================
      The inverse of the site: black ground, site-grey text, same 60px margins and the
@@ -800,47 +1075,132 @@
     color: var(--tech-fg);
   }
   /* the same content column the artwork above uses, so the two align exactly */
-  .tech-inner { width: min(var(--detail-img-max), 100%); margin-inline: auto; }
+  /* ⭐ THE SAME CONTENT COLUMN AS THE ARTWORK ABOVE — --art-body-w, not --detail-img-max.
+     The old comment here claimed the two aligned; after the 2026-08-23 rework they did
+     not, because the sheet narrowed to --art-body-w and this stayed on the old 900 cap. JJ: "the
+     same horizontal scale conventions as the rest of the art card, but with left and right
+     swapped." Same cap here, mirrored tracks below, so every outer edge lines up. */
+  .tech-inner { width: min(var(--art-body-w), 100%); margin-inline: auto; }
   /* .art-info and .tech-figs both carry a 48px top margin for their rhythm INSIDE the
      card; the first one in here would stack that on top of --tech-pad and make the
      inset 108 instead of 60. Zeroed generically so it holds whichever part comes
      first (a work may have a gallery and no tagline). */
   .tech-inner > :first-child { margin-top: 0; }
 
-  /* tagline in column 1, text in column 2 — the same split as heading/lists vs
-     statement above. Re-uses .art-info, so the wrap breakpoint stays in one place. */
-  .tech-tagline { line-height: 1.2; font-weight: 700; margin: 0; }
+  /* ⭐ MIRRORED (JJ, 2026-08-23): images and captions LEFT, text RIGHT — the inverse of
+     the artwork sheet above it. Same total width and the same outer edges, so the two
+     sections still line up; only the roles of the tracks swap.
+     ⚠︎ THE WIDE TRACK IS ON THE LEFT HERE. A technical gallery in a 240px column would be
+     unreadable, so the images take the flexible track and the text takes the 240. If JJ
+     meant the tracks to stay 240-then-flexible, swap this one declaration and the two
+     `order` values below — nothing else depends on it.
+     ⚠︎ Nothing here is sticky. JJ: "both columns will scroll up when it comes." That is
+     automatic: the sticky rule lives on .art-side inside .art-grid, and this is a
+     different grid in a different section. */
+  .tech-grid {
+    display: grid;
+    /* ⭐ THE ART CARD'S TRACKS, MIRRORED. The sheet is `240px 1fr` (narrow text left, wide
+       media right); this is `1fr 240px` — wide media LEFT, narrow text RIGHT. Same sum,
+       same cap, same gap, so both the section's outer edges and its inner seam align with
+       the sheet above. Confirmed by JJ 2026-08-23. */
+    grid-template-columns: 1fr var(--art-side-w);
+    gap: var(--art-col-gap);
+    align-items: start;
+  }
+  /* ⭐ TOP-STICKY, THE MIRROR OF .art-side (JJ, 2026-08-23). The text pins while the
+     gallery scrolls past it, exactly as the sheet's left column does — just on the other
+     side and in the other section.
 
-  .tech-figs { margin-top: 48px; display: flex; flex-direction: column; gap: var(--card-gap); }
+     ⚠︎ SAME PADDING CORRECTION, SAME REASON. This is inside the same #detailScroll, whose
+     `padding-top: --frame-margin` adds to a sticky offset (hooks.md § v6 fork, and again
+     on the art column today). `.tech`'s OWN 60px padding is irrelevant here — an
+     intermediate ancestor's padding moves where the block starts in flow, not where it
+     pins; only the SCROLL CONTAINER's padding shifts the offset. Written as the same
+     formula so both columns retune together.
+
+     ⭐ It releases on its own at the end of the section: a sticky box is bounded by its
+     containing block, which is .tech-grid. No rule needed to stop it.
+
+     ⚠︎ KNOWN LIMIT, ACCEPTED: if technicalText ever grows past the viewport height its
+     tail is unreachable while pinned. The fix would be a nested scroller, and a nested
+     scroller inside #detailScroll would fight the overscroll and give tuning that
+     `hooks.md § BRANCH 2` spent a session getting right. Not worth it for one paragraph. */
+  .tech-text {
+    min-width: 0;
+    position: sticky;
+    top: calc(var(--art-sticky-top) - var(--frame-margin));
+  }
+  .tech-tagline { line-height: 1.2; font-weight: 700; margin: 0 0 var(--art-stack-gap); }
+
+  /* Stacked: TEXT FIRST, then the gallery (JJ) — the opposite of the two-column order,
+     hence the explicit `order`. */
+  @media (max-width: 812px) {
+    .tech-grid { grid-template-columns: 1fr; gap: var(--art-stack-gap); }
+    /* ⚠︎ position:static, not just a new order — a sticky block in a one-column stack
+       would pin over the gallery below it. Same reason .art-side drops its height. */
+    .tech-text { order: 1; position: static; }
+    .tech-figs { order: 2; margin-top: 0; }
+  }
+
+  .tech-figs { margin-top: 0; display: flex; flex-direction: column; gap: var(--card-gap); }
   .tech-figs figure { margin: 0; }
   .tech-figs img { width: 100%; height: auto; display: block; }
-  /* first captions anywhere on the site — the schema's technicalGallery[].caption */
+  /* First captions anywhere on the site — the schema's technicalGallery[].caption.
+     ⚠︎ ABOVE the image, not below (JJ, 2026-08-23). The caption is the FIRST child of its
+     <figure> in the markup, so this is real document order, not a visual reorder — a
+     screen reader and a text browser get the same sequence the eye does. HTML permits
+     figcaption as either the first or last child, so nothing is being bent to do it. */
   .tech-figs figcaption {
-    margin-top: var(--caption-gap);
+    margin-bottom: var(--caption-gap);
     line-height: 1.4;
-    color: var(--tech-muted);
+    font-size: var(--cap-size);
+    color: var(--tech-cap);
   }
 
   /* ===================== ABOUT panel ===================== */
   :root {
-    --about-col-bio: 350px;
-    --about-col: 400px;
-    --about-col-gap: 32px;
+    /* ⛔ RETIRED 2026-08-23 (JJ): "bio adopts the art card's column width, spacing between,
+       and breakpoint." The bio pair was 350 + 32 + 400 (fixed) = 782, stacking at 902; the
+       art card is --art-side-w + 32 + 360–480 (fluid), stacking at --art-stack-at. Two systems, 30px
+       of misregistration between their outer edges, and 150px of viewport where one
+       surface was stacked and the other was not.
+       The bio now reads --art-side-w / --art-col-gap / --art-body-w directly, so there is
+       ONE set of column tokens for the whole site and they cannot drift apart again.
+       ⚠︎ NOT adopted: the sticky OFFSET. --bio-pin-top stays --band, because the bio pins
+       under the nav band and the art column pins inside a card — different reference
+       frames, and JJ asked for widths, gap and breakpoint only.
+       --about-col-bio: 350px;   --about-col: 400px;   --about-col-gap: 32px; */
     --about-sec-gap: 32px;     /* [TUNE] between the bio sections. was 24 */
     --about-head-gap: 12px;
     --about-item-gap: 6px;
     --about-year: #b3b3b3;
   }
+  /* ⭐ THE ART CARD'S GRID, EXACTLY — same tracks, same gap, same cap, same breakpoint.
+     `width` + `margin-inline: auto` replaces the old `justify-content: center`: the pair
+     used to be centred with no cap, so its outer edges floated with the content. Capping
+     it is what makes the bio and an art card share an edge. */
   .about {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    gap: var(--about-col-gap);
+    width: min(var(--art-body-w), 100%);
+    margin-inline: auto;
+    display: grid;
+    /* ⭐ COLUMN 2 HUGS ITS LONGEST ENTRY (JJ, 2026-08-23) — `fit-content(limit)` is
+       min(max-content, limit), i.e. exactly "as wide as the longest row, but never past
+       the cap". The art card's right column deliberately does NOT do this and stays
+       360–480: it holds the artist statement and the gallery, and PROSE HAS NO NATURAL
+       WIDTH — a paragraph's max-content is the whole paragraph on one unwrapped line.
+       Hugging is only meaningful for a column of discrete rows, which is what the bio is.
+       ⚠︎ The cap is --art-main-max, so the bio can never be WIDER than an art card even
+       though it is often narrower. Left edges still register: the track pair starts at the
+       left edge of the same --art-body-w box the sheet uses, so the two surfaces share an
+       origin and only the ragged right edge differs. */
+    grid-template-columns: var(--art-side-w) fit-content(var(--art-main-max));
+    gap: var(--art-col-gap);
+    align-items: start;
     font-size: var(--type-size);
     line-height: 1.5;
   }
   .about-bio,
-  .about-col2 { flex: 0 0 auto; min-width: 0; }
+  .about-col2 { min-width: 0; }
   /* ⚠︎ THE BAND LIVES ON .about, NOT ON #bio's SCROLLER — and that is the whole fix.
      A sticky offset is NOT measured from the scroll container's padding-box edge; it is
      measured from where the content begins, i.e. the padding is already counted. So
@@ -858,14 +1218,14 @@
   #bio { padding-top: 0; }
   .about { padding-top: var(--band); }
 
-  /* column 1 pins where it loads and stays put while column 2 scrolls past it. */
+  /* Column 1 pins where it loads and stays put while column 2 scrolls past it.
+     ⚠︎ NO `width` ON EITHER COLUMN ANY MORE — the grid tracks own it. A width here would
+     silently win over the track and put the two systems back out of step. */
   .about-bio  {
-    width: min(var(--about-col-bio), 100%);
     margin: 0;
     position: sticky;
     top: var(--bio-pin-top);
   }
-  .about-col2 { width: min(var(--about-col), 100%); }
   .about-bio strong { font-weight: 700; }
   .about-col2 { display: flex; flex-direction: column; gap: var(--about-sec-gap); }
 
@@ -876,11 +1236,46 @@
   .about-item .yr { color: var(--about-year); }
   .about-item a { color: inherit; text-underline-offset: 2px; }
 
-  @media (max-width: 902px) {
-    .about { flex-direction: column; align-items: center; gap: var(--about-sec-gap); }
-    .about-bio { width: min(var(--about-col), 100%); position: static; }  /* no pin when stacked */
-    /* .about keeps its padding-top here — it is now the only thing supplying the band
-       for this panel, stacked or not. */
+  /* ⭐ THE BIO STACKS ON A MEASURED CLASS, NOT ON A WIDTH (JJ, 2026-08-23).
+     `.bio-stacked` is set by measureBioStack() in site.js, which measures how wide the
+     LONGEST list entry actually wants to be and stacks when the sticky column, the gap,
+     that width and both margins no longer fit. JJ: "avoid multi-line entries" — a fixed
+     breakpoint cannot promise that, because whether an entry wraps depends on the text,
+     the font and the type size, none of which a media query can see.
+
+     ⚠︎ SO THE BIO NO LONGER SHARES THE ART CARD'S BREAKPOINT, and that is deliberate
+     rather than drift. The sheet still stacks at --art-stack-at (a fixed 812) because its
+     right column holds prose and a gallery, which have no natural width to measure. The
+     two surfaces share their column TOKENS and their left edge; they no longer share the
+     moment they stack. If the bio's longest entry is short, it will stay two-column below
+     812; if it is long, it will stack above it.
+
+     ⚠︎ NO @media HERE ON PURPOSE. Adding one back alongside the class would give two
+     independent stack triggers that disagree at most widths. */
+  /* ⭐ STACKED: THE LIST STILL SETS THE MEASURE, AND THE PROSE ADOPTS IT (JJ).
+     One track, sized `fit-content(100%)` — the longest list entry, capped at whatever room
+     there is — and `justify-content: center` puts that column in the middle.
+     ⚠︎ Flat selectors, not CSS nesting: nothing else in this file nests, and this has to
+     survive whatever the production minifier does to it. */
+  :root.bio-stacked .about {
+    grid-template-columns: fit-content(100%);
+    justify-content: center;
+    gap: var(--about-sec-gap);
+  }
+  /* ⚠︎ `width: 0; min-width: 100%` IS THE WHOLE MECHANISM, not a hack to tidy away. Both
+     blocks share one track, so both would normally contribute to sizing it — and the bio
+     paragraph's max-content is the entire paragraph on one unwrapped line, which would win
+     every time and the "hug" would never be visible. `width: 0` removes it from the track's
+     intrinsic sizing so ONLY the list entries are measured; then `min-width: 100%` — a
+     percentage, resolved after the track is known — expands it back to fill. That is what
+     "let the bio paragraph conform" means. Remove either half and the stack silently
+     reverts to prose-driven width, with nothing obviously broken to point at.
+     .about keeps its padding-top throughout — it is the only thing supplying the band for
+     this panel, stacked or not. */
+  :root.bio-stacked .about-bio {
+    position: static;            /* no pin when stacked */
+    width: 0;
+    min-width: 100%;
   }
 
 /* ============================================================================
@@ -919,16 +1314,17 @@
    question that had been open since 2026-08-05.
 
    Sits between the title and exhibitions, inside art column 1. Uses --muted (the same
-   grey as news meta and captions) rather than --tech-muted, which is scoped to captions
+   grey as news meta and captions) rather than --tech-cap, which is scoped to captions
    on the black technical ground.
 
    [TUNE] --spec-gap is the space between the spec block and the exhibitions below it;
    the 48px above it is .detail-heading's own margin-bottom, deliberately untouched. */
-:root { --spec-gap: 24px; }        /* [TUNE] spec block -> exhibitions */
+:root { --spec-gap: 32px; }        /* [TUNE] metadata -> exhibitions (JJ: 32) */
 .detail-spec {
   color: var(--muted);
+  font-size: var(--cap-size);
   line-height: 1.5;
-  margin: -32px 0 var(--spec-gap);  /* pull up under the title; 48 - 32 = 16px gap */
+  margin: 0 0 var(--spec-gap);      /* 16 above comes from .detail-heading; 32 below */
 }
 
 /* ---- 3. CARDS ARE LINKS ---------------------------------------------------------

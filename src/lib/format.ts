@@ -46,9 +46,37 @@ export const inlineMd = (s: string): string =>
   s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
 
+/**
+ * One list row rendered as: grey year, then the rest. Shared by the bio lists and the
+ * artwork exhibitions so the two cannot drift apart visually — they now produce byte-
+ * identical markup and differ ONLY in how the year is found.
+ */
+const yearItem = (year: string, rest: string): string =>
+  `<div class="about-item"><span class="yr">${year}</span> ${inlineMd(rest.trim())}</div>`;
+
+const plainItem = (line: string): string =>
+  `<div class="about-item">${inlineMd(line.trim())}</div>`;
+
+/**
+ * An ARTWORK exhibitions row. ⚠︎ THE YEAR IS TYPED LAST AND RENDERS FIRST.
+ *   stored:    "CIRCA2023, London, Milan, and Berlin, 2023"
+ *   rendered:  "2023 CIRCA2023, London, Milan, and Berlin"
+ * So this is a reorder, not just a restyle — the bio list stores the year leading and the
+ * artwork files store it trailing, and JJ wants both to READ the same (2026-08-23).
+ *
+ * ⚠︎ The match is non-greedy on the head and anchored on the tail, which is what keeps
+ * "CIRCA2023" intact: a greedy or unanchored year match would find the 2023 inside the
+ * title. Verified against all 10 populated exhibitions rows, including that one and a
+ * "2024 - 2026" range. A row with no trailing year renders whole and untouched rather
+ * than disappearing.
+ */
+export function exhibitionItem(line: string): string {
+  const m = line.match(/^(.*?),\s*((?:\d{4})(?:\s*[–—-]\s*\d{4})?)\s*$/);
+  return m ? yearItem(m[2], m[1]) : plainItem(line);
+}
+
 /** A bio list row: "2025 - Thing" splits the year into its own span. */
 export function aboutItem(line: string): string {
   const m = line.match(/^\s*(\d{4})\s*-\s*(.*)$/);
-  if (!m) return `<div class="about-item">${inlineMd(line.trim())}</div>`;
-  return `<div class="about-item"><span class="yr">${m[1]}</span> ${inlineMd(m[2].trim())}</div>`;
+  return m ? yearItem(m[1], m[2]) : plainItem(line);
 }
