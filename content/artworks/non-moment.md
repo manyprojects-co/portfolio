@@ -23,26 +23,20 @@ artistStatement: "“Several decades from now before I go, I want my eyes to
   JJ"
 landingVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/artworks/non-moment/nmm-ld.jpg
+  mediaUrl: https://media.agawen.com/artworks/non-moment/nmm-ld.jpg
 tabArtVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/artworks/non-moment/nmm-tab.png
+  mediaUrl: https://media.agawen.com/artworks/non-moment/nmm-tab.png
 cardCoverVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/artworks/non-moment/nmm-card.jpg
+  mediaUrl: https://media.agawen.com/artworks/non-moment/nmm-card.jpg
 cardGallery:
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/non-moment/nmm-art1.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/non-moment/nmm-art2.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/non-moment/nmm-art3.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/non-moment/nmm-art4.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/non-moment/nmm-art5.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/non-moment/nmm-art6.jpg
 technicalTagline: Deliberate blur
 technicalText: In contrast to the visual richness common in our art practice,
   Non-moment is a work that aims to isolate only the gestures that populate our
@@ -51,5 +45,4 @@ technicalText: In contrast to the visual richness common in our art practice,
   mass of shadows emerging from anonymous fog.
 technicalGallery:
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/non-moment/nmm-tech1.jpg
 ---
