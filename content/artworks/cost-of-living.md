@@ -34,11 +34,17 @@ cardGallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-art2.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-art3.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-art4.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-art5.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-art6.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-art7.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-art8.jpg
 technicalTagline: A volatile home
 technicalText: Cost of Living took a technique that we developed for Box Body
   and Emerge:ncy and brought it to an unprecedented miniature scale. We began
