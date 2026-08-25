@@ -67,11 +67,13 @@ export function media(v: unknown): Media {
   const vid = str("videoUrl");
   const caption = str("caption") || undefined;
 
-  /* A TEXT ROW carries prose instead of a picture. Where that prose lives is not settled —
-   * a dedicated `text` field and a re-used `caption` are both accepted; whichever is
-   * present wins. A text row with no prose is dropped like any other empty row. */
+  /* A TEXT ROW carries prose instead of a picture. ⭐ `textContent` is the CMS's field —
+   * see content.config.ts for why the earlier guess (`text` / `caption`) silently dropped
+   * every one of them. The two legacy names remain as a fallback and cost nothing.
+   * ⚠︎ The value is RICH TEXT: paragraphs split on blank lines, inline markdown rendered by
+   * Media.astro. A text row with no prose is dropped like any other empty row. */
   if (o.mediaType === "text") {
-    const body = str("text") || str("caption");
+    const body = str("textContent") || str("text") || str("caption");
     return body ? { kind: "text", src: "", text: body } : null;
   }
   // declared video, URL in the right box

@@ -41,6 +41,21 @@ console.log("  ── visuals ──");
 row("mainVisual (new)", count(news, "mainVisual"), news.length);
 const legacyImg = news.filter((n) => typeof n.d.image === "string").length;
 const galObj = news.filter((n) => (n.d.gallery ?? []).some((g) => typeof g === "object")).length;
+/* ⭐ A ROW IS EMPTY ONLY IF IT CARRIES NOTHING — not merely because it is an object.
+ * 🐞 The flag below used `galObj` (any object row) and read "15 news items have EMPTY
+ * gallery rows". That was TRUE when every row really was a bare `{}`, and silently became
+ * a false alarm on all 15 the moment the galleries were populated — the predicate never
+ * tested emptiness at all.
+ * ⛔ THIRD INSTANCE OF THIS EXACT FAILURE TODAY (imageUrl, acknowledgements, this): the
+ * report describing a state that was true when it was written and is no longer checked.
+ * ⚠︎ A TEXT ROW HAS NO URL BY DESIGN and must not count as empty — it carries textContent. */
+const rowEmpty = (g) => {
+  if (typeof g === "string") return !g.trim();
+  if (!g || typeof g !== "object") return true;
+  if (g.mediaType === "text") return !String(g.textContent ?? g.text ?? "").trim();
+  return !String(g.mediaUrl ?? g.imageUrl ?? g.videoUrl ?? "").trim();
+};
+const galEmpty = news.filter((n) => (n.d.gallery ?? []).some(rowEmpty)).length;
 const galStr = news.filter((n) => (n.d.gallery ?? []).some((g) => typeof g === "string")).length;
 row("image (LEGACY)", legacyImg, news.length);
 row("gallery new-shape", galObj, news.length);
@@ -58,6 +73,17 @@ function checkUrl(where, raw) {
     badUrls.push(`${where}: r2.dev URL — CANNOT be transformed. Use ${MEDIA_ORIGIN}.`);
   else if (v.startsWith("http") && !v.includes(MEDIA_ORIGIN) && !v.includes("agawen.com"))
     badUrls.push(`${where}: off-origin host — transforms will be rejected. ${v.slice(0, 60)}`);
+  /* ⚠︎ A MALFORMED PATH ON THE *CORRECT* HOST used to pass clean — the host checks above were
+   * the only ones, so `…/box-body/ bb-art1.jpg` (a stray space before the filename, six of
+   * them in one file) reported as valid and produced six broken images.
+   * `new URL()` percent-encodes the space to `/%20bb-art1.jpg`, which matches no R2 object,
+   * so nothing throws and nothing 404s at build time — it just serves a broken picture.
+   * ⭐ SAME SHAPE AS THE imageUrl BLINDNESS: the validator not covering the failure that
+   * actually happened. Whitespace is the one an editor pasting by hand will keep producing. */
+  else if (/\s/.test(v))
+    badUrls.push(`${where}: WHITESPACE inside the URL — resolves to %20 and will 404. ${v.slice(0, 70)}`);
+  else if (/(?<!:)\/\//.test(v.replace(/^https?:\/\//, "")))
+    badUrls.push(`${where}: double slash in the path. ${v.slice(0, 70)}`);
 }
 /**
  * ⛔ THIS SCRIPT WAS SILENTLY VALIDATING NOTHING (found 2026-08-23).
@@ -96,8 +122,8 @@ if (!totalVisuals) flags.push(
 if (legacyImg) flags.push(
   `${legacyImg} news items still use the flat \`image:\` field pointing at /assets/… — an origin\n` +
   `     DELETED on 2026-08-10. These resolve to nothing today.`);
-if (galObj) flags.push(
-  `${galObj} news items have new-shape gallery rows that are EMPTY objects — slots created in\n` +
+if (galEmpty) flags.push(
+  `${galEmpty} news items have gallery rows that carry NOTHING — slots created in\n` +
   `     the CMS UI but no URL pasted yet. Migration in progress, not finished.`);
 for (const n of news) {
   if (n.d.isDateRange === false && n.d.endDate)
