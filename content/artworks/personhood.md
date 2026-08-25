@@ -44,30 +44,19 @@ institutionSupport: Personhood (originally "Proof of Personhood") was first
   developed for various spaces around the world.
 landingVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/artworks/personhood/psh-ld.jpg
 tabArtVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/artworks/personhood/psh-tab.png
 cardCoverVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/artworks/personhood/psh-card.jpg
 cardGallery:
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/personhood/psh-art1.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/personhood/psh-art2.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/personhood/psh-art3.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/personhood/psh-art4.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/personhood/psh-art5.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/personhood/psh-art6.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/personhood/psh-art7.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/personhood/psh-art8.jpg
 technicalTagline: An iterating work
 technicalText: >-
   As a piece that comments on our coexistence with the impacts of technology,
@@ -93,17 +82,10 @@ technicalText: >-
   formed in the likeness of Xin.
 technicalGallery:
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/personhood/psh-tech1.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/personhood/psh-tech2.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/personhood/psh-tech3.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/personhood/psh-tech4.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/personhood/psh-tech5.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/personhood/psh-tech6.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/personhood/psh-tech7.jpg
 ---
