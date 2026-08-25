@@ -85,7 +85,7 @@ content:
               values: [image, video]
           - { name: imageUrl, label: Cloudflare URL, type: string }
 
-      # Art Gallery (100% Cloudflare Hosted)
+  # Art Gallery (Intersperse Images, Videos, & Text)
       - name: cardGallery
         label: Art Gallery
         type: object
