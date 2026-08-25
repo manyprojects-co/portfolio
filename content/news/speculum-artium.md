@@ -1,5 +1,5 @@
 ---
-title: Personhood / Speculum Artium
+title: Speculum Artium
 subheading: A video version of Personhood (2024) was exhibited at the Speculum
   Artium Festival.
 isDateRange: true
