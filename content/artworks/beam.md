@@ -36,6 +36,7 @@ cardCoverVisual:
   mediaUrl: https://media.agawen.com/artworks/beam/beam-card.jpg
 cardGallery:
   - mediaType: video
+    mediaUrl: https://media.agawen.com/artworks/beam/beam-art-v1.mp4
   - {}
   - mediaType: image
   - mediaType: image
