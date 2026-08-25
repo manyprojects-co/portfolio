@@ -48,6 +48,7 @@ cardGallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/emergency/emgc-art4.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/emergency/emgc-art5.jpg
   - mediaType: image
 technicalTagline: Light beyond the dark
 technicalText: "This award-winning artwork was made in the shared basement
