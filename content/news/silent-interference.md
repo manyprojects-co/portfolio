@@ -2,10 +2,10 @@
 title: Non-moment / Silent Interference (靜噪)
 subheading: Our new video artwork, Non-moment (2025), was exhibited at Silent
   Interference (靜噪).
-isDateRange: false
+isDateRange: true
 date: 2025-11-28
 endDate: 2025-11-30
-location: Screen on Fengling Commercial Building
+location: Fengling Commercial Building
 city: Taoyuan, Taiwan
 eventType: Group exhibition
 statement: >-
