@@ -105,4 +105,5 @@ technicalGallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/personhood/psh-tech6.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/personhood/psh-tech7.jpg
 ---
