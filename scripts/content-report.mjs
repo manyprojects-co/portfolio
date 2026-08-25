@@ -25,7 +25,9 @@ const row = (label, n, t) => console.log(`  ${label.padEnd(22)} ${bar(n, t)} ${S
 
 console.log("\n═══ ARTWORKS (%d) ═══════════════════════════════════════", arts.length);
 for (const f of ["title", "productionDate", "tagline", "medium", "size", "duration",
-                 "premiereCity", "exhibitions", "artistStatement", "acknowledgements",
+                 // ⚠︎ institutionSupport, NOT acknowledgements — the CMS renamed it and the
+                 // content followed. Reporting the dead key showed a FALSE 0/11.
+                 "premiereCity", "exhibitions", "artistStatement", "institutionSupport",
                  "featureOrder", "technicalTagline", "technicalText"])
   row(f, count(arts, f), arts.length);
 console.log("  ── visuals ──");
@@ -57,14 +59,27 @@ function checkUrl(where, raw) {
   else if (v.startsWith("http") && !v.includes(MEDIA_ORIGIN) && !v.includes("agawen.com"))
     badUrls.push(`${where}: off-origin host — transforms will be rejected. ${v.slice(0, 60)}`);
 }
+/**
+ * ⛔ THIS SCRIPT WAS SILENTLY VALIDATING NOTHING (found 2026-08-23).
+ * It read `imageUrl` only. The CMS renamed that field to `mediaUrl` and migrated files as
+ * they were saved — so from the first CMS save onward, every migrated file's URLs were
+ * skipped and the report cheerfully printed "0 invalid URLs". By the time it was caught,
+ * seven artwork files were already invisible to it.
+ * ⚠︎ THE FAILURE MODE IS THE POINT: a validator that silently stops seeing its input reads
+ * exactly like a validator that found nothing wrong. Both names are read here, and both
+ * must stay until `mediaUrl` is the only key in the content.
+ * ⚠︎ A text row has no URL at all and must not be reported as an empty one.
+ */
+const url = (o) => (o.mediaType === "text" ? "" : (o.mediaUrl || o.imageUrl || o.videoUrl || ""));
+
 function walkVisuals(rows, kind) {
   for (const r of rows) {
     for (const [k, val] of Object.entries(r.d)) {
       if (val && typeof val === "object" && !Array.isArray(val))
-        checkUrl(`${kind}/${r.slug} ${k}`, val.imageUrl || val.videoUrl);
+        checkUrl(`${kind}/${r.slug} ${k}`, url(val));
       if (Array.isArray(val))
         val.forEach((row, i) => { if (row && typeof row === "object")
-          checkUrl(`${kind}/${r.slug} ${k}[${i}]`, row.imageUrl || row.videoUrl); });
+          checkUrl(`${kind}/${r.slug} ${k}[${i}]`, url(row)); });
     }
   }
 }
@@ -93,7 +108,8 @@ for (const a of arts) if (!has(a.d.premiereCity)) flags.push(`artworks/${a.slug}
 // ✅ RESOLVED 2026-08-13 (JJ): personhood should NOT show a range. v6 displayed
 // "2024 - 2026"; the CMS has always said 2024-10-01 and that is correct. This was
 // prototype drift, not a schema gap — the port already renders "2024". No flag.
-if (!has(fm("content/about.md").imageUrl))
-  flags.push("about.imageUrl is empty — no profile picture renders anywhere.");
+{ const ab = fm("content/about.md");
+  if (!has(ab.mediaUrl ?? ab.imageUrl))
+    flags.push("about.mediaUrl is empty — no profile picture renders anywhere."); }
 flags.forEach((f, i) => console.log(`  ${String(i + 1).padStart(2)}. ${f}`));
 console.log("");
