@@ -190,6 +190,45 @@ import { createTrace } from "../lib/trace.mjs";
     // ⚠︎ Read AFTER --landing-h is set: `.artwork` has `max-height: calc(--landing-h - 80px)`,
     // so on a short viewport the band depends on the value set two lines above.
     DECK_H = carousel ? carousel.getBoundingClientRect().height : 0;
+    measureBioStack();
+  }
+
+  /**
+   * ⭐ THE BIO'S BREAKPOINT IS MEASURED, NOT DECLARED (JJ, 2026-08-23).
+   *
+   * JJ: "have the bio breakpoint adjust to the measurement of the longest entry instead of
+   * shrinking the column width — I'd like to avoid multi-line entries."
+   *
+   * ⛔ A MEDIA QUERY CANNOT DO THIS. It knows the viewport; it cannot know how wide the
+   * longest exhibitions row wants to be. That width depends on the content, the font and
+   * the type size, so the threshold has to be computed from the rendered text — which is
+   * exactly what this file already does for --band (measures the nav) and --vh-live.
+   * So the bio stacks on a CLASS this function sets, not on a `@media` rule.
+   *
+   * ⚠︎ THE READ IS A FORCED LAYOUT, AND IT BELONGS HERE AND NOWHERE ELSE. Same rule as
+   * DECK_H above: measureGeom() runs on load, on resize and on `document.fonts.ready` —
+   * every event that can change the answer — so the cost is paid a handful of times rather
+   * than per frame. Never move this into a scroll or wheel path.
+   *
+   * ⚠︎ `max-width: none` MATTERS. .about-col2's track is fit-content(--art-main-max), so
+   * without lifting the cap this would measure 480 forever and the threshold would never
+   * move. We want the width the content WANTS, not the width it is allowed.
+   */
+  function measureBioStack() {
+    const col2 = document.querySelector(".about-col2");
+    if (!col2) return;
+    const prevW = col2.style.width, prevMax = col2.style.maxWidth;
+    col2.style.width = "max-content";
+    col2.style.maxWidth = "none";
+    const listW = Math.ceil(col2.getBoundingClientRect().width);
+    col2.style.width = prevW;
+    col2.style.maxWidth = prevMax;
+    // the two-column layout needs: sticky column + gap + the longest entry + both margins
+    const sideW = cssNum("--art-side-w", 300);
+    const gap = cssNum("--art-col-gap", 32);
+    const need = sideW + gap + listW + FRAME * 2;
+    root.style.setProperty("--bio-list-w", listW + "px");
+    root.classList.toggle("bio-stacked", window.innerWidth < need);
   }
 
   /**

@@ -301,21 +301,31 @@
        --art-side-w + --art-col-gap + right, and the right column is whatever is left —
        which makes it 360 at the breakpoint and 480 at the cap, exactly as specified,
        with no second rule to keep in sync.
-           752 = 240 + 32 + 480   (cap)
-           632 = 240 + 32 + 360   (minimum two-column content width)
-       ⚠︎ SO THE BREAKPOINT IS 752, NOT 616. JJ's first number was 616, which would have
-       left a 136px band where the layout is two-column and the right column is 224 —
-       under its own stated minimum. Corrected in conversation: the breakpoint moved. */
-    --art-side-w: 240px;     /* [TUNE] the sticky column. STRICT — never flexes */
+           812 = 300 + 32 + 480   (cap)
+           692 = 300 + 32 + 360   (minimum two-column content width)
+       ⚠︎ THE CAP AND THE BREAKPOINT ARE THE SAME NUMBER BY COINCIDENCE, NOT BY DESIGN.
+       --art-body-w uses the MAX right column; --art-stack-at uses the MIN plus the two
+       margins. They coincide only because (--art-main-max - --art-main-min) happens to
+       equal 2 x --frame-margin (480 - 360 = 120). Change the 360/480 range and they
+       diverge — do not assume one number serves both.
+       ⚠︎ THE BREAKPOINT IS DERIVED, NEVER PICKED. JJ's first number was 616, which would
+       have left a band where the layout is two-column and the right column sits under its
+       own stated minimum. It has since moved twice — to 752, then to 812 when the sticky
+       column went 240 -> 300 — and each time it followed from the widths rather than being
+       chosen. Recompute it; do not nudge it. */
+    --art-side-w: 300px;     /* [TUNE] the sticky column. STRICT — never flexes */
     --art-main-min: 360px;   /* [TUNE] right column at the breakpoint */
     --art-main-max: 480px;   /* [TUNE] right column at the cap */
     --art-body-w: calc(var(--art-side-w) + var(--art-col-gap) + var(--art-main-max));
     /* ⚠︎ DOCUMENTATION, NOT A LIVE VALUE. A media query cannot read a custom property, so
-       the two `@media (max-width: 752px)` blocks hardcode this number. This token is here
+       the TWO `@media (max-width: 812px)` blocks hardcode this number — the art sheet and
+       its technical section. ⚠︎ The BIO no longer uses it: it stacks on the measured
+       `.bio-stacked` class instead, because its right column hugs its longest entry and
+       only JS can know how wide that is. This token is here
        so the arithmetic that PRODUCES it is written down next to its inputs — if any of
-       the three widths or --frame-margin change, recompute and update both queries. */
+       the three widths or --frame-margin change, recompute and update BOTH queries. */
     --art-stack-at: calc(var(--art-side-w) + var(--art-col-gap) + var(--art-main-min)
-                         + 2 * var(--frame-margin));   /* = 752px */
+                         + 2 * var(--frame-margin));   /* = 812px */
     --art-sticky-top: 32px;  /* [TUNE] where the left column pins, from the CARD's top edge */
     --art-stack-gap: 16px;   /* [TUNE] the single gap between every block when stacked */
 
@@ -919,7 +929,7 @@
 
   /* ===================== ART CARD: sticky column + scrolling column =====================
      ⚠︎ SCOPED TO .art-body, NOT .detail-body. NewsItem uses .detail-body too and must keep
-     the 900px column; only the artwork sheet narrows to 752. */
+     the 900px column; only the artwork sheet uses --art-body-w. */
   .art-body { width: min(var(--art-body-w), 100%); }
 
   .art-grid {
@@ -984,7 +994,7 @@
      `display: contents` dissolves both column wrappers so every leaf becomes a direct
      grid item — which is the only way the lead gallery image can rise above the statement
      while exhibitions and acknowledgements fall to the bottom. */
-  @media (max-width: 752px) {
+  @media (max-width: 812px) {
     .art-grid {
       grid-template-columns: 1fr;
       gap: var(--art-stack-gap);
@@ -1067,7 +1077,7 @@
   /* the same content column the artwork above uses, so the two align exactly */
   /* ⭐ THE SAME CONTENT COLUMN AS THE ARTWORK ABOVE — --art-body-w, not --detail-img-max.
      The old comment here claimed the two aligned; after the 2026-08-23 rework they did
-     not, because the sheet narrowed to 752 and this stayed on the old 900 cap. JJ: "the
+     not, because the sheet narrowed to --art-body-w and this stayed on the old 900 cap. JJ: "the
      same horizontal scale conventions as the rest of the art card, but with left and right
      swapped." Same cap here, mirrored tracks below, so every outer edge lines up. */
   .tech-inner { width: min(var(--art-body-w), 100%); margin-inline: auto; }
@@ -1124,7 +1134,7 @@
 
   /* Stacked: TEXT FIRST, then the gallery (JJ) — the opposite of the two-column order,
      hence the explicit `order`. */
-  @media (max-width: 752px) {
+  @media (max-width: 812px) {
     .tech-grid { grid-template-columns: 1fr; gap: var(--art-stack-gap); }
     /* ⚠︎ position:static, not just a new order — a sticky block in a one-column stack
        would pin over the gallery below it. Same reason .art-side drops its height. */
@@ -1149,24 +1159,48 @@
 
   /* ===================== ABOUT panel ===================== */
   :root {
-    --about-col-bio: 350px;
-    --about-col: 400px;
-    --about-col-gap: 32px;
+    /* ⛔ RETIRED 2026-08-23 (JJ): "bio adopts the art card's column width, spacing between,
+       and breakpoint." The bio pair was 350 + 32 + 400 (fixed) = 782, stacking at 902; the
+       art card is --art-side-w + 32 + 360–480 (fluid), stacking at --art-stack-at. Two systems, 30px
+       of misregistration between their outer edges, and 150px of viewport where one
+       surface was stacked and the other was not.
+       The bio now reads --art-side-w / --art-col-gap / --art-body-w directly, so there is
+       ONE set of column tokens for the whole site and they cannot drift apart again.
+       ⚠︎ NOT adopted: the sticky OFFSET. --bio-pin-top stays --band, because the bio pins
+       under the nav band and the art column pins inside a card — different reference
+       frames, and JJ asked for widths, gap and breakpoint only.
+       --about-col-bio: 350px;   --about-col: 400px;   --about-col-gap: 32px; */
     --about-sec-gap: 32px;     /* [TUNE] between the bio sections. was 24 */
     --about-head-gap: 12px;
     --about-item-gap: 6px;
     --about-year: #b3b3b3;
   }
+  /* ⭐ THE ART CARD'S GRID, EXACTLY — same tracks, same gap, same cap, same breakpoint.
+     `width` + `margin-inline: auto` replaces the old `justify-content: center`: the pair
+     used to be centred with no cap, so its outer edges floated with the content. Capping
+     it is what makes the bio and an art card share an edge. */
   .about {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    gap: var(--about-col-gap);
+    width: min(var(--art-body-w), 100%);
+    margin-inline: auto;
+    display: grid;
+    /* ⭐ COLUMN 2 HUGS ITS LONGEST ENTRY (JJ, 2026-08-23) — `fit-content(limit)` is
+       min(max-content, limit), i.e. exactly "as wide as the longest row, but never past
+       the cap". The art card's right column deliberately does NOT do this and stays
+       360–480: it holds the artist statement and the gallery, and PROSE HAS NO NATURAL
+       WIDTH — a paragraph's max-content is the whole paragraph on one unwrapped line.
+       Hugging is only meaningful for a column of discrete rows, which is what the bio is.
+       ⚠︎ The cap is --art-main-max, so the bio can never be WIDER than an art card even
+       though it is often narrower. Left edges still register: the track pair starts at the
+       left edge of the same --art-body-w box the sheet uses, so the two surfaces share an
+       origin and only the ragged right edge differs. */
+    grid-template-columns: var(--art-side-w) fit-content(var(--art-main-max));
+    gap: var(--art-col-gap);
+    align-items: start;
     font-size: var(--type-size);
     line-height: 1.5;
   }
   .about-bio,
-  .about-col2 { flex: 0 0 auto; min-width: 0; }
+  .about-col2 { min-width: 0; }
   /* ⚠︎ THE BAND LIVES ON .about, NOT ON #bio's SCROLLER — and that is the whole fix.
      A sticky offset is NOT measured from the scroll container's padding-box edge; it is
      measured from where the content begins, i.e. the padding is already counted. So
@@ -1184,14 +1218,14 @@
   #bio { padding-top: 0; }
   .about { padding-top: var(--band); }
 
-  /* column 1 pins where it loads and stays put while column 2 scrolls past it. */
+  /* Column 1 pins where it loads and stays put while column 2 scrolls past it.
+     ⚠︎ NO `width` ON EITHER COLUMN ANY MORE — the grid tracks own it. A width here would
+     silently win over the track and put the two systems back out of step. */
   .about-bio  {
-    width: min(var(--about-col-bio), 100%);
     margin: 0;
     position: sticky;
     top: var(--bio-pin-top);
   }
-  .about-col2 { width: min(var(--about-col), 100%); }
   .about-bio strong { font-weight: 700; }
   .about-col2 { display: flex; flex-direction: column; gap: var(--about-sec-gap); }
 
@@ -1202,11 +1236,46 @@
   .about-item .yr { color: var(--about-year); }
   .about-item a { color: inherit; text-underline-offset: 2px; }
 
-  @media (max-width: 902px) {
-    .about { flex-direction: column; align-items: center; gap: var(--about-sec-gap); }
-    .about-bio { width: min(var(--about-col), 100%); position: static; }  /* no pin when stacked */
-    /* .about keeps its padding-top here — it is now the only thing supplying the band
-       for this panel, stacked or not. */
+  /* ⭐ THE BIO STACKS ON A MEASURED CLASS, NOT ON A WIDTH (JJ, 2026-08-23).
+     `.bio-stacked` is set by measureBioStack() in site.js, which measures how wide the
+     LONGEST list entry actually wants to be and stacks when the sticky column, the gap,
+     that width and both margins no longer fit. JJ: "avoid multi-line entries" — a fixed
+     breakpoint cannot promise that, because whether an entry wraps depends on the text,
+     the font and the type size, none of which a media query can see.
+
+     ⚠︎ SO THE BIO NO LONGER SHARES THE ART CARD'S BREAKPOINT, and that is deliberate
+     rather than drift. The sheet still stacks at --art-stack-at (a fixed 812) because its
+     right column holds prose and a gallery, which have no natural width to measure. The
+     two surfaces share their column TOKENS and their left edge; they no longer share the
+     moment they stack. If the bio's longest entry is short, it will stay two-column below
+     812; if it is long, it will stack above it.
+
+     ⚠︎ NO @media HERE ON PURPOSE. Adding one back alongside the class would give two
+     independent stack triggers that disagree at most widths. */
+  /* ⭐ STACKED: THE LIST STILL SETS THE MEASURE, AND THE PROSE ADOPTS IT (JJ).
+     One track, sized `fit-content(100%)` — the longest list entry, capped at whatever room
+     there is — and `justify-content: center` puts that column in the middle.
+     ⚠︎ Flat selectors, not CSS nesting: nothing else in this file nests, and this has to
+     survive whatever the production minifier does to it. */
+  :root.bio-stacked .about {
+    grid-template-columns: fit-content(100%);
+    justify-content: center;
+    gap: var(--about-sec-gap);
+  }
+  /* ⚠︎ `width: 0; min-width: 100%` IS THE WHOLE MECHANISM, not a hack to tidy away. Both
+     blocks share one track, so both would normally contribute to sizing it — and the bio
+     paragraph's max-content is the entire paragraph on one unwrapped line, which would win
+     every time and the "hug" would never be visible. `width: 0` removes it from the track's
+     intrinsic sizing so ONLY the list entries are measured; then `min-width: 100%` — a
+     percentage, resolved after the track is known — expands it back to fill. That is what
+     "let the bio paragraph conform" means. Remove either half and the stack silently
+     reverts to prose-driven width, with nothing obviously broken to point at.
+     .about keeps its padding-top throughout — it is the only thing supplying the band for
+     this panel, stacked or not. */
+  :root.bio-stacked .about-bio {
+    position: static;            /* no pin when stacked */
+    width: 0;
+    min-width: 100%;
   }
 
 /* ============================================================================
