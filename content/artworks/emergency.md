@@ -46,6 +46,7 @@ cardGallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/emergency/emgc-art3.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/emergency/emgc-art4.jpg
   - mediaType: image
   - mediaType: image
 technicalTagline: Light beyond the dark
