@@ -8,7 +8,7 @@ size: 19 × 21 × 21 cm (7.5 × 8.3 × 8.3 in.)
 duration: 00 min. 05 sec. automated motion cycle
 featured: true
 featureOrder: 4
-premiereCity: Stockholm
+premiereCity: Stockholm, Sweden
 exhibitions: 2026 / [Helix Art Space](https://agawen.com/news/selfish/) (Stockholm)
 artistStatement: >-
   Today, free will is compromised not through the limiting of freedom, but by
