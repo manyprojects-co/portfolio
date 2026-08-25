@@ -1,5 +1,7 @@
 ---
 title: An Act of Homemaking
+subheading: We presented a first cut of 2025PCM and shared our experiences as
+  migrant creatives in London at Bow Arts.
 isDateRange: false
 date: 2025-10-09
 endDate: 2026-08-15
