@@ -21,30 +21,22 @@ artistStatement: >-
   confined the ‘home,’ embracing the void and endless possibilities it holds.
 landingVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/artworks/cost-of-living/col-ld.jpg
+  mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-ld.jpg
 tabArtVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/artworks/cost-of-living/col-tab.png
+  mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-tab.png
 cardCoverVisual:
   mediaType: image
-  imageUrl: https://media.agawen.com/artworks/cost-of-living/col-card.jpg
+  mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-card.jpg
 cardGallery:
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/cost-of-living/col-art1.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/cost-of-living/col-art2.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/cost-of-living/col-art3.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/cost-of-living/col-art4.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/cost-of-living/col-art5.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/cost-of-living/col-art6.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/cost-of-living/col-art7.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/cost-of-living/col-art8.jpg
 technicalTagline: A volatile home
 technicalText: Cost of Living took a technique that we developed for Box Body
   and Emerge:ncy and brought it to an unprecedented miniature scale. We began
@@ -55,11 +47,7 @@ technicalText: Cost of Living took a technique that we developed for Box Body
   together. This piece has yet to debut on the screen it was envisioned for.
 technicalGallery:
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/cost-of-living/col-tech1.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/cost-of-living/col-tech2.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/cost-of-living/col-tech3.jpg
   - mediaType: image
-    imageUrl: https://media.agawen.com/artworks/cost-of-living/col-tech4.jpg
 ---
