@@ -29,9 +29,13 @@ cardCoverVisual:
   mediaUrl: https://media.agawen.com/artworks/screentime/sct-card.jpg
 cardGallery:
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/screentime/sct-art1.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/screentime/sct-art2.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/screentime/sct-art3.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/screentime/sct-art4.jpg
 technicalTagline: Behind the screens
 technicalText: We interviewed several friends on their nightly phone rituals,
   which they then replicated out of habit on encased sheets of glass. Embedded
