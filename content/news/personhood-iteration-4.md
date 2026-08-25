@@ -10,7 +10,8 @@ mainVisual:
   mediaType: image
   mediaUrl: https://media.agawen.com/news/mvr/mvr-tab.jpg
 gallery:
-  - {}
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/mvr/mvr-1.jpg
   - mediaType: text
     textContent: >-
       Personhood (Iteration 4) relies on state-based branching animation trees
@@ -29,4 +30,12 @@ gallery:
 
 
       *Curated by So-Yeon Yoon, supported by Cornell Council for the Arts.*
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/mvr/mvr-2.jpg
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/mvr/mvr-3.jpg
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/mvr/mvr-4.jpg
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/mvr/mvr-5.jpg
 ---
