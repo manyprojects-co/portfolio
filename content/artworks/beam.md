@@ -57,6 +57,9 @@ technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
   non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
 technicalGallery:
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/beam/beam-tech1.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/beam/beam-tech2.jpg
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/beam/beam-tech3.jpg
 ---
