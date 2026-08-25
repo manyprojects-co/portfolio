@@ -53,6 +53,7 @@ cardCoverVisual:
   mediaUrl: https://media.agawen.com/artworks/personhood/psh-card.jpg
 cardGallery:
   - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/personhood/psh-art1.jpg
   - mediaType: image
   - mediaType: image
   - mediaType: image
