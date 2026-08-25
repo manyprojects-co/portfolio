@@ -1,5 +1,5 @@
 ---
-title: EMERGE:NCY / CIRCA2023 Screening
+title: CIRCA2023 Screening
 subheading: EMERGE:NCY (2023) was screened on the London Piccadilly Lights at
   20:23 local time, September 16, 2023. It was one of the 30 works chosen out of
   1000 films globally to screen on the Piccadilly Lights for the third edition
