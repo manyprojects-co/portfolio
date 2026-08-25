@@ -47,6 +47,4 @@ technicalGallery:
     mediaUrl: https://media.agawen.com/artworks/metadata/mtdt-tech1.jpg
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/metadata/mtdt-tech2.jpg
-  - mediaType: image
-    mediaUrl: https://media.agawen.com/artworks/metadata/mtdt-tech3.jpg
 ---
