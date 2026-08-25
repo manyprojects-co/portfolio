@@ -6,7 +6,7 @@ medium: Single-channel video (color, silent)
 size: Dimensions variable (3:4 P aspect ratio)
 duration: 01 min. 00 sec. loop
 featured: false
-premiereCity: Taoyuan City, Taiwan
+premiereCity: Taoyuan, Taiwan
 exhibitions: 2025 / [Turtle Chamber
   Projects](https://agawen.com/news/silent-interference/) (Taoyuan)
 artistStatement: "“Several decades from now before I go, I want my eyes to
