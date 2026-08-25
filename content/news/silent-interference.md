@@ -1,8 +1,7 @@
 ---
 title: Non-moment / Silent Interference (靜噪)
 subheading: Our new video artwork, Non-moment (2025), was exhibited at Silent
-  Interference (靜噪), an exhibition on the screen at the intersection of No. 199,
-  Fuxing 1st Rd.
+  Interference (靜噪).
 isDateRange: false
 date: 2025-11-28
 endDate: 2025-11-30
