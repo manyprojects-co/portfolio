@@ -56,9 +56,15 @@ const galleryRow = z
     imageUrl: z.string().optional(),
     videoUrl: z.string().optional(),
     caption: z.string().optional(),
-    /* ⚠︎ WHERE A TEXT ROW'S PROSE LIVES IS NOT YET KNOWN. The local `.pages.yml` predates
-     * the change, so both a dedicated `text` field and re-use of `caption` are accepted
-     * and map.ts takes whichever is present. Narrow this once the real schema is pulled. */
+    /* ⭐ `textContent` IS THE REAL FIELD — confirmed against `.pages.yml` on origin/main,
+     * 2026-08-23. It is `rich-text`, so it can carry markdown links and bold.
+     * ⛔ THE EARLIER GUESS WAS WRONG AND FAILED SILENTLY. This accepted `text` and re-used
+     * `caption`; the CMS uses neither, so `media()` found nothing, returned null, and every
+     * text row was DROPPED with no error — across 10 files that already had them. The
+     * guess was flagged as a guess at the time; it still cost a silent regression.
+     * ⚠︎ `caption` is labelled "Image/Video Caption" in the CMS and belongs to media rows.
+     * A text row never carries one. The two legacy names stay only as a cheap fallback. */
+    textContent: z.string().optional(),
     text: z.string().optional(),
   })
   .partial();

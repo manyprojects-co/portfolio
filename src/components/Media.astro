@@ -24,6 +24,7 @@
  * NOT cover its subdomains. And `r2.dev` can never work here — it is outside the zone.
  */
 import { normaliseMediaUrl, TRANSFORM_HOST } from "../lib/media-origin";
+import { inlineMd } from "../lib/format";
 
 interface Props {
   media?: { kind: "image" | "video" | "text"; src: string; text?: string; caption?: string } | null;
@@ -88,8 +89,16 @@ const emptyStyle = ratio ? `aspect-ratio:${ratio[0]}/${ratio[1]}` : undefined;
   /* ⚠︎ A TEXT ROW IS CHECKED FIRST, BEFORE THE `ok` GUARD. It has no src by definition, so
      the empty-state branch below would swallow it and render a grey placeholder box. */
   media?.kind === "text" ? (
+    /* ⚠︎ `textContent` IS RICH TEXT, so inline markdown has to be rendered — without
+       inlineMd a link renders as literal `[label](url)` on the page. Paragraphs split on
+       blank lines, matching `paragraphs()` in map.ts so prose breaks the same way wherever
+       it comes from. */
     <div class={`media-text ${cls}`}>
-      {(media.text ?? "").split(/\n\s*\n/).map((para) => <p>{para.trim()}</p>)}
+      {(media.text ?? "")
+        .split(/\n\s*\n/)
+        .map((para) => para.trim())
+        .filter(Boolean)
+        .map((para) => <p set:html={inlineMd(para)} />)}
     </div>
   ) : !ok ? (
     /* No source. Renders the same box the real media will occupy, so layout is honest. */
