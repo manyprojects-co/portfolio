@@ -9,10 +9,10 @@ location: Helix Art Space
 city: Stockholm, Sweden
 eventType: Solo exhibition
 statement: >-
-  **Self—*ish*** reflects the ambiguous space of the digital self, where
-  solitude, self-expression, and exposure coexist, and where identity is both
-  something we claim and something that is claimed for us. What happens to our
-  sense of self when identity becomes a performance, existence requires
+  **Self—*ish***<em></em> reflects the ambiguous space of the digital self,
+  where solitude, self-expression, and exposure coexist, and where identity is
+  both something we claim and something that is claimed for us. What happens to
+  our sense of self when identity becomes a performance, existence requires
   maintenance, and the real becomes eclipsed by the artificial?
 
 
