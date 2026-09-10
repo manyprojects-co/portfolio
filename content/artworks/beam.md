@@ -39,15 +39,15 @@ cardGallery:
     mediaUrl: https://media.agawen.com/artworks/beam/beam-art-v1.mp4
   - mediaUrl: https://media.agawen.com/artworks/beam/beam-art-v2.mp4
   - mediaType: image
-    mediaUrl: https://media.agawen.com/artworks/beam/beam-art1.mp4
+    mediaUrl: https://media.agawen.com/artworks/beam/beam-art1.jpg
   - mediaType: image
-    mediaUrl: https://media.agawen.com/artworks/beam/beam-art2.mp4
+    mediaUrl: https://media.agawen.com/artworks/beam/beam-art2.jpg
   - mediaType: image
-    mediaUrl: https://media.agawen.com/artworks/beam/beam-art3.mp4
+    mediaUrl: https://media.agawen.com/artworks/beam/beam-art3.jpg
   - mediaType: image
-    mediaUrl: https://media.agawen.com/artworks/beam/beam-art4.mp4
+    mediaUrl: https://media.agawen.com/artworks/beam/beam-art4.jpg
   - mediaType: image
-    mediaUrl: https://media.agawen.com/artworks/beam/beam-art5.mp4
+    mediaUrl: https://media.agawen.com/artworks/beam/beam-art5.jpg
 technicalTagline: A lamp that feels alive
 technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
   eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
