@@ -1,7 +1,7 @@
 ---
 title: Screentime
 productionDate: 2024-05-01
-tagline: Multichannel installation
+tagline: Multichannel video sculpture
 medium: 4-channel synchronized video (color, silent), phone frames, phone glass
   screens, and MacBook glass screens
 size: Four displays, each 68.5 × 121.5 cm (27.0 × 47.8 in.)
