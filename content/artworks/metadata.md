@@ -1,7 +1,7 @@
 ---
 title: Metadata
 productionDate: 2026-03-01
-tagline: Projection-mapped installation
+tagline: Video sculpture
 medium: Single-channel digital video projection (color, silent) and hanging
   linen curtain
 size: 110 x 80 cm (43.3 x 31.5 in.) [Projection scale]
