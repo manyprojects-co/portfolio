@@ -787,6 +787,11 @@ import { createTrace } from "../lib/trace.mjs";
   function openDetail() {
     if (detailOpen) return;
     detailOpen = true;
+    // WARM's measurement: press → reveal start. Harmless if no mark exists (a popstate open).
+    if (performance.getEntriesByName("card:tap").length) {
+      performance.measure("card:ingress", "card:tap");
+      performance.clearMarks("card:tap");
+    }
     detailEl.classList.add("open");
     detailScroll.scrollTop = 0;
     detailScroll.style.overflowY = "auto";
@@ -1447,16 +1452,51 @@ import { createTrace } from "../lib/trace.mjs";
   // <Work>/<NewsItem> component — one renderer, not two. v6 built this markup in
   // JavaScript; that generator is deleted, along with the embedded JSON payload it fed on.
   // ============================================================================
-  const partialCache = new Map();
+  /**
+   * ⭐ WARM (2026-09-24) — `placeholder-fork-brief.md § PART 2`. The symptom: the first tap on a
+   * work starts its reveal a beat late, every later tap is instant. The fetch is not the bug;
+   * WHEN it is awaited is. WARM moves the request earlier and changes no animation code:
+   *   · the featured deck's partials are prefetched on idle after load (low priority);
+   *   · any [data-detail] press prefetches on `pointerdown`, ~100ms+ before its click.
+   * ⚠︎ The cache now holds PROMISES, not strings, so a pointerdown prefetch and the click that
+   * follows it share ONE request instead of racing two. A failed fetch evicts its entry so the
+   * next attempt retries rather than replaying the failure.
+   * 🅿️ MEASURE: `performance.getEntriesByName("card:ingress")` in the console — pointerdown →
+   * reveal start, per open. The brief's bar is "consistently under one frame" before REORDER
+   * is even considered.
+   */
+  const partialCache = new Map();   // path -> Promise<string>
 
-  async function loadPartial(path) {
-    if (partialCache.has(path)) return partialCache.get(path);
-    const res = await fetch(`/${path}/content`, { headers: { Accept: "text/html" } });
-    if (!res.ok) throw new Error(`partial ${path}: ${res.status}`);
-    const html = await res.text();
-    partialCache.set(path, html);   // one fetch per item, cached after
-    return html;
+  function loadPartial(path) {
+    if (!partialCache.has(path)) {
+      const p = fetch(`/${path}/content`, { headers: { Accept: "text/html" }, priority: "low" })
+        .then((res) => {
+          if (!res.ok) throw new Error(`partial ${path}: ${res.status}`);
+          return res.text();
+        })
+        .catch((err) => { partialCache.delete(path); throw err; });
+      partialCache.set(path, p);
+    }
+    return partialCache.get(path);
   }
+
+  /** WARM, half 1: the deck's partials, on idle, in feature order. Errors are silent here —
+   *  a prefetch that fails just leaves the click path exactly as it was. */
+  function warmFeatured() {
+    const paths = [...document.querySelectorAll("#carousel [data-detail]")]
+      .map((a) => a.dataset.detail);
+    (async () => { for (const path of paths) { try { await loadPartial(path); } catch {} } })();
+  }
+  const onIdle = window.requestIdleCallback || ((fn) => setTimeout(fn, 1500));   // Safari lacks rIC
+  onIdle(warmFeatured);
+
+  /** WARM, half 2: the press. pointerdown fires for mouse AND touch, well before click. */
+  document.addEventListener("pointerdown", (e) => {
+    const hit = e.target.closest?.("[data-detail]");
+    if (!hit) return;
+    performance.mark("card:tap");
+    loadPartial(hit.dataset.detail).catch(() => {});
+  }, { passive: true });
 
   /** The card's bottom ground follows whatever section actually ends the card. */
   const syncTechTail = () =>
