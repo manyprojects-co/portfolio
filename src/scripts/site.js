@@ -471,7 +471,7 @@ import { createTrace } from "../lib/trace.mjs";
   function goTab() {
     if (view === "tab") return;
     giveWorld.cancel();
-    giveLanding.cancel(); landAcc = 0; deckIdle = 0;   // its travel is the lerp's head start
+    giveLanding.cancel(); landAcc = 0;   // its travel is the lerp's head start
     T.push({ k: "@goTab", g: arb.state().gestureId, claim: arb.state().gRegion });
     view = "tab";
     arb.consume();                                    // this gesture has had its transition
@@ -706,13 +706,11 @@ import { createTrace } from "../lib/trace.mjs";
    * ⏪ ROLLBACK: `--landing-give: 0`, applied live by retune().
    */
   let landAcc = 0;      // signed px pulled at the landing. + = toward the tab, − = dead end.
-  let deckIdle = 0;     // consecutive vertical events the deck could NOT consume
-  const DECK_RUN = 3;   // ...before the landing takes over. Same idiom as --repush-run.
 
   const giveLanding = createGive({
     busy: () => !!worldTween || view !== "landing" || detailOpen,
     at: (px) => applyWorld(px),
-    back: () => { landAcc = 0; deckIdle = 0; worldTo(0); },
+    back: () => { landAcc = 0; worldTo(0); },
     map: (a) => a >= 0
       ? -giveOf(a, arb.config.commitDist)                        // toward the tab
       : bounceOf(-a),                                            // the dead end above
@@ -852,36 +850,6 @@ import { createTrace } from "../lib/trace.mjs";
     }
   );
   let lastT = 0;
-  // map a wheel over a horizontal strip onto its scrollLeft; true if consumed
-  function mapToCarousel(el, e) {
-    const maxLeft = el.scrollWidth - el.clientWidth;
-    if (maxLeft <= 0) return false;
-    const before = el.scrollLeft;
-    /* 🐞 FIX 2 — A VERTICAL GESTURE MUST NOT DRIVE THE DECK SIDEWAYS WITH ITS INCIDENTAL dx.
-       Reported by JJ: "the carousel vibrates horizontally when I scroll vertically at the
-       rightmost boundary." A trackpad's vertical swipe carries a real horizontal component —
-       `hooks.md` records that WebKit decays the whole velocity VECTOR, so dx is just whatever
-       angle you flicked at — and dx was applied unconditionally, with no boundary test. At
-       the end of the deck that jitters it back and forth inside its last pixels.
-       ⭐ Per-event axis dominance, the same rule the touch path already axis-locks with.
-       A deliberate horizontal swipe has |dx| > |dy| and is untouched, so rule 3 ("horizontal
-       is unconditional") still holds. ⏪ Off at --landing-give: 0. */
-    if (e.deltaX && !(LANDING_GIVE && Math.abs(e.deltaY) > Math.abs(e.deltaX))) {
-      el.scrollLeft += e.deltaX;
-    }
-    const dy = e.deltaY;
-    if (dy) {
-      const atStart = el.scrollLeft <= 1, atEnd = el.scrollLeft >= maxLeft - 1;
-      if (!((dy > 0 && atEnd) || (dy < 0 && atStart))) el.scrollLeft += dy;
-    }
-    /* 🐞 FIX 1 — MEASURED, NOT ASSUMED. `consumed` used to mean "we tried to move it", so at
-       either end every event still claimed the deck had acted: deckIdle reset on every event
-       and the give could never start. It now means what the callers actually need — DID THE
-       DECK MOVE. ⚠︎ The trace's leak counter is unaffected: `hooks.md` warns not to count
-       PIXELS for that, and it doesn't — the grant is recorded by the >DECK row existing, and
-       `moved` has always been the extra field beside it. */
-    return Math.abs(el.scrollLeft - before) > 0.5;
-  }
 
   window.addEventListener("wheel", (e) => {
     // NOTE: no "busy" gate. Input is never blocked while a lerp RUNS — scrolling and
@@ -961,77 +929,27 @@ import { createTrace } from "../lib/trace.mjs";
       return;                                                            // native scroll otherwise
     }
 
-    // ---- REGION: over the carousel ----
-    // Tested against the carousel's CURRENT on-screen extent rather than a fixed
-    // LANDING_H, so the region stays correct while a lerp is in flight: whatever is
-    // under the cursor right now is what responds.
-    // ⭐ A: that extent is now the ARTWORK BAND (deckBottomY), not the whole hero
-    // (tabTopY). The band below the artwork leaves the landing, as designed.
-    if (e.clientY < deckBottomY()) {
-      e.preventDefault();
-      // BOTH axes drive horizontal movement here, and a vertical gesture never commits.
-      //
-      // ⭐ OWNERSHIP, not liveness. Reaching this branch only means the cursor is over the
-      // carousel NOW — and "now" is not stable, because tabTopY() moves as the card closes
-      // and as the world lerps. A gesture that began over the open card, or down on the tab
-      // frame, arrives here mid-coast through no intent of the user's. It does not own the
-      // carousel and gets nothing. The event is still preventDefault'd above, so it dies
-      // here rather than leaking to native scroll.
-      // ⚠︎ RECORDED ON THE GRANT, NOT ON THE PIXELS. A coast that wins ownsCarousel() has
-      // leaked, whether or not the deck had room left to move — count the moved pixels and
-      // you get a counter that reads 0 at either end of the carousel, and on a cold load
-      // before the images size it. `moved` keeps the distinction visible.
-      if (!arb.ownsCarousel()) { arb.resetIntent(); return; }   // ownership: it gets nothing
-      const moved = mapToCarousel(carousel, e);
-      T.push({ k: ">DECK", via: "region", g: arb.state().gestureId, moved,
-               dx: +e.deltaX.toFixed(2), dy: +e.deltaY.toFixed(2), mom: e.momentum });
-      if (!LANDING_GIVE) { arb.resetIntent(); return; }
-      if (moved) {
-        deckIdle = 0;
-        // ⭐ THE DECK HAD THIS GESTURE'S ACTION, so it cannot also leave the landing. Without
-        // this a flick that runs the deck to its end chains straight on into the transition —
-        // momentum crossing a boundary, the exact class Branch 1 spent itself on. The call's
-        // name is about the RULE (one gesture, one action), not about who did the scrolling;
-        // the deck is JS-driven. ⚠︎ ownsCarousel() is deliberately NOT gated by the spend
-        // counter, so the deck itself keeps working — only transitions are blocked.
-        if (EDGE_STRICT) arb.spendOnNativeScroll();
-        arb.resetIntent();
-        // ⚠︎ Safe here ONLY because deckIdle keeps the give from starting during the
-        // alternation — see below. release() is a SPRING, not a no-op: it starts a tween and
-        // therefore self-blocks for ~150ms, so calling it from a branch that flips every
-        // event is what produced the stutter that got attempt 1 rolled back.
-        giveLanding.release();
-      } else if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && ++deckIdle >= DECK_RUN) {
-        /* ⭐ THE DECK IS EXHAUSTED, so vertical here does nothing — mapToCarousel already
-           reports exactly that (`dy > 0 && atEnd`, `dy < 0 && atStart`).
-           ⛔ GUARD 2 — RUN OF N, because `consumed` IS NOT STABLE AT THE BOUNDARY.
-           `atEnd` is `scrollLeft >= maxLeft - 1` against a FRACTIONAL scrollLeft, so right at
-           the end `moved` alternates true/false event to event. Attempt 1 trusted it per
-           event and the give started and sprang back at wheel frequency. Three consecutive
-           refusals is the same idiom --repush-run already uses for "this is not noise". */
-        landingVertical(e, dt);
-      } else arb.resetIntent();
-      return;
-    }
-
-    // ---- REGION: over the tab frame, at (or heading to) landing ----
+    // ---- REGION: at (or heading to) landing — the deck is NATIVE on x (2026-09-24) ----
+    // ⛔ THE VERTICAL→HORIZONTAL DECK MAPPING IS GONE. Until now a wheel over the artwork band
+    // was preventDefault'd and its deltaY written to `carousel.scrollLeft`, which is the whole
+    // reason a non-passive listener sat on `window`, and the origin of the arbiter's DECK
+    // question (ownsCarousel, gRegion, claimRise/claimFloor, deckIdle/DECK_RUN, FIX 1, FIX 2).
+    // `native-snap-spike-brief.md § 1c`, step 1: horizontal over the deck is left to the
+    // browser — `.carousel` is `overflow-x: auto` and needs no help; shift+wheel and the mouse
+    // click-drag below cover a wheel with no horizontal axis. Vertical over the deck goes to
+    // landingVertical() at once: wheel-down enters the tab view without waiting for the deck
+    // to exhaust. ownsCarousel() is never asked; the arbiter module itself is untouched.
     if (view === "landing") {
-      e.preventDefault();
-      // Horizontal over the tab frame at landing also browses the deck — a second JS-driven
-      // write to the same scroller, and the old momentum gate never covered it. Ownership
-      // does: anything born over the open card is excluded, the rest browses as before.
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
-        if (arb.region() !== "detail") {
-          carousel.scrollLeft += e.deltaX;
-          // ⚠︎ the SECOND writer to the same scroller, behind a DIFFERENT gate. Tagged
-          // separately so the report can show which of the two gates leaked. C collapses
-          // these into one unconditional rule.
-          T.push({ k: ">DECK", via: "frame", g: arb.state().gestureId,
-                   dx: +e.deltaX.toFixed(2), dy: +e.deltaY.toFixed(2), mom: e.momentum });
-        }
+        // Over the deck: no preventDefault — the native scroller takes it. Over the tab frame:
+        // swallow it, because `.track` must not move at landing (the panels are faded out and a
+        // silent tab swap would surprise the next reveal). The horizontal-over-frame deck
+        // browse that used to live here is deleted with the mapping.
+        if (e.clientY >= deckBottomY()) e.preventDefault();
+        arb.resetIntent();
         return;
       }
-      deckIdle = 0;                    // below the band the deck is not in play at all
+      e.preventDefault();
       landingVertical(e, dt);          // down → give then commit; up → the dead-end bounce
       return;
     }
@@ -1414,6 +1332,58 @@ import { createTrace } from "../lib/trace.mjs";
   }, true);
 
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") setContact(false); });
+
+  // ============================================================================
+  // DECK — mouse click-drag (2026-09-24). `native-snap-spike-brief.md § 1c`.
+  //
+  // The vertical→horizontal wheel mapping is gone (see the wheel handler), so a mouse with no
+  // horizontal axis needs another way to browse the deck: shift+wheel (native) and this.
+  // ⭐ MOUSE ONLY. `pointerType === "mouse"` — a touch drag is the browser's, and a trackpad
+  // swipes sideways natively. Bounded by real start/end events, so it needs no arbitration.
+  // ⛔ CAPTURE AFTER THE THRESHOLD, NOT ON pointerdown. setPointerCapture retargets the
+  // resulting `click` to the captured element, which would break a plain click on a card.
+  // ⛔ `clientX` deltas, not `movementX` (DPR-scaled on some Chrome platforms).
+  // ⚠︎ The cards are real anchors: a drag past the threshold must swallow the click that fires
+  // on release (capture-phase, before the [data-detail] listener below sees it), and
+  // `dragstart` must be cancelled or the browser starts a native HTML drag of the artwork.
+  // Dead stop on release — no inertia (JJ).
+  // ============================================================================
+  const DRAG_START = 5;             // px before a press becomes a drag
+  let dragOn = false, dragMoved = false, dragId = -1, dragX = 0, dragLeft = 0, dragSwallow = false;
+  if (carousel) {
+    carousel.addEventListener("pointerdown", (e) => {
+      if (e.pointerType !== "mouse" || e.button !== 0) return;
+      dragOn = true; dragMoved = false; dragSwallow = false;
+      dragId = e.pointerId; dragX = e.clientX; dragLeft = carousel.scrollLeft;
+    });
+    carousel.addEventListener("pointermove", (e) => {
+      if (!dragOn || e.pointerId !== dragId) return;
+      const dx = e.clientX - dragX;
+      if (!dragMoved) {
+        if (Math.abs(dx) < DRAG_START) return;
+        dragMoved = true;
+        carousel.setPointerCapture(dragId);
+        carousel.classList.add("dragging");
+      }
+      carousel.scrollLeft = dragLeft - dx;
+    });
+    const endDrag = (e) => {
+      if (!dragOn || e.pointerId !== dragId) return;
+      dragOn = false;
+      if (!dragMoved) return;
+      dragSwallow = true;                       // the click that follows is not a click
+      carousel.classList.remove("dragging");
+      if (carousel.hasPointerCapture(dragId)) carousel.releasePointerCapture(dragId);
+    };
+    carousel.addEventListener("pointerup", endDrag);
+    carousel.addEventListener("pointercancel", endDrag);
+    carousel.addEventListener("dragstart", (e) => e.preventDefault());
+    carousel.addEventListener("click", (e) => {
+      if (!dragSwallow) return;
+      dragSwallow = false;
+      e.preventDefault(); e.stopPropagation();
+    }, true);
+  }
 
   // ============================================================================
   // NAV

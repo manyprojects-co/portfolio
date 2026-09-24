@@ -589,6 +589,10 @@
     scrollbar-width: none;
   }
   .carousel::-webkit-scrollbar { display: none; }
+  /* mouse click-drag (2026-09-24, site.js § DECK). grab on the deck, grabbing while a drag
+     is live — the class also kills text selection for the duration. Cards keep `pointer`. */
+  .carousel { cursor: grab; }
+  .carousel.dragging, .carousel.dragging .card { cursor: grabbing; user-select: none; }
 
   .card { flex: 0 0 auto; margin: 0; padding: 0; display: flex; flex-direction: column; cursor: pointer; }
   .card:first-child { margin-left: var(--frame-margin); }
