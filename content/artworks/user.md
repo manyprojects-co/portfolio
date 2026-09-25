@@ -30,6 +30,15 @@ tabArtVisual:
 cardCoverVisual:
   mediaType: image
   mediaUrl: https://media.agawen.com/artworks/user/user-card.jpg
+cardGallery:
+  - mediaType: video
+    mediaUrl: https://media.agawen.com/artworks/user/user-art-v1.mp4
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/user/user-art1.jpg
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/user/user-art2.jpg
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/user/user-art3.jpg
 technicalTagline: Made to scroll
 technicalText: The vast and complex human being is everyday subsumed into the
   digital affordances of contemporary life. Gesturing to this, Xin's own hand is
