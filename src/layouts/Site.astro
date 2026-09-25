@@ -4,8 +4,9 @@
  *   #detail  (below, the card)  ·  #stage  (owns the detail offset)
  *   #world   (owns landing<->tab)  ·  .hero + .section
  *
- * ⚠︎ THE ORDER AND NESTING ARE LOad-BEARING. #stage and #world own different offsets,
- * and every geometry measurement in site.js reads from this exact tree.
+ * ⚠︎ THE ORDER AND NESTING ARE LOAD-BEARING. #detail (a scroller, above) drives #stage
+ * through a named scroll timeline scoped on <body>; #world owns the landing<->tab offset;
+ * every geometry measurement in site.js reads from this exact tree.
  */
 import "../styles/global.css";
 interface Props {
@@ -37,17 +38,27 @@ const {
     />
   </head>
   <body>
-    <!-- BELOW: the detail card. Rises over the site; #detail owns the grey->black ground. -->
+    <!-- ABOVE (card-native, 2026-09-24): #detail is now a full-viewport NATIVE SNAP SCROLLER
+         sitting OVER the stage. Two snap stops: #detailSpacer (100%, transparent — the site
+         shows through it) and #detailSheet (the card, 100% minus --detail-top). scrollTop 0 is
+         closed; scrolled to the sheet is open, with the spacer's top 120px still showing — that
+         strip IS the sliver, so a tap on it closes. The reveal (#stage rise + scale, sheet
+         scale, #cardBlur veil) is a CSS scroll-driven animation on this scroller's timeline.
+         MP_CMS_CF/native-snap-spike-brief.md § 1b. #detailSheet owns the grey->black ground. -->
     <div
       id="detail"
       aria-label="Artwork or news detail"
       class:list={[coldOpen && "open", coldOpen && "cold"]}
       data-cold-open={coldOpen ? `${coldOpen.type}/${coldOpen.slug}` : undefined}
     >
-      <div id="detailScroll"><div id="detailContent"><slot name="detail" /></div></div>
+      <div id="detailSpacer" aria-hidden="true"></div>
+      <div id="detailSheet">
+        <div id="detailScroll"><div id="detailContent"><slot name="detail" /></div></div>
+      </div>
     </div>
 
-    <!-- ABOVE: the site. #stage owns the detail offset, #world the landing<->tab offset. -->
+    <!-- BENEATH the card scroller: the site. #stage is driven by #detail's scroll timeline;
+         #world owns the landing<->tab offset. -->
     <div id="stage">
       <div id="world">
         <slot />
