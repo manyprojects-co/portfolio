@@ -8,7 +8,7 @@
 
    ⚠︎ FOUR INVARIANTS THAT EACH COST A ROUND TO LEARN. Do not "tidy" any of them:
 
-   1. NOTHING IN THE DETAIL CARD MAY BE TRANSPARENT. #detail carries a hard-stop
+   1. NOTHING IN THE DETAIL CARD MAY BE TRANSPARENT. #detailSheet carries a hard-stop
       grey->black gradient and a card background does not scroll with its content.
       Every full-bleed section paints its own ground (.art-ground, .tech) or the
       card goes half black.
@@ -109,6 +109,9 @@
     --card-veil-color: var(--bg);
     --card-blur-max: 24px;   /* [TUNE] the radius at the card boundary */
     --card-blur-in: 0.45;    /* [TUNE] blur reaches full strength at this much of the reveal */
+    --card-egress-tau: 70ms; /* [TUNE] card close, once committed: TIME CONSTANT of an exponential
+                                approach, not a duration. ~95% of the travel gone by 3τ (site.js
+                                § EGRESS). Smaller = snappier; below ~40 it reads as a cut. */
     --card-blur-from: 35%;   /* [TUNE] gradient starts here; above it the site is untouched */
     --fade-floor: 0.2;       /* [TUNE] tab contents hit opacity 0 at this reveal (0.2 = 80% home) */
     --blur-floor: 0.4;       /* [TUNE] site blur hits 0 at this reveal (0.4 = 60% through the exit) */
@@ -532,7 +535,7 @@
     bottom: calc(-1 * var(--card-blur-max));
     z-index: 1;
     pointer-events: none;
-    opacity: 0;                    /* JS ramps this off detailP(); see applyStage */
+    opacity: 0;                    /* base = closed; the card-veil keyframes ramp it */
     backdrop-filter: blur(var(--card-blur-max));
     -webkit-backdrop-filter: blur(var(--card-blur-max));
     /* Clear at the top of the plane, full AT THE CARD BOUNDARY — which is no longer the
@@ -930,30 +933,104 @@
      is in git if a real "featured item" distinction ever wants it back — but it should key
      off a deliberate flag, not off a category that happens to be rare. */
 
-  /* ===================== ART-NEWS DETAIL VIEW =====================
-     Sits BENEATH the stage, already in place. No chrome: no rounding, no
-     hairline, no blur, no scrim, no pull tab — the site sliding up is the
-     entire reveal. Contents sit within a 60px margin and scroll beneath the
-     persistent 120px top margin. */
+  /* ===================== ART-NEWS DETAIL VIEW — NATIVE (card-native, 2026-09-24) =====
+     ⭐ #detail is now a full-viewport SNAP SCROLLER sitting OVER the stage (z 3 > z 2), not a
+     fixed card beneath it. Two snap stops, each a child:
+       #detailSpacer  100% tall, transparent — the site shows through it.
+       #detailSheet   the card, 100% − --detail-top tall, carrying the ground and the bleed.
+     scrollTop 0 = closed (the sheet is entirely below the viewport). The sheet's snap stop is
+     its top on the scroller's padded edge, `scroll-padding-top: --detail-top` — i.e. 120 from
+     the viewport top, at scrollTop = 100% − 120 = the scroller's MAX scroll. So the timeline
+     0 → 100% is exactly closed → open, and the top 120px of the spacer still showing at open
+     IS the sliver: a tap on it closes, a wheel over it scrolls the overlay.
+     The reveal is a scroll-driven animation on this scroller's timeline (below). Nothing in JS
+     writes a transform any more; JS only opens (scrollTo), closes (scrollTo 0) and finalises
+     on scrollend. MP_CMS_CF/native-snap-spike-brief.md § 1b.
+     ⛔ `contain`, not `none`, on this scroller — `html` is already `contain`, and the local
+     bounce at both ends is the browser's rubber-band, which is now the ONLY give there is. */
   #detail {
     position: fixed;
-    /* wider than the viewport on both sides — see --detail-bleed. html/body are
-       overflow:hidden, so the overhang can't produce a scrollbar. */
-    left: calc(-1 * var(--detail-bleed));
-    right: calc(-1 * var(--detail-bleed));
-    top: var(--detail-top);
-    bottom: 0;
-    z-index: 1;
-    display: none;                 /* inert until opened */
-    background: var(--detail-bg);  /* the card reads lighter than the site above it */
+    inset: 0;
+    z-index: 3;
+    display: none;                 /* inert until opened; an inactive timeline = base styles */
+    overflow-x: hidden;            /* the sheet's bleed overhangs; clip it at the viewport */
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+    scroll-padding-top: var(--detail-top);
+    overscroll-behavior-y: contain;
+    scroll-behavior: smooth;       /* every programmatic scrollTo inherits this — see § 1d */
+    scrollbar-width: none;
+    scroll-timeline: --card block; /* named; lifted to <body> by timeline-scope below */
     font-size: var(--type-size);
-    /* Same bottom-centre anchor as the site. The card is revealed bottom-up, so anchoring
-       here keeps its bottom edge pinned to the viewport floor at every zoom — a centred
-       anchor would expose a sliver of body background along the bottom mid-reveal. */
-    transform-origin: 50% 100%;
+    background: none;              /* the spacer must show the stage through */
+  }
+  #detail::-webkit-scrollbar { display: none; }
+  #detail.open { display: block; }
+  /* a committed close: inert, so the NEXT swipe reaches the site instead of re-opening the
+     card. JS drives the rest of the travel on --card-egress (site.js § EGRESS). */
+  #detail.closing { pointer-events: none; }
+
+  #detailSpacer {
+    height: 100%;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+  /* The card. Wider than the viewport on both sides (--detail-bleed) so the mid-reveal
+     scale-down still covers it; #detail's overflow-x:hidden clips the overhang.
+     🐞 ANCHORED TOP-CENTRE, NOT BOTTOM (JJ, 2026-09-24: "a visible seam — the card seems to
+     descend faster than the page above it"). The old card sat BENEATH the stage, so scaling
+     about its bottom tucked its shrunken top edge behind the stage's bottom edge — the seam
+     was hidden by construction. This card sits ABOVE the stage: the same tuck drops the
+     sheet's top up to 5% of its height below the stage edge and the body ground shows in
+     the gap. Scaling about the TOP welds the sheet's top to the stage's bottom edge for the
+     whole travel, and the bottom is still covered: the scaled sheet reaches the viewport
+     floor iff (0.95 + 0.05p) ≥ p, which holds for every p ≤ 1 — the original inequality,
+     read from the other end. */
+  #detailSheet {
+    position: relative;
+    height: calc(100% - var(--detail-top));
+    width: calc(100% + 2 * var(--detail-bleed));
+    margin-left: calc(-1 * var(--detail-bleed));
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    background: var(--detail-bg);  /* the card reads lighter than the site above it */
+    transform-origin: 50% 0%;
     will-change: transform;
   }
-  #detail.open { display: block; }
+
+  /* ---- the reveal, as a function of the card scroller's position ----
+     ⭐ `timeline-scope` on <body> is what lets #stage — a SIBLING of #detail, not a
+     descendant — bind to #detail's timeline. Base styles are the CLOSED state on purpose:
+     when #detail is display:none its timeline is inactive and every animation below falls
+     back to base, which must therefore be "nothing revealed".
+     ⚠︎ transform and opacity only — those are the compositor-synced properties. Never filter.
+     ⚠︎ `var()` is legal inside @keyframes and resolves on the ANIMATED element, so the
+     [TUNE] tokens keep working; the 45% stop is --card-blur-in and cannot be a var (keyframe
+     selectors are literals) — change both together. */
+  body { timeline-scope: --card; }
+
+  @keyframes card-stage {
+    from { transform: translateY(0) scale(1); }
+    to   { transform: translateY(calc(-1 * (var(--vh-live, 100vh) - var(--detail-top))))
+                      scale(var(--site-zoom-max)); }
+  }
+  @keyframes card-sheet {
+    from { transform: scale(var(--card-zoom-min)); }
+    to   { transform: scale(1); }
+  }
+  @keyframes card-veil {
+    from { opacity: 0; }
+    45%  { opacity: var(--veil-ceil); }   /* = --card-blur-in */
+    to   { opacity: var(--veil-ceil); }
+  }
+  #stage       { animation: card-stage linear both; animation-timeline: --card; }
+  #detailSheet { animation: card-sheet linear both; animation-timeline: --card; }
+  #cardBlur    { animation: card-veil  linear both; animation-timeline: --card; --veil-ceil: 1; }
+  #cardBlur.solid { --veil-ceil: var(--card-veil-op); }
+
+  @media (prefers-reduced-motion: reduce) {
+    #detail { scroll-behavior: auto; }
+  }
 
   /* ⚠︎ OVERSCROLL GROUND. #detailScroll paints no background of its own, so an elastic
      bounce past either end of the card reveals #detail's background underneath. On a
@@ -967,7 +1044,7 @@
      the rubber-band stays under half the card height.
      Applied ONLY via .tech-tail — news cards and works with no technical content keep a
      plain grey card at both ends. */
-  #detail.tech-tail {
+  #detail.tech-tail #detailSheet {
     background: linear-gradient(to bottom,
                 var(--detail-bg) 0, var(--detail-bg) 50%,
                 var(--tech-bg) 50%, var(--tech-bg) 100%);
@@ -1017,7 +1094,11 @@
        accident of overflow-x being hidden. Never restore the shorthand.
        ⚠︎ If a top bounce ever shows through, the cause is a top-edge event that did NOT get
        preventDefault'd — fix the handler, do not go back to `none`. */
-    overscroll-behavior-y: contain;
+    /* ⛔ card-native (2026-09-24): `auto`, NOT `contain`. Everything above this line
+       describes the JS-owned top edge, which is gone. The card closes by CHAINING out of this
+       scroller into #detail at scrollTop 0, and `contain` forbids that outright. The bottom
+       bounce is still local. */
+    overscroll-behavior-y: auto;
     scrollbar-width: none;
     /* the bleed is absorbed as PADDING, so the content box stays exactly (vw - 120)
        and nothing inside the card had to learn about the overhang */

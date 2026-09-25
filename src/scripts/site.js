@@ -112,6 +112,9 @@ import { createTrace } from "../lib/trace.mjs";
   let BOUNCE_DIST = cssNum("--bounce-dist", 300);   // px of pull    (HOW LONG)
   // ⏪ ROLLBACK SWITCH for the landing's two edges. 0 restores the bare 120px threshold.
   let LANDING_GIVE = cssNum("--landing-give", 1) === 1;
+  // card-native egress — see § EGRESS. A TIME CONSTANT, not a duration: each frame closes
+  // (1 - e^(-dt/τ)) of the remaining distance. ~95% of the travel is gone after 3τ.
+  let CARD_EGRESS_TAU = cssMs("--card-egress-tau", 70);
 
   // Generic value tween on the shared curve. Returns a CANCELLABLE handle: every
   // transition in the site can be caught mid-flight and re-aimed from wherever it
@@ -146,6 +149,7 @@ import { createTrace } from "../lib/trace.mjs";
   // hoisted above applyStage, which drives all three layers together
   const detailEl = document.getElementById("detail");
   const detailScroll = document.getElementById("detailScroll");
+  const detailSpacer = document.getElementById("detailSpacer");   // the sliver, once open
   const detailContent = document.getElementById("detailContent");
   const track = document.getElementById("track");
   // ⚠︎ DECLARED EXPLICITLY. Until A this was never declared at all — the wheel handler's
@@ -256,10 +260,9 @@ import { createTrace } from "../lib/trace.mjs";
   let detailOpen = false;
   let cxOpen = false;               // contact expander (all its visuals are CSS off .cx-open)
   let current = "art";              // active tab
-  let worldY = 0, stageY = 0;
-  let worldTween = null, stageTween = null, tabTween = null;
+  let worldY = 0;
+  let worldTween = null, tabTween = null;
 
-  const stageOpenY = () => -(VH - DETAIL_TOP);
 
   // reveal progress 0 (landing) → 1 (tab); drives the nav tint and the content fade
   const revealP = () => (LANDING_H ? Math.min(1, Math.max(0, -worldY / LANDING_H)) : 0);
@@ -284,63 +287,11 @@ import { createTrace } from "../lib/trace.mjs";
     paintTrack();
     paintNav();
   }
-  // 0 (card closed) → 1 (card fully revealed). Every reveal dynamic keys off this, so
-  // they stay in lockstep with where the stage ACTUALLY is — including when the lerp is
-  // caught or reversed mid-flight. Position-derived, never tween-time-derived.
-  function detailP() {
-    const open = stageOpenY();
-    return open ? Math.min(1, Math.max(0, stageY / open)) : 0;
-  }
-
-  function applyStage(y) {
-    stageY = y;
-    const p = detailP();
-    // SITE: rises, enlarges to --site-zoom-max, blurs to --site-blur-max.
-    stage.style.transform = `translateY(${y}px) scale(${1 + (SITE_ZOOM - 1) * p})`;
-    /* ⛔ BLUR OFF (2026-08-18, JJ) — a DESIGN decision, not a bug fix.
-     * `hooks.md`: "the 50px full-viewport blur is the most expensive thing in the file",
-     * applied per frame to the whole viewport simultaneously with a scale() and an opacity
-     * ramp — three compositor-hostile operations at once on the largest element on the page,
-     * and one of JJ's stated reasons for wanting a design alternative rather than more tuning.
-     * Separation of planes is now carried by scale + opacity alone, both composited without
-     * repaint.
-     *
-     * ⭐ CONSEQUENCES, so nobody re-derives them: this deletes `motion-fork-brief.md § F`
-     * (hold the blur constant during give) and most of § 4, and it UNBLOCKS § E (give at the
-     * card boundary), which was gated only on the blur's per-frame cost.
-     *
-     * ⚠︎ Left as a comment, not deleted, and `--site-blur-max` / `--blur-floor` / SITE_BLUR /
-     * BLUR_FLOOR all stay live and unread — so this is a one-line revert, and every tuning
-     * note in `hooks.md` that references those tokens stays executable.
-     *
-     *   const bp = Math.min(1, Math.max(0, (p - BLUR_FLOOR) / (1 - BLUR_FLOOR)));
-     *   world.style.filter = bp > 0.001 ? `blur(${(SITE_BLUR * bp).toFixed(2)}px)` : "none";
-     */
-    // ⚠︎ Still written every frame, and it must be: the property is inline, so a stale
-    // blur() from a previous build or a hot reload would otherwise never be cleared.
-    world.style.filter = "none";
-    /* CARD BLUR: the progressive plane over the departing site. The GEOMETRY is free —
-     * #cardBlur is a child of #stage pinned to its bottom edge, so it inherits this same
-     * translate and scale and stays welded to the card boundary. Only opacity is written,
-     * and opacity is composited without repaint.
-     * ⚠︎ It must reach 0 at rest or it blurs the landing page: the stage fills the
-     * viewport when the card is closed. Position-derived off detailP() like everything
-     * else here, so a caught or reversed lerp keeps it exactly in step. */
-    if (CARD_BLUR && cardBlur) {
-      /* One ramp, two modes. The blur runs to full strength; the solid scrim tops out at
-       * --card-veil-op so the site never quite disappears into the ground. Same curve,
-       * same position-derived source, so switching modes cannot change the TIMING — only
-       * what is painted. That is what makes the two comparable. */
-      const ceil = VEIL_MODE ? 1 : VEIL_OP;
-      cardBlur.style.opacity = p > 0.001
-        ? (Math.min(1, p / (CARD_BLUR_IN || 1)) * ceil).toFixed(3)
-        : "0";
-    }
-    // CARD: zooms --card-zoom-min → 1. Because (0.95 + 0.05p) >= p for all p <= 1, the
-    // card's growing top edge stays tucked behind the rising stage edge the whole way,
-    // and the two arrive on the 120px line together.
-    detailEl.style.transform = `scale(${CARD_ZOOM + (1 - CARD_ZOOM) * p})`;
-  }
+  /* ⭐ card-native (2026-09-24): applyStage() and detailP() are GONE. The card reveal —
+   * stage rise + scale, sheet scale, veil opacity — is a CSS scroll-driven animation on
+   * #detail's own scroll timeline (global.css § ART-NEWS DETAIL VIEW). Position-derived by
+   * construction, and the position is the compositor's. The 2026-08-18 blur note that lived
+   * here is preserved in git; --site-blur-max / --blur-floor are declared and unread. */
 
   // nav active state = grey, lerped continuously with the horizontal swipe AND
   // ramped by reveal so every link reads black at landing.
@@ -646,8 +597,6 @@ import { createTrace } from "../lib/trace.mjs";
    * `!scrollSpent()` gate is a landed, test-pinned fix and must hold at every setting. Only
    * the TAB's copy of that gate is the experiment.
    */
-  /** card → site. Branch 1's rule, unconditional. */
-  const cardLive = () => arb.gestureLive() && !arb.scrollSpent();
   /** tab → landing. The same rule, but only while the experiment is on. */
   const tabLive  = () => arb.gestureLive() && (!EDGE_STRICT || !arb.scrollSpent());
   /** may we take the edge from the browser? In rollback we always did. */
@@ -661,27 +610,6 @@ import { createTrace } from "../lib/trace.mjs";
     map: (a) => giveOf(a, arb.config.commitDist),   // G: one threshold, both directions
   });
 
-  /**
-   * E — card → site. Identical shape on a different scalar: stageY rests at stageOpenY()
-   * (negative) and give walks it toward 0, so `detailP()` dips below 1 and the card and the
-   * departing site preview the close exactly as they would during the real lerp.
-   *
-   * ⭐ UNBLOCKED BY THE BLUR COMING OUT. It was gated on nothing else: `applyStage` at
-   * detailP() = 1.0 sat at the full 50px blur, and give would have driven it 50 → 37.5px
-   * PER FRAME from a scroll gesture, on a project already reporting frame drops. With the
-   * blur gone `applyStage` is two transforms — both composited, no repaint — so the card
-   * boundary is now the CHEAPER of the two gives, not the expensive one.
-   *
-   * ⭐ And the curve transfers with no new numbers: it is keyed to --commit-dist-back, not
-   * to the span. The two spans differ (LANDING_H ~763 vs VH - DETAIL_TOP ~780); the
-   * threshold does not.
-   */
-  const giveStage = createGive({
-    busy: () => !!stageTween || !detailOpen,
-    at: (px) => applyStage(stageOpenY() + px),
-    back: () => stageTo(stageOpenY()),
-    map: (a) => giveOf(a, arb.config.commitDist),   // G: one threshold, both directions
-  });
 
   /**
    * ── THE LANDING'S TWO EDGES — REBUILT (2026-08-18, JJ) ─────────────────────────────
@@ -752,7 +680,7 @@ import { createTrace } from "../lib/trace.mjs";
        evidence. ⛔ UNSCORED on the flagless side; see `coastRun` in the arbiter. It is
        allowed to be wrong because both failure modes are cosmetic: a false coast springs the
        give back early, a false finger is exactly today's hang. ⛔ It gates no transition.
-       ⚠︎ giveWorld and giveStage still release on silence. Less visible because those
+       ⚠︎ giveWorld still releases on silence (giveStage is gone with card-native). Less visible because those
        boundaries usually commit at 200px rather than hanging. Not changed here. */
     if (arb.coastLikely()) {
       landAcc = 0;
@@ -778,52 +706,155 @@ import { createTrace } from "../lib/trace.mjs";
     giveLanding.drive(landAcc);
   }
 
-  function stageTo(target, done) {
-    if (stageTween) stageTween.cancel();
-    stageTween = tween(stageY, target, spanDur(stageY, target, VH - DETAIL_TOP), applyStage,
-      () => { stageTween = null; if (done) done(); });
-  }
+  // ============================================================================
+  // THE CARD — native (card-native, 2026-09-24). MP_CMS_CF/native-snap-spike-brief.md § 1b
+  //
+  // #detail is a full-viewport snap scroller above the stage: scrollTop 0 = closed, max
+  // scroll = open (the sheet's top on the 120 line). JS does three things and nothing else:
+  //   open   → detail.scrollTo({ top: max })     smooth via CSS `scroll-behavior`
+  //   close  → detail.scrollTo({ top: 0 })       same
+  //   settle → on `scrollend`, if it rested at 0, finalise (URL, content, display:none)
+  // A gesture close is the snap itself; it needs no JS until it has rested. No tween, no
+  // give, no arbiter: the wheel and touch handlers return before doing anything while the
+  // card is open, and the scroller's own latching + `scroll-snap-stop: always` are the
+  // one-gesture-one-action rule.
+  // ⛔ NO `behavior: "smooth"` IN THESE CALLS — it would override the CSS and silently defeat
+  // the reduced-motion rule. `behavior: "instant"` is the only value ever passed.
+  // ============================================================================
+  const cardMax = () => detailEl.scrollHeight - detailEl.clientHeight;   // = the open stop
+  /** why the next rest-at-0 is happening: null = a gesture (unwind the URL), "history" = a
+   *  popstate already moved the URL (do NOT unwind), "ui" = sliver/Escape (unwind). */
+  let closeCause = null;
 
   function openDetail() {
     if (detailOpen) return;
     detailOpen = true;
+    closeCause = null;
+    cardSettled = false;
     // WARM's measurement: press → reveal start. Harmless if no mark exists (a popstate open).
     if (performance.getEntriesByName("card:tap").length) {
       performance.measure("card:ingress", "card:tap");
       performance.clearMarks("card:tap");
     }
-    detailEl.classList.add("open");
+    detailEl.classList.add("open");          // display:block; the timeline goes live
     detailScroll.scrollTop = 0;
-    detailScroll.style.overflowY = "auto";
-    // Opening is click-driven, so there is no gesture to consume — but a gesture may still be
-    // in flight (tap-to-click lands mid-coast) and it would be holding a "carousel" claim.
-    // The card is now up; nothing in flight can be a carousel gesture any more. Usually the
-    // pause before the click ends the gesture anyway; this closes the case where it doesn't.
-    arb.claimRegion("detail");
-    requestAnimationFrame(() => stageTo(stageOpenY()));   // click-driven: no gesture to consume
+    detailEl.scrollTop = 0;                  // closed, then rise
+    detailEl.scrollTo({ top: cardMax() });   // the rise — CSS decides smooth vs instant
   }
 
-  function closeDetail() {
-    // the give's travel becomes the close lerp's head start; stageTo() tweens from stageY
-    giveStage.cancel();
-    if (!detailOpen) return;
-    // ⭐ the anchor for every leak counter — the post-close window opens HERE, which is
-    // also where `detailOpen` flips and the coast becomes free to reach the deck.
-    T.push({ k: "@closeDetail", g: arb.state().gestureId, claim: arb.state().gRegion,
-             spent: arb.state().spentOn, sTop: detailScroll.scrollTop });
-    closeViaHistory();   // keep the URL in step with a gesture-driven close
+  /**
+   * ⭐ EGRESS — the close is OURS once it is committed (JJ, 2026-09-25).
+   *
+   * The problem: the browser's snap-to-closed is slow and untunable, and for its whole
+   * duration #detail is still the topmost scroller — so the swipe you make NEXT, meaning to
+   * move through the site, lands on the overlay and re-opens the card. Two fixes in one:
+   *   1. the instant a close is committed, #detail goes `pointer-events: none` (.closing), so
+   *      nothing can re-open it, and
+   *   2. the remaining travel is an EXPONENTIAL APPROACH from wherever the overlay is: each
+   *      frame moves (1 - e^(-dt/τ)) of the distance that remains, τ = --card-egress-tau.
+   * 🐞 WHY NOT A TWEEN (JJ, 2026-09-25: "aggressively jerky"). A fixed-duration curve on the
+   * shared ease STARTS SLOW, while the overlay is already moving at gesture speed; the coast
+   * led for a few frames, the tween overtook, and the handover read as stall-then-jump. The
+   * approach has no start: its speed is (remaining / τ), continuous with whatever came before,
+   * and it re-bases from the CURRENT position every frame — so the coast, which is still
+   * latched to the scroller and writes deltas between our frames in the same direction,
+   * only ever hands us a smaller remainder. Never written backwards. Snap is off for the
+   * duration so the UA's own settle cannot restart underneath.
+   * ⛔ `behavior: "instant"` on every write — #detail has `scroll-behavior: smooth`, and a bare
+   * `scrollTop =` would ANIMATE toward each frame's value.
+   *
+   * WHEN it is committed:
+   *   · programmatic (sliver, Escape, popstate) — immediately.
+   *   · wheel — the first `scroll` event past --touch-commit of the travel, once the card has
+   *     settled open. Below that the browser still decides (a few-px chain that dies snaps
+   *     back natively; slow, rare, and the honest answer for "you didn't mean it").
+   *   · touch — same test, but at touchend: a finger on the glass owns the scroller and a
+   *     tween under it would fight the drag. Released short of the threshold → snap back open.
+   * This is J (position-at-release), which native gave us for free, with its resolution sped
+   * up. The open stays native smooth.
+   */
+  let cardSettled = false;     // has the overlay reached its open stop since opening?
+  let cardFinger = false;      // a touch is down while the card is open
+  let egressTween = null;
+
+  function finaliseClose() {
+    const cause = closeCause; closeCause = null;
+    egressTween = null;
+    T.push({ k: "@closeDetail", cause: cause ?? "gesture" });
+    if (cause !== "history") closeViaHistory();   // a gesture or UI close must unwind the URL
     detailOpen = false;
-    arb.consume();   // spend the gesture HERE, not when the lerp lands: detailOpen flips
-                 // immediately, so the next event of this same flick would otherwise fall
-                 // through to the tab branch and carry it home too.
-    // The card stays display:block (and on top of the cursor) until the tween ends, so a
-    // momentum tail would otherwise land on ITS scroller and visibly jitter the content
-    // while it is being covered. Lock it for the duration.
-    detailScroll.style.overflowY = "hidden";
-    stageTo(0, () => {
-      detailEl.classList.remove("open");     // inert again
-      detailContent.innerHTML = "";
-    });
+    cardSettled = false;
+    detailEl.classList.remove("open", "closing");   // inert again; the timeline goes inactive
+    detailEl.style.scrollSnapType = "";
+    detailContent.innerHTML = "";
+  }
+
+  function egress() {
+    if (!detailOpen || egressTween) return;
+    detailEl.classList.add("closing");               // nothing can re-open it from here
+    detailEl.style.scrollSnapType = "none";          // the UA settle must not restart underneath
+    let last = performance.now();
+    const step = (now) => {
+      if (!egressTween) return;                      // cancelled by a finalise elsewhere
+      const dt = Math.min(now - last, 50); last = now;   // a stalled tab must not teleport
+      const cur = detailEl.scrollTop;
+      const next = cur * Math.exp(-dt / CARD_EGRESS_TAU);
+      if (next < 1) { detailEl.scrollTo({ top: 0, behavior: "instant" }); finaliseClose(); return; }
+      if (next < cur) detailEl.scrollTo({ top: next, behavior: "instant" });
+      egressTween.raf = requestAnimationFrame(step);
+    };
+    egressTween = { raf: requestAnimationFrame(step) };
+  }
+
+  /** Programmatic close. `cause` says whether the URL still needs unwinding. */
+  function closeDetail(cause = "ui") {
+    if (!detailOpen) return;
+    closeCause = cause;
+    egress();
+  }
+
+  /** A gesture has moved the overlay off its open stop. Past the threshold → ours. */
+  const cardCommitted = () => {
+    const max = cardMax();
+    return max > 0 && detailEl.scrollTop < max * (1 - TOUCH_COMMIT);
+  };
+  detailEl.addEventListener("scroll", () => {
+    if (!detailOpen || egressTween) return;
+    if (detailEl.scrollTop >= cardMax() - 1) { cardSettled = true; return; }   // arrived / re-arrived
+    if (!cardSettled || cardFinger) return;          // still rising, or a finger owns it
+    if (cardCommitted()) egress();
+  }, { passive: true });
+
+  /** touch: defer the decision to the release. Registered on window because #detail may be
+   *  display:none at touchstart; cheap, passive, and a no-op unless the card is open. */
+  window.addEventListener("touchstart", () => { if (detailOpen) cardFinger = true; }, { passive: true });
+  const cardTouchEnd = () => {
+    if (!cardFinger) return;
+    cardFinger = false;
+    if (!detailOpen || egressTween || !cardSettled) return;
+    if (cardCommitted()) egress();
+    else if (detailEl.scrollTop < cardMax() - 1) detailEl.scrollTo({ top: cardMax() });   // short → back open
+  };
+  window.addEventListener("touchend", cardTouchEnd, { passive: true });
+  window.addEventListener("touchcancel", cardTouchEnd, { passive: true });
+
+  /** The native path still exists below the threshold: a small chain that the UA snaps all
+   *  the way to 0 rests here. Also fires after an open and after every non-closing chain —
+   *  hence the position test (tolerance: scrollTop can be fractional under zoom). */
+  function onCardRest() {
+    if (!detailOpen || egressTween) return;
+    if (detailEl.scrollTop > 1) return;
+    finaliseClose();
+  }
+  if ("onscrollend" in window) {
+    detailEl.addEventListener("scrollend", onCardRest, { passive: true });
+  } else {
+    // settle-on-rest, the same 120ms idiom the tab track uses (see `settleTimer` above)
+    let cardRestTimer = 0;
+    detailEl.addEventListener("scroll", () => {
+      clearTimeout(cardRestTimer);
+      cardRestTimer = setTimeout(onCardRest, 120);
+    }, { passive: true });
   }
 
   // ============================================================================
@@ -851,12 +882,16 @@ import { createTrace } from "../lib/trace.mjs";
       tabTopY: () => tabTopY(),
       // ⭐ A: the region boundary is the artwork band's lower edge, not the tab frame's top.
       deckBottomY: () => deckBottomY(),
-      tweenActive: () => !!(stageTween || worldTween),
+      tweenActive: () => !!worldTween,
     }
   );
   let lastT = 0;
 
   window.addEventListener("wheel", (e) => {
+    // ⭐ card-native: while the card is open EVERY wheel belongs to the #detail scroller
+    // (it sits above the stage and is the innermost scroller under the pointer). Nothing
+    // detail-born reaches the arbiter any more — so no claim, no spend, no post-close guard.
+    if (detailOpen) return;
     // NOTE: no "busy" gate. Input is never blocked while a lerp RUNS — scrolling and
     // swiping continue, and a commit in the opposite direction catches the lerp and
     // re-aims it from wherever it currently sits.
@@ -885,54 +920,6 @@ import { createTrace } from "../lib/trace.mjs";
                momentum: e.momentum, deltaMode: e.deltaMode });
     if (T.on) T.wheel(e, dt, tBefore, arb.state());
 
-    // ---- STATE 3: art-news detail ----
-    if (detailOpen) {
-      if (!detailEl.contains(e.target)) { e.preventDefault(); return; }   // over the sliver
-      // no horizontal case left: the card is a single column, so vertical is the
-      // only axis and the native scroller owns it
-      if (detailScroll.scrollTop <= 0 && e.deltaY < 0) {                  // beyond the upper bound
-        // ⭐ E: THE GIVE TAKES OVER THIS BOUNDARY, so the browser must stop drawing its own.
-        // Until now this branch did NOT preventDefault, which is precisely why the elastic
-        // you felt here was the browser's — decoupled from the 200px threshold, and therefore
-        // telling you nothing.
-        // ⚠︎ CONDITIONAL under EDGE-STRICT: when the gesture has already been spent scrolling
-        // the card, we hand the edge BACK to the browser deliberately, rather than relying on
-        // an already-running macOS rubber-band to survive our preventDefault. Same rule as
-        // the tab, which is the symmetry JJ asked for.
-        const live = cardLive();
-        if (holdEdge(live)) e.preventDefault();
-        arb.addIntent(-e.deltaY);
-        // ⭐ THE BOUNDARY, RECORDED. This is where the card-close decision is made, and it
-        // is the one place in the handler whose inputs were invisible in an export.
-        T.push({ k: "@cardEdge", g: arb.state().gestureId, spent: arb.state().spentOn,
-                 claim: arb.state().claim ?? arb.region(), sTop: detailScroll.scrollTop,
-                 dy: +e.deltaY.toFixed(2), dt: +dt.toFixed(1), mom: e.momentum,
-                 live: arb.gestureLive(), acc: +arb.intent.toFixed(1) });
-        // ⚠︎ `scrollSpent()` NOT just `gestureLive()`. A reversal mints a fresh gesture
-        // mid-flick — measured on JJ's stream, ~100px into an up-swipe — and a mint restores
-        // the budget by design. scrollSpent survives that mint; only silence, a resume, or a
-        // real transition clears it. See the arbiter.
-        if (live && arb.meant(arb.intent, -e.deltaY, dt, true)) closeDetail();
-        // ⚠︎ THE GIVE CARRIES THE SAME THREE GATES AS THE COMMIT, `scrollSpent()` included.
-        // A flick that already scrolled the card to its top has spent its one action — it
-        // must not drag the card either, or the overshoot comes back as a visual instead of
-        // as a close. Push again and you get both. This IS `J`'s rule, stated as feedback:
-        // "you released before reaching the edge -> you stop at the top."
-        else if (live) giveStage.drive(arb.intent);
-      } else {
-        arb.resetIntent();
-        giveStage.release();
-        // ⭐ THE CARD IS SCROLLING, SO THIS GESTURE IS SPENT. Without this, a flick from
-        // mid-card coasts to the top and the first coast event at the boundary commits the
-        // close on velocity alone — 19px/ms against a 1.8px/ms threshold. See
-        // spendOnNativeScroll() in the arbiter for why this is not a momentum test.
-        // Closing then needs a second push, which is what J specifies and what B detects.
-        arb.spendOnNativeScroll();
-        T.push({ k: "@cardScroll", g: arb.state().gestureId, spent: arb.state().spentOn,
-                 sTop: detailScroll.scrollTop, dy: +e.deltaY.toFixed(2), mom: e.momentum });
-      }
-      return;                                                            // native scroll otherwise
-    }
 
     // ---- REGION: at (or heading to) landing — the deck is NATIVE on x (2026-09-24) ----
     // ⛔ THE VERTICAL→HORIZONTAL DECK MAPPING IS GONE. Until now a wheel over the artwork band
@@ -960,30 +947,8 @@ import { createTrace } from "../lib/trace.mjs";
     }
 
     // ---- REGION: over the tab frame, in tab view ----
-    // ⚠︎ A SPENT, DETAIL-BORN GESTURE MUST NOT REACH NATIVE SCROLL EITHER.
-    // Everything else in this handler is preventDefault'd, so ownership decides what
-    // happens. This branch is the one place a wheel event is deliberately left to the
-    // browser — and that made it the one place a closing card's momentum could still act.
-    // Reported by JJ on Safari, 2026-08-17: "card -> tab, momentum carries into tab scroll
-    // as soon as the card closes."
-    //
-    // Not an arbiter bug: the arbiter had it right — spent, claimed "detail", nothing
-    // granted. The events simply fell past every gate to the panel's own scroller.
-    // closeDetail() already locks `detailScroll.overflowY` for exactly this reason, one
-    // layer up; this is the same argument applied to the panel the card uncovers. One
-    // gesture, one action: the flick that closed the card does not also scroll what is
-    // underneath.
-    //
-    // ⭐ Scoped, and self-releasing: a genuine resume clears `spentOn`, so this stops
-    // holding the instant the user pushes again — no timer and no fixed window (DEAD 1/2).
-    // ⚠︎ `coasting()` is what stops this becoming a lockout — see its comment in the
-    // arbiter. Block while the coast can still move the panel; release once it is spent
-    // down to a few px, because past that point a resume is no longer detectable and
-    // holding would trap the user until 100ms of silence.
-    if (arb.region() === "detail" && !arb.gestureLive() && arb.coasting()) {
-      e.preventDefault();
-      return;
-    }
+    // (the post-close "detail-born coast" guard that stood here is gone with card-native:
+    //  a gesture latched to the card scroller has nowhere to go once the card is hidden)
 
     // horizontal is left entirely to the native snap track (no preventDefault); a
     // swipe mid-slide releases the nav tween so the gesture takes over
@@ -1074,8 +1039,6 @@ import { createTrace } from "../lib/trace.mjs";
       // ⚠︎ Above the landing there is nothing, so reuse the wheel's dead-end curve rather than
       // hard-stopping — otherwise touch and wheel disagree at the same edge.
       applyWorld(tPending > 0 ? bounceOf(tPending) : Math.max(-LANDING_H, tPending));
-    } else if (tDrive === "card") {
-      applyStage(Math.min(0, Math.max(stageOpenY(), tPending)));
     }
   };
 
@@ -1101,7 +1064,7 @@ import { createTrace } from "../lib/trace.mjs";
    * `scrollTop` read happens ONCE, at axis lock, below.
    */
   window.addEventListener("touchmove", (e) => {
-    if (tDone) return;
+    if (tDone || detailOpen) return;         // card-native: the card is the browser's
     const t = e.touches[0];
     const dx = t.clientX - tsX, dy = t.clientY - tsY;
     if (!tAxis) {
@@ -1126,9 +1089,7 @@ import { createTrace } from "../lib/trace.mjs";
     if (tDrive === null) {
       tDrive = "none";
       const down = dy > 0;
-      if (detailOpen) {
-        if (down && detailScroll.scrollTop <= 0) { tDrive = "card"; tBase = stageY; }
-      } else if (view === "landing") {
+      if (view === "landing") {
         tDrive = "world"; tBase = worldY;            // the traverse — either direction
       } else if (down && subs[current].scrollTop <= 0) {
         tDrive = "world"; tBase = worldY;            // tab → landing, from the panel's top
@@ -1137,7 +1098,6 @@ import { createTrace } from "../lib/trace.mjs";
         // ⚠︎ DIRECT MANIPULATION OUTRANKS A LERP. Catching a transition mid-flight is this
         // project's defining property; on touch it is literal. Base off the LIVE scalar.
         if (tDrive === "world" && worldTween) { worldTween.cancel(); worldTween = null; }
-        if (tDrive === "card" && stageTween) { stageTween.cancel(); stageTween = null; }
         // ⭐ ONE layout read for the whole gesture — see paintNav. The horizontal axis is
         // locked out from here, so these two cannot change until the finger lifts.
         const w = tabW();
@@ -1177,14 +1137,14 @@ import { createTrace } from "../lib/trace.mjs";
     const drive = tDrive;
     tDrive = null;
     navCache = null;        // ⛔ before any commit — the tweens below must read live values
-    if (drive !== "world" && drive !== "card") return;
+    if (drive !== "world") return;
     /* ⚠︎ TOUCH HAS ITS OWN VELOCITY THRESHOLD, and borrowing --commit-vel was the bug.
        1.2px/ms is 1200px/s — a number tuned for a WHEEL accumulator. A comfortable phone swipe
        covers 150-400px in 150-300ms, i.e. 0.5-2.5px/ms, so a large share of deliberate swipes
        failed the flick test and fell back to needing --touch-commit of the WHOLE traverse.
        On a phone that is half the screen, which is why JJ's report was "way too strict". */
     const V = TOUCH_VEL;
-    if (drive === "world") {
+    {
       const p = LANDING_H ? -worldY / LANDING_H : 0;
       const up = -tvY;                        // px/ms, positive = swiping up = toward the tab
       const toTab = up >= V ? true : up <= -V ? false : p >= TOUCH_COMMIT;
@@ -1192,12 +1152,6 @@ import { createTrace } from "../lib/trace.mjs";
       // displaced with nothing to put it back. Spring explicitly in that case.
       if (toTab) { if (view === "tab") worldTo(-LANDING_H); else goTab(); }
       else       { if (view === "landing") worldTo(0); else goLanding(); }
-    } else {
-      const open = stageOpenY();
-      const p = open ? stageY / open : 1;     // 1 = fully open, 0 = closed
-      const down = tvY;                       // positive = swiping down = closing
-      const close = down >= V ? true : down <= -V ? false : p <= 1 - TOUCH_COMMIT;
-      if (close) closeDetail(); else stageTo(open);
     }
   };
   window.addEventListener("touchend", endTouchDrag, { passive: true });
@@ -1425,12 +1379,11 @@ import { createTrace } from "../lib/trace.mjs";
    * pointer-events changes HIT TESTING, and hit testing is what routes wheel and touch
    * events to a region — so it would reach straight into the most heavily tested subsystem
    * in the project to fix a click bug. Two lines here beat that. */
-  stage.addEventListener("click", (e) => {
-    if (!detailOpen) return;
-    e.preventDefault();
-    e.stopPropagation();
-    closeDetail();
-  }, true);
+  /* card-native: the sliver IS #detailSpacer (the top 120px of it still showing at open), so
+   * the close tap is a click on the spacer. The old capture-phase listener on #stage is gone:
+   * #detail now sits ABOVE the stage, so no click over the sliver can reach an anchor
+   * underneath — the preventDefault story above is moot by construction. */
+  detailSpacer.addEventListener("click", () => closeDetail("ui"));
 
   // ============================================================================
   // ============================================================================
@@ -1528,10 +1481,9 @@ import { createTrace } from "../lib/trace.mjs";
     detailOpen = true;
     detailEl.classList.remove("cold");
     detailScroll.scrollTop = 0;
-    detailScroll.style.overflowY = "auto";
     syncTechTail();
-    arb.claimRegion("detail");
-    applyStage(stageOpenY());     // measured and presented, NOT tweened
+    detailEl.scrollTo({ top: cardMax(), behavior: "instant" });   // presented AT REST, no rise
+    cardSettled = true;
   }
 
   // ---- click wiring. Cards are real links; intercept only the plain left-click, so
@@ -1578,7 +1530,7 @@ import { createTrace } from "../lib/trace.mjs";
     // whether it is same-document. Assume not — see the note on closeViaHistory.
     pushedByUs = false;
     if (wantsDetail && !detailOpen) openPath(path, { push: false });
-    else if (!wantsDetail && detailOpen) { navLock = true; closeDetail(); navLock = false; }
+    else if (!wantsDetail && detailOpen) closeDetail("history");   // the URL already moved
     else navLock = false;
   });
 
@@ -1606,7 +1558,6 @@ import { createTrace } from "../lib/trace.mjs";
       adoptSheet();
     }
     applyWorld(view === "tab" ? -LANDING_H : 0);
-    if (!detailOpen) applyStage(0);   // adoptSheet already positioned it
     applyView();
     scrollToTab(order.indexOf(current), false);
     paintNav();
@@ -1687,6 +1638,7 @@ import { createTrace } from "../lib/trace.mjs";
     BOUNCE_MAX   = cssNum("--bounce-max", 48);
     BOUNCE_DIST  = cssNum("--bounce-dist", 300);
     LANDING_GIVE = cssNum("--landing-give", 1) === 1;
+    CARD_EGRESS_TAU = cssMs("--card-egress-tau", 70);
     Object.assign(arb.config, {
       gestureGap: cssMs("--gesture-gap", 100),
       reverseFrac: cssNum("--gesture-reverse", 0.25),
@@ -1709,7 +1661,6 @@ import { createTrace } from "../lib/trace.mjs";
     navLast.fill(-1);                   // force a repaint; the mapping may have changed
     measureGeom();
     applyWorld(worldY);
-    applyStage(stageY);
   }
 
   if (import.meta.hot) {
@@ -1724,22 +1675,20 @@ import { createTrace } from "../lib/trace.mjs";
     const heightOnly = w === lastW && h !== lastH;
     lastW = w; lastH = h;
 
-    if (heightOnly && (worldTween || stageTween)) {
+    if (heightOnly && worldTween) {
       measureGeom();
       // RE-AIM, don't cancel. Contact is left alone: its geometry is the nav's line width,
       // which is width-driven, so a height-only change has not invalidated it.
       if (worldTween) worldTo(view === "tab" ? -LANDING_H : 0);
-      if (stageTween) stageTo(detailOpen ? stageOpenY() : 0);
       return;                                     // snap offset is width-driven: nothing to do
     }
 
     // a genuine resize invalidates every in-flight target — land on the current state instead
     if (worldTween) { worldTween.cancel(); worldTween = null; }
-    if (stageTween) { stageTween.cancel(); stageTween = null; }
     setContact(false);                            // an open group is stale geometry
     measureGeom();
     applyWorld(view === "tab" ? -LANDING_H : 0);
-    applyStage(detailOpen ? stageOpenY() : 0);
+    if (detailOpen) detailEl.scrollTo({ top: cardMax(), behavior: "instant" });   // re-seat the open stop
     scrollToTab(order.indexOf(current), false);   // px snap offset changes with width
   });
 }
