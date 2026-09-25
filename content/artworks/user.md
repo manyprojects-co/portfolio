@@ -44,4 +44,11 @@ technicalText: The vast and complex human being is everyday subsumed into the
   digital affordances of contemporary life. Gesturing to this, Xin's own hand is
   plaster-cast, broken, and rigged to a machine, made to keep it scrolling on
   Instagram forever.
+technicalGallery:
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/user/user-tech1.jpg
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/user/user-tech2.jpg
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/user/user-tech3.jpg
 ---
