@@ -12,7 +12,7 @@ premiereCity: Stockholm, Sweden
 exhibitions: 2026 / [Helix Art Space](https://agawen.com/news/selfish/) (Stockholm)
 artistStatement: >-
   Today, free will is compromised not through the limiting of freedom, but by
-  the manipulation of will. Byung-Chul Han’s Psychololitics asserts that our
+  the manipulation of will. Byung-Chul Han’s Psychopolitics asserts that our
   devices and platforms are objects of control but their power is not asserted
   through force. Instead, they operate on a pre-reflexive level in the psyche to
   steer desire itself.  
