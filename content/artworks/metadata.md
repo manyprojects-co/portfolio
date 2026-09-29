@@ -10,13 +10,13 @@ featured: true
 featureOrder: 5
 premiereCity: Stockholm, Sweden
 exhibitions: 2026 / [Helix Art Space](https://agawen.com/news/selfish/) (Stockholm)
-artistStatement: "In this age of surveillance capitalism, user data is fracked
-  by platforms through every swipe and scroll, processed into behavioral models,
-  and sold. The buyers: advertisers, data brokers, and demagogues—individuals
-  and firms with a keen interest in steering humanity en-masse. Metadata
-  embodies this voyeuristic act of character-profiling into a swirl of floating
-  data points forming a dissected nervous skeletal figure caught in the mundane
-  act of phone-scrolling on the loo."
+artistStatement: "Metadata is a radical portrait of the contemporary individual:
+  surveilled, anonymized, dehumanized, and subsumed into naked clouds of
+  datapoints. By implying much about the quantified person while saying nothing
+  of the unique individual, the work embodies three layers of psychopolitical
+  exploitation: the intimate surveillance of the self, the reduction of that
+  self into data, and the commodification of this data for the consolidation of
+  power."
 landingVisual:
   mediaType: image
   mediaUrl: https://media.agawen.com/artworks/metadata/mtdt-ld.jpg
@@ -36,12 +36,19 @@ cardGallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/metadata/mtdt-art4.jpg
 technicalTagline: Modern human nature
-technicalText: Digital media has hijacked our minds and bodies, and to best
-  evoke this we searched for a medical-grade anatomical model, stripped away all
-  of its flesh, and flooded its nervous and skeletal systems with ebbing clouds
-  of datapoints. Then, we projected these remains onto a translucent and
-  loosely-draped curtain to give the illusion of upright volume for the skeletal
-  form and evoke a domestic setting to match its mundane pose.
+technicalText: >-
+  Production began with the acquisition of a medical-grade anatomical 3D model
+  of a human body, which was virtually dissected to reveal only bones and nerves
+  to evoke the datafication of a person normally achieved through CT scans and
+  MRIs. These remains were then posed in a crouch with looped phone-scrolling
+  animation. A point cloud was propagated over the resulting mesh, animated to
+  flash in time with each thumb-scroll to mirror the chemical messengers that
+  digital systems manipulate.
+
+
+  The work is projected onto a translucent and loosely-draped curtain to give
+  physical volume and presence to the skeletal form, and also further placing it
+  within a domestic sphere.
 technicalGallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/metadata/mtdt-tech1.jpg
