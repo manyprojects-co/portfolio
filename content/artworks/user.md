@@ -10,17 +10,12 @@ featured: true
 featureOrder: 4
 premiereCity: Stockholm, Sweden
 exhibitions: 2026 / [Helix Art Space](https://agawen.com/news/selfish/) (Stockholm)
-artistStatement: >-
-  Today, free will is compromised not through the limiting of freedom, but by
-  the manipulation of will. Byung-Chul Han’s Psychopolitics asserts that our
-  devices and platforms are objects of control but their power is not asserted
-  through force. Instead, they operate on a pre-reflexive level in the psyche to
-  steer desire itself.  
-
-
-  In the language of technology, the contemporary human is reduced to the label
-  of “user”. The sculpture User began as a cast hand which was then broken,
-  rigged, and made to doom-scroll.
+artistStatement: Through a collision between traditional sculpture and robotic
+  actuation, *User* serves to expose the contradictions betraying our
+  conventional notions of beauty, humanity, and human agency when in friction
+  against the accelerating landscape of technology. The human sculpture is a
+  millenia-old celebration of the person, but has been tragically hijacked
+  within this work and forced into the digital affordances of contemporary life.
 landingVisual:
   mediaType: image
   mediaUrl: https://media.agawen.com/artworks/user/user-ld.jpg
