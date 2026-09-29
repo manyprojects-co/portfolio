@@ -731,6 +731,7 @@ import { createTrace } from "../lib/trace.mjs";
     detailOpen = true;
     closeCause = null;
     cardSettled = false;
+    clog("open");
     // WARM's measurement: press → reveal start. Harmless if no mark exists (a popstate open).
     if (performance.getEntriesByName("card:tap").length) {
       performance.measure("card:ingress", "card:tap");
@@ -773,12 +774,23 @@ import { createTrace } from "../lib/trace.mjs";
    * This is J (position-at-release), which native gave us for free, with its resolution sped
    * up. The open stays native smooth.
    */
+  /** ⭐ CAPTURE FIRST (2026-09-29). JJ: after a tile-tap close the site is sometimes visible
+   *  but inert and the URL stays on /art/<slug> — i.e. the overlay rested at 0 and
+   *  finaliseClose never ran. Unreproducible on demand, so every card event is logged here;
+   *  `__card()` in the console dumps state + the last 40 events. Zero cost when nothing happens. */
+  const cardLog = [];
+  const clog = (k, extra) => {
+    cardLog.push({ t: Math.round(performance.now()), k, top: +detailEl.scrollTop.toFixed(1),
+                   open: detailOpen, eg: !!egressTween, ...extra });
+    if (cardLog.length > 40) cardLog.shift();
+  };
   let cardSettled = false;     // has the overlay reached its open stop since opening?
   let cardFinger = false;      // a touch is down while the card is open
   let egressTween = null;
 
   function finaliseClose() {
     const cause = closeCause; closeCause = null;
+    clog("finalise", { cause });
     egressTween = null;
     T.push({ k: "@closeDetail", cause: cause ?? "gesture" });
     if (cause !== "history") closeViaHistory();   // a gesture or UI close must unwind the URL
@@ -790,25 +802,48 @@ import { createTrace } from "../lib/trace.mjs";
   }
 
   function egress() {
-    if (!detailOpen || egressTween) return;
+    if (!detailOpen || egressTween) { clog("egress-refused"); return; }
+    clog("egress");
     detailEl.classList.add("closing");               // nothing can re-open it from here
     detailEl.style.scrollSnapType = "none";          // the UA settle must not restart underneath
-    let last = performance.now();
+    let last = performance.now(), stall = 0, prev = Infinity;
+    // ⚠︎ WATCHDOG. An egress that has not finalised in 1.5s (a dead rAF, a scroller that will
+    // not take the write) is forced home, so a stuck `egressTween` can never wedge the card.
+    const mine = { raf: 0 };
+    setTimeout(() => {
+      if (egressTween !== mine) return;
+      clog("watchdog");
+      detailEl.scrollTo({ top: 0, behavior: "instant" });
+      finaliseClose();
+    }, 1500);
     const step = (now) => {
       if (!egressTween) return;                      // cancelled by a finalise elsewhere
       const dt = Math.min(now - last, 50); last = now;   // a stalled tab must not teleport
       const cur = detailEl.scrollTop;
       const next = cur * Math.exp(-dt / CARD_EGRESS_TAU);
-      if (next < 1) { detailEl.scrollTo({ top: 0, behavior: "instant" }); finaliseClose(); return; }
+      /* 🐞 THE FIXED POINT (JJ, 2026-09-29: every close stalled, then the watchdog "shifted
+         it into place" a second later; before the watchdog this was the wedged card).
+         Chrome stores scroll offsets in PHYSICAL pixels. At a non-integer DPR or zoom, a
+         write of 1.2 CSS px can round back UP to 1.333 — the value it started from — and
+         then `next` is recomputed from 1.333 every frame: a fixed point just above the 1px
+         finish line, forever. Two guards: finish once the REMAINDER is sub-visible (2px —
+         a jump nobody can see), and finish if the scroller failed to move on three
+         consecutive writes, whatever the number says. */
+      if (cur < 2 || next < 2) { detailEl.scrollTo({ top: 0, behavior: "instant" }); finaliseClose(); return; }
+      if (cur >= prev - 0.01) { if (++stall >= 3) { clog("stall", { cur }); detailEl.scrollTo({ top: 0, behavior: "instant" }); finaliseClose(); return; } }
+      else stall = 0;
+      prev = cur;
       if (next < cur) detailEl.scrollTo({ top: next, behavior: "instant" });
       egressTween.raf = requestAnimationFrame(step);
     };
-    egressTween = { raf: requestAnimationFrame(step) };
+    egressTween = mine;
+    mine.raf = requestAnimationFrame(step);
   }
 
   /** Programmatic close. `cause` says whether the URL still needs unwinding. */
   function closeDetail(cause = "ui") {
-    if (!detailOpen) return;
+    if (!detailOpen) { clog("close-ignored", { cause }); return; }
+    clog("close", { cause });
     closeCause = cause;
     egress();
   }
@@ -843,7 +878,8 @@ import { createTrace } from "../lib/trace.mjs";
    *  hence the position test (tolerance: scrollTop can be fractional under zoom). */
   function onCardRest() {
     if (!detailOpen) return;
-    if (detailEl.scrollTop > 1) return;
+    if (detailEl.scrollTop > 2) { clog("rest-open"); return; }
+    clog("rest-0");
     // ⚠︎ NOT gated on egressTween any more (2026-09-25). If the overlay is at rest at 0 the
     // close IS final, whoever got it there; an egress that somehow never reached its own
     // finalise must not leave detailOpen stuck true — which is the "URL persists and no
@@ -862,7 +898,17 @@ import { createTrace } from "../lib/trace.mjs";
   /** console probe for the stuck-close report: `__card()` in DevTools. Dev-only cost: none. */
   window.__card = () => ({ detailOpen, egress: !!egressTween, closeCause, cardSettled,
                            top: detailEl.scrollTop, max: cardMax(), open: detailEl.classList.contains("open"),
-                           url: location.pathname, state: history.state, navLock, pushedByUs });
+                           closing: detailEl.classList.contains("closing"),
+                           snap: detailEl.style.scrollSnapType || "(css)",
+                           url: location.pathname, state: history.state, navLock, pushedByUs,
+                           log: cardLog.slice() });
+  /** ⭐ SELF-HEAL, at the inputs a wedged user would reach for: the overlay rests at 0 with
+   *  nothing driving it, yet the card is still "open". Whatever missed it, finalise now. */
+  const healIfWedged = () => {
+    if (detailOpen && !egressTween && detailEl.scrollTop <= 2) { clog("heal"); finaliseClose(); return true; }
+    return false;
+  };
+  document.addEventListener("click", () => { healIfWedged(); }, true);
 
   // ============================================================================
   // GESTURE ARBITER — imported, not reimplemented. See gesture-arbiter.mjs and its
@@ -898,7 +944,7 @@ import { createTrace } from "../lib/trace.mjs";
     // ⭐ card-native: while the card is open EVERY wheel belongs to the #detail scroller
     // (it sits above the stage and is the innermost scroller under the pointer). Nothing
     // detail-born reaches the arbiter any more — so no claim, no spend, no post-close guard.
-    if (detailOpen) return;
+    if (detailOpen && !healIfWedged()) return;
     // NOTE: no "busy" gate. Input is never blocked while a lerp RUNS — scrolling and
     // swiping continue, and a commit in the opposite direction catches the lerp and
     // re-aims it from wherever it currently sits.
@@ -1402,6 +1448,7 @@ import { createTrace } from "../lib/trace.mjs";
     const r = stage.getBoundingClientRect();
     if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
     e.preventDefault(); e.stopPropagation();
+    clog("tile-tap");
     closeDetail("ui");
   }, true);
 
@@ -1479,7 +1526,7 @@ import { createTrace } from "../lib/trace.mjs";
   async function openPath(path, { push = true } = {}) {
     // self-heal: "open" but resting at 0 with nothing driving it is a close that never
     // finalised (see onCardRest). Finalise it now rather than refusing the click.
-    if (detailOpen && !egressTween && detailEl.scrollTop <= 1) finaliseClose();
+    healIfWedged();
     if (detailOpen) return;
     let html;
     try {
