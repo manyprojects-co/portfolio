@@ -73,9 +73,25 @@
     --card-shadow: 0 2px 20px rgba(0, 0, 0, 0.045), 0 20px 100px rgba(0, 0, 0, 0.09);
 
     /* ---- v3 reveal dynamics (JS reads these once at init; tune here) ---- */
-    --site-zoom-max: 1.1;    /* [TUNE] the departing site enlarges to this, anchored bottom-centre */
+    --site-zoom-max: 0.9;    /* [TUNE] the departing site scales to this, anchored bottom-centre.
+                                ⭐ TILE COMPOSITION (JJ, 2026-09-25/29, kept from the native-snap
+                                spike): <1 SHRINKS the site into a floating rounded tile that
+                                lifts off a pinned, full-viewport card. 1.1 was the original
+                                "enlarge and leave" and is still valid. */
+    --site-corner: 60px;     /* [TUNE] the tile's corner radius at full reveal. Ramped over the
+                                FIRST 10% of the reveal only, so the site is square at rest.
+                                ⚠︎ border-radius repaints; the short range is why. */
+    --card-close: 300ms;     /* [TUNE] the card CLOSE's own duration (opens use --dur). Distance-
+                                scaled like every lerp, floored at 30%. */
+    --site-rest: 90px;       /* [TUNE] where the tile's BOTTOM EDGE rests at full open, from the
+                                viewport top. This IS --detail-top now (site.js sets it from
+                                here): the card's content begins --frame-margin below it and
+                                scrolls UNDER the tile. 120 = the old sliver line. */
     --site-blur-max: 50px;   /* [TUNE] ...and blurs to this over the same lerp */
-    --card-zoom-min: 0.95;   /* [TUNE] the card zooms from this up to 1 as it is revealed */
+    --card-zoom-min: 1;      /* [TUNE] the card zooms from this up to 1 as it is revealed.
+                                1 = OFF (2026-09-29): the card is pinned full-viewport under
+                                the tile — a reveal, not a slide. 0.95 was the original.
+                                --detail-bleed is a formula off this; at 1 it is 2px. */
 
     /* ---- progressive blur over the departing site (2026-08-23, JJ) ----
        ⭐ THE CARD DOES NOT MOVE. #detail is fixed at --detail-top and only scales; the
@@ -276,7 +292,8 @@
     /* ---- v2 geometry (JS writes --band and --landing-h on load + resize) ---- */
     --band: 132px;           /* 60 + navH + 60 — the top of the tab frame */
     --landing-h: calc(100vh - 132px);
-    --detail-top: 120px;     /* art-news view starts here; the sliver above is the site */
+    --detail-top: 90px;      /* the card's CONTENT viewport starts here (= --site-rest; site.js
+                                keeps them equal). The card box itself now starts at 0. */
     --detail-img-max: 900px; /* [TUNE] card content column: image cap AND the info block's left edge */
 
     /* ⚠︎ DERIVED, not a free knob. The card scales from --card-zoom-min up to 1 about
@@ -941,7 +958,8 @@
        overflow:hidden, so the overhang can't produce a scrollbar. */
     left: calc(-1 * var(--detail-bleed));
     right: calc(-1 * var(--detail-bleed));
-    top: var(--detail-top);
+    top: 0;                        /* tile composition: the card fills the viewport; the tile
+                                      floats over its top --detail-top px */
     bottom: 0;
     z-index: 1;
     display: none;                 /* inert until opened */
@@ -1020,8 +1038,10 @@
     overscroll-behavior-y: contain;
     scrollbar-width: none;
     /* the bleed is absorbed as PADDING, so the content box stays exactly (vw - 120)
-       and nothing inside the card had to learn about the overhang */
-    padding: var(--frame-margin) var(--detail-pad-x);
+       and nothing inside the card had to learn about the overhang.
+       TOP = the tile's rest line + the frame margin: content begins below the tile and
+       scrolls up underneath it (tile composition, 2026-09-29). */
+    padding: calc(var(--detail-top) + var(--frame-margin)) var(--detail-pad-x) var(--frame-margin);
   }
   #detailScroll::-webkit-scrollbar { display: none; }
 
@@ -1102,7 +1122,9 @@
      ⚠︎ A negative computed `top` is correct and legal here. Do not "correct" it. */
   .art-side {
     position: sticky;
-    top: calc(var(--art-sticky-top) - var(--frame-margin));
+    /* + --detail-top (2026-09-29): the scroller now starts at the viewport top with the tile
+       over its first --detail-top px, so the stick line moves down by that much. */
+    top: calc(var(--detail-top) + var(--art-sticky-top) - var(--frame-margin));
     height: calc(var(--vh-live, 100vh) - var(--detail-top)
                  - var(--art-sticky-top) - var(--frame-margin));
     display: flex;

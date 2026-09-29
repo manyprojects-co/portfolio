@@ -133,7 +133,12 @@ import { createTrace } from "../lib/trace.mjs";
   // GEOMETRY — one measurement drives every state
   // ============================================================================
   const FRAME = 60;                 // the 60px rhythm
-  const DETAIL_TOP = 120;           // art-news view's top; the sliver above it is the site
+  // ⭐ TILE COMPOSITION (2026-09-29): the card fills the viewport and the site lifts off it into
+  // a shrunken rounded tile whose bottom edge rests at --site-rest. DETAIL_TOP is that line —
+  // the card's CONTENT viewport starts there, and --detail-top is published from it.
+  let DETAIL_TOP  = cssNum("--site-rest", 90);
+  let SITE_CORNER = cssNum("--site-corner", 60);
+  let CARD_CLOSE  = cssMs("--card-close", 300);   // the close's own --dur (JJ: egress was slow)
 
   const stage = document.getElementById("stage");
   const world = document.getElementById("world");
@@ -297,6 +302,9 @@ import { createTrace } from "../lib/trace.mjs";
     const p = detailP();
     // SITE: rises, enlarges to --site-zoom-max, blurs to --site-blur-max.
     stage.style.transform = `translateY(${y}px) scale(${1 + (SITE_ZOOM - 1) * p})`;
+    // the tile's corners: square at rest, --site-corner by 10% of the reveal. ⚠︎ Not a
+    // compositor property — the stage repaints while this changes; hence the short ramp.
+    stage.style.borderRadius = `${(SITE_CORNER * Math.min(1, p / 0.1)).toFixed(1)}px`;
     /* ⛔ BLUR OFF (2026-08-18, JJ) — a DESIGN decision, not a bug fix.
      * `hooks.md`: "the 50px full-viewport blur is the most expensive thing in the file",
      * applied per frame to the whole viewport simultaneously with a scale() and an opacity
@@ -780,7 +788,14 @@ import { createTrace } from "../lib/trace.mjs";
 
   function stageTo(target, done) {
     if (stageTween) stageTween.cancel();
-    stageTween = tween(stageY, target, spanDur(stageY, target, VH - DETAIL_TOP), applyStage,
+    // ⭐ the CLOSE has its own duration (--card-close, 300ms): JJ found the shared --dur read
+    // as slow on egress, and a slow close let the next swipe land on the card. Same spanDur
+    // shape, shorter base. Opens keep --dur.
+    const span = VH - DETAIL_TOP, left = Math.abs(target - stageY);
+    const dur = target === 0
+      ? Math.max(CARD_CLOSE * 0.3, CARD_CLOSE * (span ? left / span : 1))
+      : spanDur(stageY, target, span);
+    stageTween = tween(stageY, target, dur, applyStage,
       () => { stageTween = null; if (done) done(); });
   }
 
@@ -1687,6 +1702,9 @@ import { createTrace } from "../lib/trace.mjs";
     BOUNCE_MAX   = cssNum("--bounce-max", 48);
     BOUNCE_DIST  = cssNum("--bounce-dist", 300);
     LANDING_GIVE = cssNum("--landing-give", 1) === 1;
+    DETAIL_TOP  = cssNum("--site-rest", 90);
+    SITE_CORNER = cssNum("--site-corner", 60);
+    CARD_CLOSE  = cssMs("--card-close", 300);
     Object.assign(arb.config, {
       gestureGap: cssMs("--gesture-gap", 100),
       reverseFrac: cssNum("--gesture-reverse", 0.25),

@@ -12,4 +12,13 @@ export default defineConfig({
   output: "static",
   outDir: "./dist",
   trailingSlash: "never",
+  /**
+   * CSS MINIFIER — esbuild, NOT lightningcss (2026-09-29). Learned on the native-snap spike:
+   * Astro 7's default (lightningcss 1.33) merged `animation-timeline` into the `animation`
+   * shorthand and silently deleted every scroll-driven animation IN PRODUCTION ONLY. Nothing
+   * on main uses animation-timeline today; this stays because the failure was invisible in
+   * dev, same class as the `500ms → .5s` rewrite css-time.ts exists for, and esbuild's output
+   * was verified clean by grepping dist/. ⛔ Re-grep the built CSS before switching back.
+   */
+  vite: { build: { cssMinify: "esbuild" } },
 });
