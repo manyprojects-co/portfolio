@@ -35,10 +35,12 @@ cardGallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/user/user-art3.jpg
 technicalTagline: Made to scroll
-technicalText: The vast and complex human being is everyday subsumed into the
-  digital affordances of contemporary life. Gesturing to this, Xin's own hand is
-  plaster-cast, broken, and rigged to a machine, made to keep it scrolling on
-  Instagram forever.
+technicalText: The kinetic mechanism of *User* relies on a modified Jansen
+  linkage attached to Xin’s plaster-cast hand, broken at the thumb base,
+  actuated by a battery-powered 6V N20 reduction gear motor, and tuned to
+  simulate a natural scrolling cadence. Conductive materials are embedded within
+  the thumb-tip to allow the hand to manipulate the capacitive touch screen
+  surfaces of most smart phones.
 technicalGallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/user/user-tech1.jpg
