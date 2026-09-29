@@ -110,7 +110,18 @@ const GAL_W = [900, 1400, 1920];
     <div class="tech-inner">
       {(t.tagline || t.text?.length || t.gallery?.length) && (
         <div class="tech-grid">
-          {/* LEFT — images and captions */}
+          {/* LEFT — text, in the art card's own metadata column (2026-09-30, JJ: un-mirrored;
+              the tracks are now IDENTICAL to .art-grid's, so this sits under the metadata).
+              First in document order so read order = visual order, stacked or not. */}
+          <div class="tech-text">
+            {t.tagline && <p class="tech-tagline">{t.tagline}</p>}
+            {t.text?.length > 0 && (
+              <div class="detail-statement">
+                {t.text.map((p: string) => <p>{p}</p>)}
+              </div>
+            )}
+          </div>
+          {/* RIGHT — images and captions, in the flexible track like the sheet's media. */}
           {/* ⚠︎ caption FIRST — JJ wants it above the image, and doing it in document order
               rather than with CSS keeps the read order and the visual order the same.
               <figcaption> is valid as either the first or last child of a <figure>. */}
@@ -121,15 +132,6 @@ const GAL_W = [900, 1400, 1920];
                 <Media media={g} alt={wk.title} widths={[900, 1400]} sizes="min(480px, 100vw)" />
               </figure>
             ))}
-          </div>
-          {/* RIGHT — text. Stacked, this comes FIRST (JJ). */}
-          <div class="tech-text">
-            {t.tagline && <p class="tech-tagline">{t.tagline}</p>}
-            {t.text?.length > 0 && (
-              <div class="detail-statement">
-                {t.text.map((p: string) => <p>{p}</p>)}
-              </div>
-            )}
           </div>
         </div>
       )}
