@@ -39,11 +39,10 @@ const {
   </head>
   <body>
     <!-- ABOVE (card-native, 2026-09-24): #detail is now a full-viewport NATIVE SNAP SCROLLER
-         sitting OVER the stage. Two snap stops: #detailSpacer (100%, transparent — the site
-         shows through it) and #detailSheet (the card, 100% minus --detail-top). scrollTop 0 is
-         closed; scrolled to the sheet is open, with the spacer's top 120px still showing — that
-         strip IS the sliver, so a tap on it closes. The reveal (#stage rise + scale, sheet
-         scale, #cardBlur veil) is a CSS scroll-driven animation on this scroller's timeline.
+         beneath the stage. Two snap stops: #detailSheet (sticky, pinned — the card, never
+         moves) and #detailSpacer (100%, the scroll distance). scrollTop 0 is closed; max is
+         open. The reveal (#stage lifting into a tile, #cardBlur veil) is a CSS scroll-driven
+         animation on this scroller's timeline; a tap on the tile closes.
          MP_CMS_CF/native-snap-spike-brief.md § 1b. #detailSheet owns the grey->black ground. -->
     <div
       id="detail"
@@ -51,10 +50,14 @@ const {
       class:list={[coldOpen && "open", coldOpen && "cold"]}
       data-cold-open={coldOpen ? `${coldOpen.type}/${coldOpen.slug}` : undefined}
     >
-      <div id="detailSpacer" aria-hidden="true"></div>
+      <!-- REVEAL (JJ, 2026-09-29): the sheet comes FIRST and is position:sticky at top 0, so
+           it is pinned, full-viewport, from the first frame; the spacer after it supplies the
+           second snap stop and the scroll distance. The only thing that moves during an open
+           is the site tile lifting off it. -->
       <div id="detailSheet">
         <div id="detailScroll"><div id="detailContent"><slot name="detail" /></div></div>
       </div>
+      <div id="detailSpacer" aria-hidden="true"></div>
     </div>
 
     <!-- BENEATH the card scroller: the site. #stage is driven by #detail's scroll timeline;

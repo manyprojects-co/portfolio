@@ -73,9 +73,23 @@
     --card-shadow: 0 2px 20px rgba(0, 0, 0, 0.045), 0 20px 100px rgba(0, 0, 0, 0.09);
 
     /* ---- v3 reveal dynamics (JS reads these once at init; tune here) ---- */
-    --site-zoom-max: 1.1;    /* [TUNE] the departing site enlarges to this, anchored bottom-centre */
+    --site-zoom-max: 0.9;    /* [TUNE] the departing site scales to this, anchored bottom-centre.
+                                <1 = SHRINKS into a floating tile (JJ, 2026-09-25); 1.1 was the
+                                original "enlarge and leave" — still valid, flip it back to compare */
+    --site-corner: 60px;     /* [TUNE] the tile's corner radius at full reveal. Animated over the
+                                FIRST 10% only, so the site is square at rest and rounds as it
+                                starts to leave. ⚠︎ border-radius is not compositor-only — the
+                                stage repaints while the radius changes; hence the short range.
+                                Judge on the phone, not the laptop. */
+    --site-rest: 90px;       /* [TUNE] where the tile's BOTTOM EDGE rests at full open, from the
+                                viewport top. 120 = the old sliver line; 90 is "25% higher" (JJ,
+                                2026-09-25 — ❓ confirm that reading). The card content starts
+                                --frame-margin below it and scrolls UNDER the tile. */
     --site-blur-max: 50px;   /* [TUNE] ...and blurs to this over the same lerp */
-    --card-zoom-min: 0.95;   /* [TUNE] the card zooms from this up to 1 as it is revealed */
+    --card-zoom-min: 1;      /* [TUNE] the card zooms from this up to 1 as it is revealed.
+                                1 = OFF (2026-09-29: the card is pinned; a reveal, not a slide).
+                                0.95 was the original. ⚠︎ --detail-bleed is a formula off this
+                                token — at 1 the bleed collapses to 2px, which is correct. */
 
     /* ---- progressive blur over the departing site (2026-08-23, JJ) ----
        ⭐ THE CARD DOES NOT MOVE. #detail is fixed at --detail-top and only scales; the
@@ -938,11 +952,14 @@
      fixed card beneath it. Two snap stops, each a child:
        #detailSpacer  100% tall, transparent — the site shows through it.
        #detailSheet   the card, 100% − --detail-top tall, carrying the ground and the bleed.
-     scrollTop 0 = closed (the sheet is entirely below the viewport). The sheet's snap stop is
-     its top on the scroller's padded edge, `scroll-padding-top: --detail-top` — i.e. 120 from
-     the viewport top, at scrollTop = 100% − 120 = the scroller's MAX scroll. So the timeline
-     0 → 100% is exactly closed → open, and the top 120px of the spacer still showing at open
-     IS the sliver: a tap on it closes, a wheel over it scrolls the overlay.
+     scrollTop 0 = closed (the sheet is entirely below the viewport). scrollTop = 100% = the
+     scroller's MAX scroll = open: the sheet fills the viewport. So the timeline 0 → 100% is
+     exactly closed → open.
+     ⭐ TILE COMPOSITION (JJ, 2026-09-25): the card sits BENEATH the stage again (z 1 < z 2),
+     and the stage becomes a shrunken, rounded tile whose bottom edge rests at --site-rest.
+     The card's content is padded down past that edge and scrolls UNDER the tile. Because the
+     stage is `pointer-events: none` while the card is open, every wheel and tap over the tile
+     falls through to this scroller — so the tile itself is the close affordance.
      The reveal is a scroll-driven animation on this scroller's timeline (below). Nothing in JS
      writes a transform any more; JS only opens (scrollTo), closes (scrollTo 0) and finalises
      on scrollend. MP_CMS_CF/native-snap-spike-brief.md § 1b.
@@ -951,12 +968,11 @@
   #detail {
     position: fixed;
     inset: 0;
-    z-index: 3;
+    z-index: 1;
     display: none;                 /* inert until opened; an inactive timeline = base styles */
     overflow-x: hidden;            /* the sheet's bleed overhangs; clip it at the viewport */
     overflow-y: auto;
     scroll-snap-type: y mandatory;
-    scroll-padding-top: var(--detail-top);
     overscroll-behavior-y: contain;
     scroll-behavior: smooth;       /* every programmatic scrollTo inherits this — see § 1d */
     scrollbar-width: none;
@@ -967,8 +983,12 @@
   #detail::-webkit-scrollbar { display: none; }
   #detail.open { display: block; }
   /* a committed close: inert, so the NEXT swipe reaches the site instead of re-opening the
-     card. JS drives the rest of the travel on --card-egress (site.js § EGRESS). */
+     card. JS drives the rest of the travel on --card-egress-tau (site.js § EGRESS). */
   #detail.closing { pointer-events: none; }
+  /* while the card is open the tile is see-through to input: wheel, touch and taps over it
+     reach the card scroller beneath. Hit-testing skips pointer-events:none, so no listener
+     on the stage is needed to forward anything. */
+  body:has(#detail.open) #stage { pointer-events: none; }
 
   #detailSpacer {
     height: 100%;
@@ -986,9 +1006,15 @@
      whole travel, and the bottom is still covered: the scaled sheet reaches the viewport
      floor iff (0.95 + 0.05p) ≥ p, which holds for every p ≤ 1 — the original inequality,
      read from the other end. */
+  /* ⭐ REVEAL (JJ, 2026-09-29): STICKY, FIRST CHILD, top 0 — so the card is pinned and
+     full-viewport at every scroll position. The spacer after it provides the travel; the
+     overlay scrolls, the card does not. "The site lifts off the card", not "the card slides
+     up with the site". The 0.95→1 zoom is therefore off by default (--card-zoom-min: 1);
+     the keyframe binding stays so it can be turned back on for comparison. */
   #detailSheet {
-    position: relative;
-    height: calc(100% - var(--detail-top));
+    position: sticky;
+    top: 0;
+    height: 100%;
     width: calc(100% + 2 * var(--detail-bleed));
     margin-left: calc(-1 * var(--detail-bleed));
     scroll-snap-align: start;
@@ -1010,9 +1036,11 @@
   body { timeline-scope: --card; }
 
   @keyframes card-stage {
-    from { transform: translateY(0) scale(1); }
-    to   { transform: translateY(calc(-1 * (var(--vh-live, 100vh) - var(--detail-top))))
-                      scale(var(--site-zoom-max)); }
+    from { transform: translateY(0) scale(1); border-radius: 0; }
+    10%  { border-radius: var(--site-corner); }
+    to   { transform: translateY(calc(-1 * (var(--vh-live, 100vh) - var(--site-rest))))
+                      scale(var(--site-zoom-max));
+           border-radius: var(--site-corner); }
   }
   @keyframes card-sheet {
     from { transform: scale(var(--card-zoom-min)); }
@@ -1101,8 +1129,10 @@
     overscroll-behavior-y: auto;
     scrollbar-width: none;
     /* the bleed is absorbed as PADDING, so the content box stays exactly (vw - 120)
-       and nothing inside the card had to learn about the overhang */
-    padding: var(--frame-margin) var(--detail-pad-x);
+       and nothing inside the card had to learn about the overhang.
+       ⭐ TOP = the tile's rest line + the frame margin: content begins below the tile and
+       scrolls up underneath it (tile composition, 2026-09-25). */
+    padding: calc(var(--site-rest) + var(--frame-margin)) var(--detail-pad-x) var(--frame-margin);
   }
   #detailScroll::-webkit-scrollbar { display: none; }
 

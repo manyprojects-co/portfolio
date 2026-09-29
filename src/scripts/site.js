@@ -842,20 +842,27 @@ import { createTrace } from "../lib/trace.mjs";
    *  the way to 0 rests here. Also fires after an open and after every non-closing chain —
    *  hence the position test (tolerance: scrollTop can be fractional under zoom). */
   function onCardRest() {
-    if (!detailOpen || egressTween) return;
+    if (!detailOpen) return;
     if (detailEl.scrollTop > 1) return;
+    // ⚠︎ NOT gated on egressTween any more (2026-09-25). If the overlay is at rest at 0 the
+    // close IS final, whoever got it there; an egress that somehow never reached its own
+    // finalise must not leave detailOpen stuck true — which is the "URL persists and no
+    // other card will open" symptom JJ reported on the preview.
     finaliseClose();
   }
-  if ("onscrollend" in window) {
-    detailEl.addEventListener("scrollend", onCardRest, { passive: true });
-  } else {
-    // settle-on-rest, the same 120ms idiom the tab track uses (see `settleTimer` above)
-    let cardRestTimer = 0;
-    detailEl.addEventListener("scroll", () => {
-      clearTimeout(cardRestTimer);
-      cardRestTimer = setTimeout(onCardRest, 120);
-    }, { passive: true });
-  }
+  // ⭐ BOTH rest detectors, always — not scrollend-or-fallback. `scrollend` is the precise
+  // one; the 120ms settle timer is the belt to its braces, because a rest at 0 that produces
+  // no scrollend (a cancelled snap, an interrupted smooth scroll) otherwise never finalises.
+  detailEl.addEventListener("scrollend", onCardRest, { passive: true });
+  let cardRestTimer = 0;
+  detailEl.addEventListener("scroll", () => {
+    clearTimeout(cardRestTimer);
+    cardRestTimer = setTimeout(onCardRest, 120);
+  }, { passive: true });
+  /** console probe for the stuck-close report: `__card()` in DevTools. Dev-only cost: none. */
+  window.__card = () => ({ detailOpen, egress: !!egressTween, closeCause, cardSettled,
+                           top: detailEl.scrollTop, max: cardMax(), open: detailEl.classList.contains("open"),
+                           url: location.pathname, state: history.state, navLock, pushedByUs });
 
   // ============================================================================
   // GESTURE ARBITER — imported, not reimplemented. See gesture-arbiter.mjs and its
@@ -1384,6 +1391,19 @@ import { createTrace } from "../lib/trace.mjs";
    * #detail now sits ABOVE the stage, so no click over the sliver can reach an anchor
    * underneath — the preventDefault story above is moot by construction. */
   detailSpacer.addEventListener("click", () => closeDetail("ui"));
+  /* Tile composition (2026-09-25): at open the tile floats over the card, and the stage is
+   * pointer-transparent, so a tap on the tile lands on whatever is beneath it — padding OR
+   * content that has scrolled up under it. 🐞 The first cut tested the TARGET (padding only)
+   * and so worked only until content reached the tile (JJ, 2026-09-29). Test the POINT
+   * against the tile's on-screen box instead: inside it, the tap is a close and never a
+   * content click. One getBoundingClientRect per click — the transform is included. */
+  detailEl.addEventListener("click", (e) => {
+    if (!detailOpen || !cardSettled) return;
+    const r = stage.getBoundingClientRect();
+    if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
+    e.preventDefault(); e.stopPropagation();
+    closeDetail("ui");
+  }, true);
 
   // ============================================================================
   // ============================================================================
@@ -1457,6 +1477,9 @@ import { createTrace } from "../lib/trace.mjs";
 
   /** In-site open: fetch, inject, rise, push the URL. */
   async function openPath(path, { push = true } = {}) {
+    // self-heal: "open" but resting at 0 with nothing driving it is a close that never
+    // finalised (see onCardRest). Finalise it now rather than refusing the click.
+    if (detailOpen && !egressTween && detailEl.scrollTop <= 1) finaliseClose();
     if (detailOpen) return;
     let html;
     try {
