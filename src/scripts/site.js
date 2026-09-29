@@ -115,6 +115,8 @@ import { createTrace } from "../lib/trace.mjs";
   // card-native egress — see § EGRESS. A TIME CONSTANT, not a duration: each frame closes
   // (1 - e^(-dt/τ)) of the remaining distance. ~95% of the travel is gone after 3τ.
   let CARD_EGRESS_TAU = cssMs("--card-egress-tau", 70);
+  let SITE_CORNER = cssNum("--site-corner", 60);
+  let SITE_REST   = cssNum("--site-rest", 90);
 
   // Generic value tween on the shared curve. Returns a CANCELLABLE handle: every
   // transition in the site can be caught mid-flight and re-aimed from wherever it
@@ -799,6 +801,7 @@ import { createTrace } from "../lib/trace.mjs";
     detailEl.classList.remove("open", "closing");   // inert again; the timeline goes inactive
     detailEl.style.scrollSnapType = "";
     detailContent.innerHTML = "";
+    if (NO_SDA) { if (revealRaf) cancelAnimationFrame(revealRaf); revealRaf = 0; clearReveal(); }
   }
 
   function egress() {
@@ -895,6 +898,43 @@ import { createTrace } from "../lib/trace.mjs";
     clearTimeout(cardRestTimer);
     cardRestTimer = setTimeout(onCardRest, 120);
   }, { passive: true });
+  // ============================================================================
+  // REVEAL FALLBACK — WebKit (2026-09-29). Safari 26.2 has no scroll-driven animations at
+  // all, so the CSS reveal in global.css cuts to its end state there. This is the same
+  // reveal as a function of #detail.scrollTop: stage rise + shrink + corner, veil opacity.
+  // ⭐ Position-derived, one write per frame (rAF-coalesced, exactly like flushTouch), and a
+  // passive listener — it never touches the scroll itself. It lags the compositor by a
+  // frame; with the card PINNED that is a moving tile over a stationary card, which the
+  // eye forgives where two moving planes would not. Chrome keeps the CSS path; the two
+  // cannot both run (`:root:not(.no-sda)` gates the CSS).
+  // ⚠︎ Same stops as the keyframes: corner over the first 10%, veil over the first 45%.
+  // ============================================================================
+  const NO_SDA = !(window.CSS && CSS.supports && CSS.supports("animation-timeline: scroll()"));
+  if (NO_SDA) root.classList.add("no-sda");
+  let revealRaf = 0;
+  function paintReveal() {
+    revealRaf = 0;
+    const max = cardMax();
+    const p = max > 0 ? Math.min(1, Math.max(0, detailEl.scrollTop / max)) : 0;
+    const rise = (VH - SITE_REST) * p;
+    stage.style.transform = `translateY(${(-rise).toFixed(2)}px) scale(${(1 + (SITE_ZOOM - 1) * p).toFixed(4)})`;
+    stage.style.borderRadius = `${(SITE_CORNER * Math.min(1, p / 0.1)).toFixed(1)}px`;
+    if (cardBlur && CARD_BLUR) {
+      const ceil = VEIL_MODE ? 1 : VEIL_OP;
+      cardBlur.style.opacity = (Math.min(1, p / (CARD_BLUR_IN || 1)) * ceil).toFixed(3);
+    }
+  }
+  function clearReveal() {          // back to base styles = the closed state
+    stage.style.transform = "";
+    stage.style.borderRadius = "";
+    if (cardBlur) cardBlur.style.opacity = "";
+  }
+  if (NO_SDA) {
+    detailEl.addEventListener("scroll", () => {
+      if (!revealRaf) revealRaf = requestAnimationFrame(paintReveal);
+    }, { passive: true });
+  }
+
   /** console probe for the stuck-close report: `__card()` in DevTools. Dev-only cost: none. */
   window.__card = () => ({ detailOpen, egress: !!egressTween, closeCause, cardSettled,
                            top: detailEl.scrollTop, max: cardMax(), open: detailEl.classList.contains("open"),
@@ -1554,6 +1594,7 @@ import { createTrace } from "../lib/trace.mjs";
     syncTechTail();
     detailEl.scrollTo({ top: cardMax(), behavior: "instant" });   // presented AT REST, no rise
     cardSettled = true;
+    if (NO_SDA) paintReveal();       // an instant seat fires no scroll event to paint from
   }
 
   // ---- click wiring. Cards are real links; intercept only the plain left-click, so
@@ -1709,6 +1750,8 @@ import { createTrace } from "../lib/trace.mjs";
     BOUNCE_DIST  = cssNum("--bounce-dist", 300);
     LANDING_GIVE = cssNum("--landing-give", 1) === 1;
     CARD_EGRESS_TAU = cssMs("--card-egress-tau", 70);
+    SITE_CORNER = cssNum("--site-corner", 60);
+    SITE_REST   = cssNum("--site-rest", 90);
     Object.assign(arb.config, {
       gestureGap: cssMs("--gesture-gap", 100),
       reverseFrac: cssNum("--gesture-reverse", 0.25),

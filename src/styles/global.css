@@ -1051,9 +1051,22 @@
     45%  { opacity: var(--veil-ceil); }   /* = --card-blur-in */
     to   { opacity: var(--veil-ceil); }
   }
-  #stage       { animation: card-stage linear both; animation-timeline: --card; }
-  #detailSheet { animation: card-sheet linear both; animation-timeline: --card; }
-  #cardBlur    { animation: card-veil  linear both; animation-timeline: --card; --veil-ceil: 1; }
+  /* 🐞 ATTACHED ONLY WHILE THE CARD IS OPEN (Safari, 2026-09-29). With #detail display:none
+     there is no `--card` timeline anywhere. Chrome treats an animation bound to a missing
+     timeline as INACTIVE (no effect — what the comment above relies on). Safari instead falls
+     back to the DOCUMENT timeline, plays the 0s animation to its end and holds it with
+     `fill: both` — so `/` loaded with the site already shrunk into its tile over nothing, and
+     nothing could close it. Gating on `:has(#detail.open)` makes "closed" mean "no animation"
+     in every engine, rather than "an animation with an inactive timeline". */
+  /* ⚠︎ WEBKIT HAS NONE OF THIS (measured 2026-09-29, Safari 26.2: `CSS.supports` is false for
+     animation-timeline, scroll-timeline-name and timeline-scope). There, site.js adds
+     `.no-sda` to <html> and drives the same three values from a passive `scroll` listener —
+     see § REVEAL FALLBACK. The two paths read the SAME tokens and the same 10% / 45% stops,
+     so retuning one retunes both. Gated here so the two can never both run. */
+  :root:not(.no-sda) body:has(#detail.open) #stage       { animation: card-stage linear both; animation-timeline: --card; }
+  :root:not(.no-sda) body:has(#detail.open) #detailSheet { animation: card-sheet linear both; animation-timeline: --card; }
+  :root:not(.no-sda) body:has(#detail.open) #cardBlur    { animation: card-veil  linear both; animation-timeline: --card; }
+  #cardBlur { --veil-ceil: 1; }
   #cardBlur.solid { --veil-ceil: var(--card-veil-op); }
 
   @media (prefers-reduced-motion: reduce) {
