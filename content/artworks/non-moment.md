@@ -37,11 +37,10 @@ cardGallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/non-moment/nmm-art6.jpg
 technicalTagline: Deliberate blur
-technicalText: In contrast to the visual richness common in our art practice,
-  Non-moment is a work that aims to isolate only the gestures that populate our
-  hours on screen. London's overcast sky was the diffused lightbox that
-  transformed a hand—tapping, swiping, scrolling behind a white sheet—into a
-  mass of shadows emerging from anonymous fog.
+technicalText: London's overcast sky provided the diffused light that produced
+  the soft volumetric shadows cast from a hand onto a white sheet. A camera
+  placed behind the sheet was used to capture the hand’s rear-projected
+  silhouette and its delicate tonal gradations.
 technicalGallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/non-moment/nmm-tech1.jpg
