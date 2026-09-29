@@ -343,7 +343,10 @@
        the three widths or --frame-margin change, recompute and update BOTH queries. */
     --art-stack-at: calc(var(--art-side-w) + var(--art-col-gap) + var(--art-main-min)
                          + 2 * var(--frame-margin));   /* = 812px */
-    --art-sticky-top: 32px;  /* [TUNE] where the left column pins, from the CARD's top edge */
+    --art-sticky-top: var(--card-gap);  /* [TUNE] where the left column pins, below the tile's
+                                bottom edge. = --card-gap ON PURPOSE (JJ, 2026-09-30): the gap
+                                tile→title equals the gap cover→title (.art-grid margin-top),
+                                so the pinned and unpinned states share one rhythm. */
     --art-stack-gap: 16px;   /* [TUNE] the single gap between every block when stacked */
 
     /* ---- technical section (v5): the inverse of the site ---- */
@@ -1122,9 +1125,15 @@
      ⚠︎ A negative computed `top` is correct and legal here. Do not "correct" it. */
   .art-side {
     position: sticky;
-    /* + --detail-top (2026-09-29): the scroller now starts at the viewport top with the tile
-       over its first --detail-top px, so the stick line moves down by that much. */
-    top: calc(var(--detail-top) + var(--art-sticky-top) - var(--frame-margin));
+    /* 🐞 NOT + --detail-top (2026-09-30, JJ: "the gap between the title and the tile should
+       be shorter"). The tile port added --detail-top here AND to #detailScroll's padding-top;
+       sticky `top` is measured from where the content begins, so the padding already carries
+       it and the title pinned 90px too low (122 below the tile, not 32). Same trap as the
+       bio pair in this file's header, walked into a third time. The formula is unchanged
+       from before the tile: pin = (scroller padding) + (--art-sticky-top - --frame-margin)
+       = --detail-top + --art-sticky-top below the viewport top = --art-sticky-top below the
+       tile's bottom edge. */
+    top: calc(var(--art-sticky-top) - var(--frame-margin));
     height: calc(var(--vh-live, 100vh) - var(--detail-top)
                  - var(--art-sticky-top) - var(--frame-margin));
     display: flex;
