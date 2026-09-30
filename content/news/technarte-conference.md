@@ -15,8 +15,8 @@ gallery:
     mediaUrl: https://media.agawen.com/news/technarte/tnt-1.jpg
   - mediaType: text
     textContent: >-
-      On May 17, 2024, XJ presented the talk ‘Living Screen: Digital Surfaces
-      for Visceral Experiences’ at the [2024
+      XJ presented the talk ‘Living Screen: Digital Surfaces for Visceral
+      Experiences’ at the [2024
       edition](https://technarte.org/en/previous-editions/2024-edition/) of the
       [Technarte Conference](https://technarte.org/en/), held at Palacio
       Euskalduna in Bilbao, Spain.
@@ -28,7 +28,7 @@ gallery:
       Body](https://agawen.com/art/box-body/) (2023) and
       [EMERGE:NCY](https://agawen.com/art/emergency) (2023) as case studies. The
       presentation received special institutional recognition from the
-      conference committee. 
+      conference committee.
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/technarte/tnt-2.jpg
   - mediaType: image
