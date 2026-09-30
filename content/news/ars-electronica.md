@@ -22,7 +22,8 @@ gallery:
       for the outdoor display."
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/ars-electronica/aef-6.jpg
-  - textContent: "Featured within the exhibition *Butterfly’s Dreams: ++[The New
+  - mediaType: text
+    textContent: "Featured within the exhibition *Butterfly’s Dreams: ++[The New
       Aesthetic of AI in Artistic
       Practice](https://ars.electronica.art/who-owns-the-truth/en/butterflys-dr\
       eams/)++* co-curated by Ina Conradi and Ong Kian Peng at Atelierhaus
