@@ -15,20 +15,21 @@ gallery:
     mediaUrl: https://media.agawen.com/news/into-the-future/itf-1.jpg
   - mediaType: text
     textContent: >-
-      [You.zip](http://You.zip) (2024) was presented at [Whitespace
-      Gallery](https://whitespace76.com/) in Edinburgh, Scotland as a part of
+      [You.zip](http://You.zip) (2024) was presented at ++[Whitespace
+      Gallery](https://whitespace76.com/)++ in Edinburgh, Scotland as a part of
       *Into the Future*, a group exhibition co-curated by Anita Gao and Jiarong
       Yu.
 
 
-      Serving as a predecessor to [Metadata](https://agawen.com/art/metadata)
-      (2026), [You.zip](http://You.zip) is a video artwork that embodies the
-      reduction of personal identity into downloadable data. The project
-      originated from encountering long-forgotten personal archives preserved on
-      social media platforms. While an individual’s online footprint can be
-      compiled into a single .zip file for algorithms and strangers to read, the
-      work questions whether such archives truly encapsulate the living self or
-      only the fragments we neglected to keep private.
+      Serving as a predecessor to
+      ++[Metadata](https://agawen.com/art/metadata)++ (2026),
+      [You.zip](http://You.zip) is a video artwork that embodies the reduction
+      of personal identity into downloadable data. The project originated from
+      encountering long-forgotten personal archives preserved on social media
+      platforms. While an individual’s online footprint can be compiled into a
+      single .zip file for algorithms and strangers to read, the work questions
+      whether such archives truly encapsulate the living self or only the
+      fragments we neglected to keep private.
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/into-the-future/itf-2.jpg
   - mediaType: image
