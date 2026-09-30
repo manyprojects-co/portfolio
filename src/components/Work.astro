@@ -66,11 +66,14 @@ const GAL_W = [900, 1400, 1920];
           <div class="detail-exh about-list"
                set:html={wk.exhibitions.map(exhibitionItem).join("")} />
         )}
+        {/* ⭐ RICH TEXT (2026-09-30, JJ): Pages CMS emits links as [label](url), *italic*,
+            ++underline++ and `- ` lists. Rendered plain, 2025pcm's "Commissioned by
+            [Kakilang](https://…)" printed literally. blocksHtml (format.ts) is the one
+            renderer for every prose field on the card and for gallery text rows.
+            ⚠︎ Comments stay OUTSIDE `{cond && ( … )}` — a comment inside the parens is a
+            second child and the production compiler rejects it (dev was lenient; the
+            2026-09-30 Workers build was not). */}
         {wk.acknowledgements?.length > 0 && (
-          {/* ⭐ RICH TEXT (2026-09-30, JJ): Pages CMS emits links as [label](url), *italic*,
-              ++underline++ and `- ` lists. Rendered plain, 2025pcm's "Commissioned by
-              [Kakilang](https://…)" printed literally. blocksHtml (format.ts) is the one
-              renderer for every prose field on the card and for gallery text rows. */}
           <div class="detail-ack" set:html={blocksHtml(wk.acknowledgements)} />
         )}
       </div>
@@ -78,7 +81,7 @@ const GAL_W = [900, 1400, 1920];
       {/* RIGHT — scrolls normally. */}
       <div class="art-main">
         {wk.statement?.length > 0 && (
-          <div class="detail-statement" set:html={blocksHtml(wk.statement)} />   {/* rich text — see .detail-ack */}
+          <div class="detail-statement" set:html={blocksHtml(wk.statement)} />
         )}
         {figLead && (
           <div class="detail-figs fig-lead">
@@ -116,7 +119,7 @@ const GAL_W = [900, 1400, 1920];
           <div class="tech-text">
             {t.tagline && <p class="tech-tagline">{t.tagline}</p>}
             {t.text?.length > 0 && (
-              <div class="detail-statement" set:html={blocksHtml(t.text)} />   {/* rich text — see .detail-ack */}
+              <div class="detail-statement" set:html={blocksHtml(t.text)} />
             )}
           </div>
           {/* RIGHT — images and captions, in the flexible track like the sheet's media. */}
