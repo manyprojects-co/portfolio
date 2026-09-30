@@ -14,10 +14,10 @@ gallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/art-act/aact-1.jpg
   - mediaType: text
-    textContent: Premiering at the ++[ART-ACT
-      Festival](https://sagg.info/event/art-act-festival-singapore/)++
-      co-curated by Aura Murillo and Ina Conradi during Singapore Art Week 2023,
-      ++[Box Body](https://agawen.com/art/box-body)++ (2023) was a site-specific
+    textContent: Premiering at the [ART-ACT
+      Festival](https://sagg.info/event/art-act-festival-singapore/) co-curated
+      by Aura Murillo and Ina Conradi during Singapore Art Week 2023, [Box
+      Body](https://agawen.com/art/box-body) (2023) was a site-specific
       anamorphic video installation that transformed the Ten Square LED
       billboard into a transparent volumetric container. Bypassing CGI
       animation, the installation utilized skewed live-action footage to create
