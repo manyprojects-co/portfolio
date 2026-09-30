@@ -1,7 +1,7 @@
 ---
 title: Technarte Conference
-subheading: On May 17, we presented our talk, ‘Living Screen - Digital Surfaces
-  for Visceral Experiences,’ at Palacio Euskalduna for the Technarte audience.
+subheading: "‘Living Screen: Digital Surfaces for Visceral Experiences’
+  presented at Palacio Euskalduna, Bilbao."
 isDateRange: false
 date: 2024-05-17
 endDate: 2026-08-15
@@ -16,34 +16,20 @@ gallery:
     mediaUrl: https://media.agawen.com/news/technarte/tnt-1.jpg
   - mediaType: text
     textContent: >-
-      On May 17, we presented our talk, ‘Living Screen - Digital Surfaces for
-      Visceral Experiences,’ at Palacio Euskalduna. We shared our journey into
-      the art world coming from backgrounds in design and engineering. We
-      discussed our project Box Body and reflected on the importance of using
-      emerging technologies not just as tools, but as lenses to question and
-      understand the relentless modern progress that humanity is struggling to
-      catch up with. Edward O. Wilson captures this tension perfectly: “The real
-      problem of humanity is the following: We have Paleolithic emotions,
-      medieval institutions, and godlike technology.” As artists, we feel a
-      responsibility to use this ‘godlike technology’ to highlight individual
-      bodies, those Paleolithic emotions, and narratives that are often pushed
-      to the periphery.
+      On May 17, 2024, XJ presented the talk ‘Living Screen: Digital Surfaces
+      for Visceral Experiences’ at the [2024
+      edition](https://technarte.org/en/previous-editions/2024-edition/) of the
+      [Technarte Conference](https://technarte.org/en/), held at Palacio
+      Euskalduna in Bilbao, Spain.
 
 
-      The conference itself was a day-long immersion among like-minded creatives
-      pushing the boundaries of art, technology, and beyond. From nanoscale
-      science to projections on sandblasted glass to soundscapes that
-      choreograph to your movement, each presentation reminded us of why we love
-      working in this space. We were honored to receive special recognition
-      among such inspiring projects. 
-
-
-      See the
-      [highlights](https://technarte.org/en/previous-editions/2024-edition/)
-      from the conference here—impressively filmed and edited by the talented
-      team on the same day.A huge thank you to Nacho Martínez for bringing this
-      incredible community together, and to everyone who made Technarte
-      possible.
+      The presentation outlined the artist duo’s practice of utilizing emerging
+      screen technologies to critique the impact of modern technological
+      acceleration, using spatial installations [Box
+      Body](https://agawen.com/art/box-body/) (2023) and
+      [EMERGE:NCY](https://agawen.com/art/emergency) (2023) as case studies. The
+      presentation received special institutional recognition from the
+      conference committee. 
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/technarte/tnt-2.jpg
   - mediaType: image
