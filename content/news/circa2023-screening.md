@@ -16,15 +16,15 @@ gallery:
     mediaUrl: https://media.agawen.com/news/circa-screen/circa-s1.jpg
   - mediaType: text
     textContent: >-
-      ++[EMERGE:NCY](https://agawen.com/art/emergency/)++ (2023) was selected as
-      one of 30 ++[CIRCA2023 Prize](https://circa.art/circa-prize/2023/)++
-      finalists from over 1,000 global submissions, and screened on the
-      Piccadilly Lights in London at 20:23 GMT on September 16, 2023.
+      [EMERGE:NCY](https://agawen.com/art/emergency/) (2023) was selected as one
+      of 30 [CIRCA2023 Prize](https://circa.art/circa-prize/2023/) finalists
+      from over 1,000 global submissions, and screened on the Piccadilly Lights
+      in London at 20:23 GMT on September 16, 2023.
 
 
-      The site-specific film responds to the CIRCA2023 Manifesto (++[HOPE: THE
-      ART OF READING WHAT IS NOT YET
-      WRITTEN](https://circa.art/manifesto-circa-2023/)++), positioning a
+      The site-specific film responds to the CIRCA2023 Manifesto ([HOPE: THE ART
+      OF READING WHAT IS NOT YET
+      WRITTEN](https://circa.art/manifesto-circa-2023/)), positioning a
       monumental figure struggling to physically break out of Europe’s largest
       commercial LED billboard. Drawing from Rebecca Solnit’s reading "inside
       the word 'emergency' is 'emerge'", the work converts a dominant site of
