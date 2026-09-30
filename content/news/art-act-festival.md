@@ -37,8 +37,8 @@ gallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/art-act/aact-6.jpg
   - mediaType: text
-    textContent: About ++[ART-ACT
-      Festival](https://sagg.info/event/art-act-festival-singapore/)++: “The
+    textContent: About [ART-ACT
+      Festival](https://sagg.info/event/art-act-festival-singapore/): “The
       festival featured 7 curated art pieces that were screened in two large LED
       billboard formats around the city of Singapore, one Ten Square, Landmark
       of Good at the Selegie Art District, and Media Art Nexus at the Nanyang
