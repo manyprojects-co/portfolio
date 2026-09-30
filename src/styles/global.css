@@ -1441,6 +1441,10 @@
   .about-item { margin: 0; }
   .about-item .yr { color: var(--about-year); }
   .about-item a { color: inherit; text-underline-offset: 2px; }
+  /* the card's prose fields now render inline markdown too (Work.astro, 2026-09-30); a link
+     there inherits the surrounding colour — grey on the sheet, --tech-fg on the dark ground —
+     instead of the UA's blue. */
+  .detail-body a, .tech a { color: inherit; text-underline-offset: 2px; }
 
   /* ⭐ THE BIO STACKS ON A MEASURED CLASS, NOT ON A WIDTH (JJ, 2026-08-23).
      `.bio-stacked` is set by measureBioStack() in site.js, which measures how wide the

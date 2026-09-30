@@ -32,7 +32,7 @@
  * ============================================================================
  */
 import Media from "./Media.astro";
-import { exhibitionItem } from "../lib/format";
+import { exhibitionItem, inlineMd } from "../lib/format";
 interface Props { work: any }
 const { work: wk } = Astro.props;
 
@@ -68,7 +68,10 @@ const GAL_W = [900, 1400, 1920];
         )}
         {wk.acknowledgements?.length > 0 && (
           <div class="detail-ack">
-            {wk.acknowledgements.map((p: string) => <p>{p}</p>)}
+            {/* ⭐ RICH TEXT (2026-09-30, JJ): Pages CMS emits links as [label](url). Rendered
+                plain, 2025pcm's "Commissioned by [Kakilang](https://…)" printed literally.
+                inlineMd is what the bio, exhibitions and gallery text rows already use. */}
+            {wk.acknowledgements.map((p: string) => <p set:html={inlineMd(p)} />)}
           </div>
         )}
       </div>
@@ -77,7 +80,7 @@ const GAL_W = [900, 1400, 1920];
       <div class="art-main">
         {wk.statement?.length > 0 && (
           <div class="detail-statement">
-            {wk.statement.map((p: string) => <p>{p}</p>)}
+            {wk.statement.map((p: string) => <p set:html={inlineMd(p)} />)}   {/* rich text — see .detail-ack */}
           </div>
         )}
         {figLead && (
@@ -117,7 +120,7 @@ const GAL_W = [900, 1400, 1920];
             {t.tagline && <p class="tech-tagline">{t.tagline}</p>}
             {t.text?.length > 0 && (
               <div class="detail-statement">
-                {t.text.map((p: string) => <p>{p}</p>)}
+                {t.text.map((p: string) => <p set:html={inlineMd(p)} />)}   {/* rich text — see .detail-ack */}
               </div>
             )}
           </div>
