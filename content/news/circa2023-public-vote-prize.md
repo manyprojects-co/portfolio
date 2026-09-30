@@ -1,8 +1,7 @@
 ---
 title: CIRCA2023 Public Vote Prize
-subheading: Powered by Piccadilly Lights, JJ Agcaoili & Xin Wen received the
-  most public votes and were announced the popular winner by Michèle Lamy during
-  a LIVE! takeover on the iconic screen.
+subheading: EMERGE:NCY (2023) received the CIRCA2023 Public Vote Prize,
+  announced by Michèle Lamy.
 isDateRange: false
 date: 2023-10-10
 endDate: 2026-08-17
