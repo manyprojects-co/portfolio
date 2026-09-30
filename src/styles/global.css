@@ -55,7 +55,11 @@
     --square: 400px;
     --grid-col-gap: 100px;
     --row-gap: 32px;
-    --cap-size: 10px;        /* [TUNE] ART grid captions. 14 -> 10 on 2026-08-23 (JJ), which puts
+    --grid-cap-size: 11px;   /* [TUNE] ART grid captions ONLY. 10 -> 11 on 2026-09-30 (JJ: "the
+                                next conventionally used size"). Split from --cap-size, which
+                                the card's metadata/exhibitions/ack and the news date lines
+                                still share at 10. */
+    --cap-size: 10px;        /* [TUNE] card metadata + news date lines (was also the ART grid until 2026-09-30). 14 -> 10 on 2026-08-23 (JJ), which puts
                                 these back exactly where they sat before tuning round 1.
                                 ⚠︎ These are BLACK, not grey — hooks.md is explicit that there has
                                 never been 10px grey text in this project. At 10px against a 12.5px
@@ -878,12 +882,12 @@
   .gcap {
     margin-top: var(--caption-gap);
     text-align: center;
-    font-size: var(--cap-size);
+    font-size: var(--grid-cap-size);
     line-height: 1;
   }
   .gcap .title { font-style: italic; }
   .gcap .year  { margin-left: var(--title-year-gap); }
-  .gcap .cities { margin-top: 6px; }
+  .gcap .kind  { margin-top: 6px; }      /* work type; was .cities (premiereCity) until 2026-09-30 */
 
   /* ===================== NEWS panel ===================== */
   .news-list {

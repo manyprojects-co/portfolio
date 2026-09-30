@@ -130,7 +130,8 @@ for (const n of news) {
     flags.push(`news/${n.slug}: isDateRange is false but endDate is set (${String(n.d.endDate).slice(0, 10)}).`);
   if (n.d.year) flags.push(`news/${n.slug}: stray \`year: ${n.d.year}\` — not in the schema, pre-date model leftover.`);
 }
-for (const a of arts) if (!has(a.d.premiereCity)) flags.push(`artworks/${a.slug}: no premiereCity — grid caption will be bare.`);
+// 2026-09-30: the grid caption's second line is `tagline` ("Work Type" in the CMS), not premiereCity.
+for (const a of arts) if (!has(a.d.tagline)) flags.push(`artworks/${a.slug}: no tagline (Work Type) — grid caption is title + year only.`);
 // ✅ RESOLVED 2026-08-13 (JJ): personhood should NOT show a range. v6 displayed
 // "2024 - 2026"; the CMS has always said 2024-10-01 and that is correct. This was
 // prototype drift, not a schema gap — the port already renders "2024". No flag.

@@ -35,9 +35,11 @@ content:
       # Title, Date, Art Tagline
       - { name: title, label: Title, type: string, required: true }
       - { name: productionDate, label: Production Date, type: date }
-      - { name: tagline, label: Art Tagline, type: string }
+      # ⚠︎ key stays `tagline` (11/11 files carry it); only the LABEL changed on 2026-09-30.
+      # Renders under the title in the ART grid (replaced premiereCity) and as the page description.
+      - { name: tagline, label: Work Type (short — under the title in the ART grid), type: string }
 
-      # Medium, Size, Duration
+      # Medium (the full technical line, on the card), Size, Duration
       - { name: medium, label: Medium, type: string }
       - { name: size, label: Size, type: string }
       - { name: duration, label: Duration, type: string }

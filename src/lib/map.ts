@@ -112,6 +112,9 @@ export function mapWork(e: CollectionEntry<"artworks">) {
     year: d.productionDate ? String(d.productionDate.getUTCFullYear()) : "",
     productionDate: d.productionDate ?? null,
     tagline: d.tagline ?? "",
+    /** the ART grid caption's second line (2026-09-30). The CMS field is still keyed
+     *  `tagline` — only its label became "Work Type"; this is the site's name for it. */
+    workType: d.tagline ?? "",
     city: d.premiereCity ?? "",            // ← the rename that was decided but never applied
     medium: d.medium ?? "",
     size: d.size ?? "",
