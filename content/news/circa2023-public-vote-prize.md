@@ -16,8 +16,8 @@ gallery:
     mediaUrl: https://media.agawen.com/news/circa-prize/circa-p1.jpg
   - mediaType: text
     textContent: During Frieze Week on October 9, 2023,
-      ++[EMERGE:NCY](https://agawen.com/art/emergency)++ (2023) was
-      ++[awarded](https://circa.art/press/press-release-circa-prize-2020-award-ceremony/)++
+      [EMERGE:NCY](https://agawen.com/art/emergency) (2023) was
+      [awarded](https://circa.art/press/press-release-circa-prize-2020-award-ceremony/)
       the CIRCA2023 Public Vote Prize, presented by Michèle Lamy during a
       takeover of the Piccadilly Lights following a global public vote.
   - mediaType: image
