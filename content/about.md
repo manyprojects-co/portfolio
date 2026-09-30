@@ -38,4 +38,5 @@ pressMentions: |-
 
   2023 - FAD Magazine / [Shortlist for CIRCA 2023](https://fadmagazine.com/2023/08/31/the-circa-prize-2023-artist-shortlist-revealed/)
 mediaUrl: https://media.agawen.com/about/xj-profile.jpg
+faviconUrl: https://media.agawen.com/about/xj-favicon.png
 ---
