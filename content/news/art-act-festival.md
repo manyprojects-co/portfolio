@@ -1,8 +1,6 @@
 ---
 title: ART-ACT Festival
-subheading: Our first site-specific anamorphic 3D video installation, Box Body
-  (2023), was featured as one of the 7 works at the ART-ACT Festival at
-  Singapore Art Week 2023.
+subheading: The premiere of Box Body (2023) as part of Singapore Art Week 2023.
 isDateRange: true
 date: 2023-01-12
 endDate: 2023-01-15
