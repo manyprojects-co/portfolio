@@ -1,7 +1,6 @@
 ---
 title: Technarte Conference
-subheading: "‘Living Screen: Digital Surfaces for Visceral Experiences’
-  presented at Palacio Euskalduna, Bilbao."
+subheading: An artist talk at Palacio Euskalduna, Bilbao.
 isDateRange: false
 date: 2024-05-17
 endDate: 2026-08-15
