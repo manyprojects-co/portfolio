@@ -22,12 +22,6 @@ gallery:
       takeover of the Piccadilly Lights following a global public vote.
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/circa-prize/circa-p4.jpg
-  - mediaType: image
-    mediaUrl: https://media.agawen.com/news/circa-prize/circa-p2.jpg
-  - mediaType: image
-    mediaUrl: https://media.agawen.com/news/circa-prize/circa-p3.jpg
-  - mediaType: image
-    mediaUrl: https://media.agawen.com/news/circa-prize/circa-p5.jpg
   - mediaType: text
     textContent: >-
       The work was made to strike a chord with themes of structural determinism
@@ -39,4 +33,10 @@ gallery:
 
       The award includes £10,000 in support for the artist duo’s ongoing new
       media practice.
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/circa-prize/circa-p2.jpg
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/circa-prize/circa-p3.jpg
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/circa-prize/circa-p5.jpg
 ---
