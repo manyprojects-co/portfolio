@@ -24,7 +24,7 @@
  * NOT cover its subdomains. And `r2.dev` can never work here — it is outside the zone.
  */
 import { normaliseMediaUrl, TRANSFORM_HOST } from "../lib/media-origin";
-import { inlineMd } from "../lib/format";
+import { blocksHtml } from "../lib/format";
 
 interface Props {
   media?: { kind: "image" | "video" | "text"; src: string; text?: string; caption?: string } | null;
@@ -93,13 +93,8 @@ const emptyStyle = ratio ? `aspect-ratio:${ratio[0]}/${ratio[1]}` : undefined;
        inlineMd a link renders as literal `[label](url)` on the page. Paragraphs split on
        blank lines, matching `paragraphs()` in map.ts so prose breaks the same way wherever
        it comes from. */
-    <div class={`media-text ${cls}`}>
-      {(media.text ?? "")
-        .split(/\n\s*\n/)
-        .map((para) => para.trim())
-        .filter(Boolean)
-        .map((para) => <p set:html={inlineMd(para)} />)}
-    </div>
+    <div class={`media-text ${cls}`}
+         set:html={blocksHtml((media.text ?? "").split(/\n\s*\n/))} />
   ) : !ok ? (
     /* No source. Renders the same box the real media will occupy, so layout is honest. */
     <div class={`media-empty ${cls}`} style={emptyStyle} role="img" aria-label={alt || "Image pending"} />

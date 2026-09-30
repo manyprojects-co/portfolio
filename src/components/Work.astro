@@ -32,7 +32,7 @@
  * ============================================================================
  */
 import Media from "./Media.astro";
-import { exhibitionItem, inlineMd } from "../lib/format";
+import { exhibitionItem, blocksHtml } from "../lib/format";
 interface Props { work: any }
 const { work: wk } = Astro.props;
 
@@ -67,21 +67,18 @@ const GAL_W = [900, 1400, 1920];
                set:html={wk.exhibitions.map(exhibitionItem).join("")} />
         )}
         {wk.acknowledgements?.length > 0 && (
-          <div class="detail-ack">
-            {/* ⭐ RICH TEXT (2026-09-30, JJ): Pages CMS emits links as [label](url). Rendered
-                plain, 2025pcm's "Commissioned by [Kakilang](https://…)" printed literally.
-                inlineMd is what the bio, exhibitions and gallery text rows already use. */}
-            {wk.acknowledgements.map((p: string) => <p set:html={inlineMd(p)} />)}
-          </div>
+          {/* ⭐ RICH TEXT (2026-09-30, JJ): Pages CMS emits links as [label](url), *italic*,
+              ++underline++ and `- ` lists. Rendered plain, 2025pcm's "Commissioned by
+              [Kakilang](https://…)" printed literally. blocksHtml (format.ts) is the one
+              renderer for every prose field on the card and for gallery text rows. */}
+          <div class="detail-ack" set:html={blocksHtml(wk.acknowledgements)} />
         )}
       </div>
 
       {/* RIGHT — scrolls normally. */}
       <div class="art-main">
         {wk.statement?.length > 0 && (
-          <div class="detail-statement">
-            {wk.statement.map((p: string) => <p set:html={inlineMd(p)} />)}   {/* rich text — see .detail-ack */}
-          </div>
+          <div class="detail-statement" set:html={blocksHtml(wk.statement)} />   {/* rich text — see .detail-ack */}
         )}
         {figLead && (
           <div class="detail-figs fig-lead">
@@ -119,9 +116,7 @@ const GAL_W = [900, 1400, 1920];
           <div class="tech-text">
             {t.tagline && <p class="tech-tagline">{t.tagline}</p>}
             {t.text?.length > 0 && (
-              <div class="detail-statement">
-                {t.text.map((p: string) => <p set:html={inlineMd(p)} />)}   {/* rich text — see .detail-ack */}
-              </div>
+              <div class="detail-statement" set:html={blocksHtml(t.text)} />   {/* rich text — see .detail-ack */}
             )}
           </div>
           {/* RIGHT — images and captions, in the flexible track like the sheet's media. */}

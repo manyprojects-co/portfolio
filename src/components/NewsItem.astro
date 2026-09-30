@@ -28,7 +28,7 @@
  * ============================================================================
  */
 import Media from "./Media.astro";
-import { titleCase, typeLabel, longDate, dateRange } from "../lib/format";
+import { titleCase, typeLabel, longDate, dateRange, inlineMd } from "../lib/format";
 interface Props { item: any }
 const { item } = Astro.props;
 
@@ -63,7 +63,8 @@ const figs = item.gallery?.length ? item.gallery : item.image ? [item.image] : [
 
       <p class="dn-title">{titleCase(item.title)}</p>
 
-      {item.subheading && <div class="dn-sub">{item.subheading}</div>}
+      {/* rich-text field in the CMS (2026-09-30): render inline markdown like every other one */}
+      {item.subheading && <div class="dn-sub" set:html={inlineMd(item.subheading)} />}
     </div>
 
     <div class="art-main">

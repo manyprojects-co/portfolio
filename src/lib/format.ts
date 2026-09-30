@@ -41,10 +41,44 @@ export function timeElapsed(date: Date | string, now: Date = new Date()): string
   return `${Math.max(1, months)}m`;
 }
 
-/** The two inline markdown forms Pages CMS actually emits in these fields. */
+/**
+ * The inline markdown forms Pages CMS's rich-text editor actually emits, as found in the
+ * content on 2026-09-30 (an audit of every rich-text field): links, **bold**, *italic* /
+ * _italic_, ++underline++ (the editor's underline button — its own syntax, not CommonMark),
+ * and ~~strike~~ for completeness. ⚠︎ ORDER MATTERS: links first, so `++[label](url)++` nests
+ * as <u><a>…</a></u>; bold before italic, so `**` is never read as two italics.
+ * ⚠︎ Runs over CMS-authored text unescaped — the same trust the bio and exhibitions already
+ * extend to the editor. Do not point it at anything a visitor can type.
+ */
 export const inlineMd = (s: string): string =>
   s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
-   .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+   .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+   .replace(/\+\+([^+]+)\+\+/g, "<u>$1</u>")
+   .replace(/~~([^~]+)~~/g, "<s>$1</s>")
+   .replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s.,;:!?)]|$)/g, "$1<em>$2</em>")
+   .replace(/(^|[\s(])_([^_\n]+)_(?=[\s.,;:!?)]|$)/g, "$1<em>$2</em>");
+
+/**
+ * Rich-text paragraphs -> block HTML. Pages CMS emits a bulleted list as `- item` paragraphs
+ * separated by blank lines (XIN-1036's interview questions), which `paragraphs()` in map.ts
+ * hands over one per entry. Consecutive `- ` entries become ONE <ul>; everything else is a
+ * <p>. Inline markdown is rendered in both. Used by every prose field on the card and by the
+ * gallery text rows, so prose breaks the same way wherever it comes from.
+ */
+export const blocksHtml = (paras: string[]): string => {
+  const out: string[] = [];
+  let list: string[] = [];
+  const flush = () => { if (list.length) { out.push(`<ul>${list.join("")}</ul>`); list = []; } };
+  for (const raw of paras) {
+    const p = raw.trim();
+    const m = p.match(/^[-*]\s+(.*)$/s);
+    if (m) { list.push(`<li>${inlineMd(m[1].trim())}</li>`); continue; }
+    flush();
+    if (p) out.push(`<p>${inlineMd(p)}</p>`);
+  }
+  flush();
+  return out.join("");
+};
 
 /**
  * One list row rendered as: grey year, then the rest. Shared by the bio lists and the

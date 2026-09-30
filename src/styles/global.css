@@ -1161,6 +1161,19 @@
   .media-text p { margin: 0 0 1em; }
   .detail-statement p:last-child,
   .media-text p:last-child { margin-bottom: 0; }
+  /* rich-text blocks and marks (2026-09-30, format.ts blocksHtml/inlineMd). A list keeps the
+     paragraph rhythm: same 1em below, items on the text's own line-height, a plain dash
+     bullet hung in a 1em gutter so the text column's left edge stays where the prose is. */
+  .detail-statement ul, .media-text ul, .detail-ack ul {
+    list-style: none; margin: 0 0 1em; padding: 0;
+  }
+  .detail-statement ul:last-child, .media-text ul:last-child, .detail-ack ul:last-child { margin-bottom: 0; }
+  .detail-statement li, .media-text li, .detail-ack li { position: relative; padding-left: 1em; }
+  .detail-statement li::before, .media-text li::before, .detail-ack li::before {
+    content: "–"; position: absolute; left: 0;
+  }
+  .detail-body u, .tech u { text-underline-offset: 2px; }
+  .detail-body s, .tech s { text-decoration-thickness: 1px; }
 
   /* ---- STACKED. One column, one gap, and an order that is NOT the source order. ----
      `display: contents` dissolves both column wrappers so every leaf becomes a direct
