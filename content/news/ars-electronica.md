@@ -15,11 +15,11 @@ gallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/ars-electronica/aef-1.jpg
   - mediaType: text
-    textContent: ++[Box Body](https://agawen.com/art/box-body/)++ (2023) was
-      re-sited for the 2023 Ars Electronica Festival. Originally exhibited on
-      the Ten Square billboard in Singapore, an interior suspended facade was
+    textContent: "[Box Body](https://agawen.com/art/box-body/) (2023) was re-sited
+      for the 2023 Ars Electronica Festival. Originally exhibited on the Ten
+      Square billboard in Singapore, an interior suspended facade was
       custom-built to preserve the anamorphic perspective originally calculated
-      for the outdoor display.
+      for the outdoor display."
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/ars-electronica/aef-6.jpg
   - textContent: "Featured within the exhibition *Butterfly’s Dreams: ++[The New
