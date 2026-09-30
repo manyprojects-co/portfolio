@@ -27,9 +27,9 @@ gallery:
       artwork confronted passersby with a visceral metaphor for the pervasive
       sense of constriction that characterizes contemporary metropolitan life.
   - mediaType: image
-    mediaUrl: https://media.agawen.com/news/art-act/aact-2.jpg
-  - mediaType: image
     mediaUrl: https://media.agawen.com/news/art-act/aact-3.jpg
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/art-act/aact-2.jpg
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/art-act/aact-4.jpg
   - mediaType: image
