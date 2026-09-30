@@ -15,13 +15,11 @@ gallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/circa-prize/circa-p1.jpg
   - mediaType: text
-    textContent: Powered by Piccadilly Lights, JJ Agcaoili & Xin Wen received the
-      most public votes and were announced the popular winner by Michèle Lamy
-      during a LIVE! takeover on the iconic screen. Titled  ‘*EMERGE:NCY’,*
-      their 3D artwork involved remapping filmed imagery taken from a built
-      to-scale model of the iconic London landmark. The recent graduates from
-      the Royal College of Art received an additional £10,000 to support their
-      joint artistic practice.
+    textContent: During Frieze Week on October 9, 2023,
+      ++[EMERGE:NCY](https://agawen.com/art/emergency)++ (2023) was
+      ++[awarded](https://circa.art/press/press-release-circa-prize-2020-award-ceremony/)++
+      the CIRCA2023 Public Vote Prize, presented by Michèle Lamy during a
+      takeover of the Piccadilly Lights following a global public vote.
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/circa-prize/circa-p2.jpg
   - mediaType: image
