@@ -8,6 +8,7 @@
  * and every geometry measurement in site.js reads from this exact tree.
  */
 import "../styles/global.css";
+import { aboutData } from "../lib/content";
 interface Props {
   title?: string;
   description?: string;
@@ -21,6 +22,11 @@ const {
   description = "Xin Wen & JJ Agcaoili — XJ",
   coldOpen = null,
 } = Astro.props;
+// Favicon from the CMS (About → Favicon URL). Empty → no <link>, the browser falls back to
+// /favicon.ico, which does not exist, which is today's behaviour. The URL is pasted as-is:
+// no transform (an icon is tiny) and no origin check beyond what content-report.mjs flags.
+const favicon = ((await aboutData()).faviconUrl ?? "").trim();
+const faviconType = /\.svg(\?|$)/i.test(favicon) ? "image/svg+xml" : /\.png(\?|$)/i.test(favicon) ? "image/png" : undefined;
 ---
 <!doctype html>
 <html lang="en">
@@ -29,6 +35,8 @@ const {
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {favicon && <link rel="icon" href={favicon} type={faviconType} />}
+    {favicon && !faviconType?.includes("svg") && <link rel="apple-touch-icon" href={favicon} />}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

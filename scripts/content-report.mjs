@@ -136,6 +136,10 @@ for (const a of arts) if (!has(a.d.premiereCity)) flags.push(`artworks/${a.slug}
 // prototype drift, not a schema gap — the port already renders "2024". No flag.
 { const ab = fm("content/about.md");
   if (!has(ab.mediaUrl ?? ab.imageUrl))
-    flags.push("about.mediaUrl is empty — no profile picture renders anywhere."); }
+    flags.push("about.mediaUrl is empty — the bio's portrait (below Press & Mentions) will not render.");
+  else checkUrl("about mediaUrl", String(ab.mediaUrl ?? ab.imageUrl));
+  // favicon (2026-09-30): optional, but if pasted it must be a real media-origin URL
+  if (has(ab.faviconUrl)) checkUrl("about faviconUrl", String(ab.faviconUrl));
+  else flags.push("about.faviconUrl is empty — the site has no favicon (browser default)."); }
 flags.forEach((f, i) => console.log(`  ${String(i + 1).padStart(2)}. ${f}`));
 console.log("");

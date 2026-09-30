@@ -456,6 +456,18 @@
      ⛔ Do not "tighten" this to `none`. The card's bottom bounce is the thing it breaks, and
      the breakage is silent and two files away from the declaration. */
   html { overscroll-behavior-y: contain; }
+  /* ⭐ THE LANDING NAV WAS UNDER SAFARI'S COLLAPSED BOTTOM BAR (JJ, 2026-09-30). With
+     viewport-fit=cover the layout viewport runs under the home-indicator zone, and once
+     the URL bar collapses it sits there as a thin strip over the last ~34px — over a nav
+     that is 60 from the bottom. env(safe-area-inset-bottom) is non-zero exactly then and
+     zero when the full bar is showing (it is chrome, outside the viewport), so it is the
+     correct correction and self-cancels on desktop. Published as a token so site.js can
+     read it as a number: measureGeom() adds it to the landing's bottom gap only. */
+  /* ⚠︎ REGISTERED, and it has to be: an unregistered custom property is stored as the raw
+     token `env(...)`, and getComputedStyle would hand site.js that string, which parses as
+     0. `@property` with a <length> syntax makes the computed value a resolved px number. */
+  @property --safe-bottom { syntax: "<length>"; inherits: true; initial-value: 0px; }
+  :root { --safe-bottom: env(safe-area-inset-bottom, 0px); }
 
   html, body {
     margin: 0;
@@ -1451,6 +1463,9 @@
   .about-sec { display: flex; flex-direction: column; gap: var(--about-head-gap); }
   .about-h { margin: 0; font-size: var(--type-size); font-weight: 400; }
   .about-list { display: flex; flex-direction: column; gap: var(--about-item-gap); }
+  /* the portrait easter egg (Bio.astro): one more .about-sec, so the column gap spaces it
+     exactly like the lists above it. Full column width, natural aspect, no crop. */
+  .about-portrait img, .about-portrait video { width: 100%; height: auto; display: block; }
   .about-item { margin: 0; }
   .about-item .yr { color: var(--about-year); }
   .about-item a { color: inherit; text-underline-offset: 2px; }

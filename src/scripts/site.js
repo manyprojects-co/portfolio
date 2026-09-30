@@ -173,7 +173,12 @@ import { createTrace } from "../lib/trace.mjs";
     VH = window.innerHeight;
     const navH = nav.getBoundingClientRect().height;
     BAND = FRAME * 2 + navH;            // 60 above the nav, the nav, 60 below it
-    LANDING_H = VH - BAND;              // hero height AND the landing→tab travel
+    // ⭐ minus the safe-area inset (2026-09-30): the nav's gap to the viewport floor is 60 +
+    // whatever iOS Safari's collapsed bar occludes. BAND itself is unchanged, so the tab
+    // view's 60 above the nav and .sub's padding are untouched; only the hero shrinks.
+    // Re-measured on every resize, including K's height-only one — which is exactly when
+    // the bar collapses and the inset appears.
+    LANDING_H = VH - BAND - cssNum("--safe-bottom", 0);   // hero height AND the landing→tab travel
     root.style.setProperty("--band", BAND + "px");
     root.style.setProperty("--landing-h", LANDING_H + "px");
     root.style.setProperty("--detail-top", DETAIL_TOP + "px");

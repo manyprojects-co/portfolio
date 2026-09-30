@@ -11,7 +11,8 @@
  * WILL silently bring the bug back. Signature: displacement at rest == `top`, exactly.
  */
 import { inlineMd, aboutItem } from "../lib/format";
-import { lines } from "../lib/map";
+import { lines, media } from "../lib/map";
+import Media from "./Media.astro";
 interface Props { about: any }
 const { about } = Astro.props;
 // Rich-text arrives as one markdown blob; the bio lists are one entry per line.
@@ -20,6 +21,12 @@ const sections = [
   { heading: "Awards & Commissions", rows: lines(about.awardsCommissions) },
   { heading: "Press & Mentions", rows: lines(about.pressMentions) },
 ].filter((s) => s.rows.length);
+// ⭐ THE EASTER EGG (JJ, 2026-09-30): the About file's profile picture, which the CMS has
+// carried since August and nothing rendered, sits at the very bottom of column 2 — after
+// Press & Mentions, full column width, as one more `.about-sec` so the column's own gap
+// spaces it like its siblings. `media()` accepts the {mediaType, mediaUrl} object or a bare
+// URL string and returns null for an empty one, in which case nothing renders.
+const portrait = media(about.mediaUrl ?? about.imageUrl ?? "");
 ---
 <div class="sub" id="bio">
   <div class="about" id="about">
@@ -31,6 +38,12 @@ const sections = [
           <div class="about-list" set:html={sec.rows.map(aboutItem).join("")} />
         </section>
       ))}
+      {portrait && (
+        <section class="about-sec about-portrait" aria-label="Portrait">
+          <Media media={portrait} alt="Xin Wen and JJ Agcaoili" class="about-portrait-img"
+                 widths={[480, 960, 1440]} sizes="(max-width: 900px) 100vw, 40vw" />
+        </section>
+      )}
     </div>
   </div>
 </div>

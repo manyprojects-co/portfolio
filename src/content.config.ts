@@ -150,6 +150,9 @@ const about = defineCollection({
     // ⚠︎ and possibly renamed again to `mediaUrl` — both accepted, same reason as `visual`.
     mediaUrl: z.string().optional(),
     imageUrl: z.string().optional(),
+    /** site favicon (2026-09-30). Lives on the About singleton because it is the one
+     *  site-wide file the CMS has; free text like every URL (rule 2). Site.astro reads it. */
+    faviconUrl: z.string().optional(),
   }),
 });
 
