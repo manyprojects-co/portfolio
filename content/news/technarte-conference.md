@@ -12,7 +12,7 @@ mainVisual:
   mediaUrl: https://media.agawen.com/news/technarte/tnt-tab.jpg
 gallery:
   - mediaType: image
-    mediaUrl: https://media.agawen.com/news/technarte/tnt-1.jpg
+    mediaUrl: https://media.agawen.com/news/technarte/tnt-5.jpg
   - mediaType: text
     textContent: >-
       XJ presented the talk ‘Living Screen: Digital Surfaces for Visceral
@@ -30,11 +30,11 @@ gallery:
       presentation received special institutional recognition from the
       conference committee.
   - mediaType: image
+    mediaUrl: https://media.agawen.com/news/technarte/tnt-1.jpg
+  - mediaType: image
     mediaUrl: https://media.agawen.com/news/technarte/tnt-2.jpg
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/technarte/tnt-3.jpg
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/technarte/tnt-4.jpg
-  - mediaType: image
-    mediaUrl: https://media.agawen.com/news/technarte/tnt-5.jpg
 ---
