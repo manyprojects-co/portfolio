@@ -23,10 +23,10 @@ gallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/ars-electronica/aef-6.jpg
   - mediaType: text
-    textContent: "Featured within the exhibition *Butterfly’s Dreams: ++[The New
+    textContent: "Featured within the exhibition *Butterfly’s Dreams: [The New
       Aesthetic of AI in Artistic
       Practice](https://ars.electronica.art/who-owns-the-truth/en/butterflys-dr\
-      eams/)++* co-curated by Ina Conradi and Ong Kian Peng at Atelierhaus
+      eams/)* co-curated by Ina Conradi and Ong Kian Peng at Atelierhaus
       Salzamt, the project incorporated generative imagery exclusively as an
       ideation tool, while insisting on live-action cinematography for its final
       output, offering a deliberate counterpoint to synthetic image generation."
