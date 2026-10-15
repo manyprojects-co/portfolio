@@ -143,7 +143,6 @@ content:
         type: select
         options:
           values: [Award, Screening, Solo exhibition, Group exhibition, Artist Talk, Press]
-      - { name: statement, label: Statement, type: rich-text }
 
       # Main News Visual
       - name: mainVisual
