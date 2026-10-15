@@ -42,18 +42,20 @@ gallery:
     mediaUrl: https://media.agawen.com/news/mvr/mvr-5.jpg
   - mediaType: text
     textContent: >-
-      Personhood (Iteration 4) debuts a new evolution of XJ’s interactive
-      projection-mapped installation, with roots in its ++[first
-      edition](https://agawen.com/art/personhood)++ in 2024. Foregoing the
-      procedural Unity engine mechanics of previous iterations, this version
-      relies on state-based branching animation trees formed via AI animations
-      that interpolate strategically between pivotal keyframes. At every given
-      moment, the artwork “decides” which character animation to transition into
-      next. Prior to recent breakthroughs in video generation, branching a
-      complex scene into several alternate paths at this degree of seamlessness
-      would have been close to impossible.
+      Tracing its origins back to ++[2024](https://agawen.com/art/personhood)++,
+      Personhood (Iteration 4) debuts a new evolution for XJ’s interactive
+      shadow installation.
 
 
-      The 4th iteration of Personhood is curated by So-Yeon Yoon, and supported
-      by [Cornell Council for the Arts](https://cca.cornell.edu/).
+      Departing from off-the-shelf projection software and Unity engine
+      mechanics, this version integrates a custom-developed mapping application
+      built from scratch with real-time Kinect depth sensing and adjustable
+      sensitivity parameter to drive an animation branching decision tree. Prior
+      to recent breakthroughs in AI video generation, branching a complex scene
+      into several alternate paths at this degree of seamlessness would have
+      been close to impossible.
+
+
+      The 4th iteration of Personhood was curated by So-Yeon Yoon, and supported
+      by ++[Cornell Council for the Arts](https://cca.cornell.edu/)++.
 ---
