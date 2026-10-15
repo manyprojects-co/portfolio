@@ -1,7 +1,7 @@
 ---
-title: "Personhood: Iteration 4"
-subheading: A new iteration of the projection-mapped interactive installation
-  exploring the boundaries of presence and identity.
+title: Personhood's 4th Iteration
+subheading: Presentation of AI-enabled interactive shadow installation at MVR
+  Gallery, Ithaca.
 isDateRange: true
 date: 2026-04-25
 endDate: 2026-05-14
