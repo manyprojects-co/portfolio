@@ -1,23 +1,12 @@
 ---
 title: Self—ish
-subheading: Our first multi-work solo exhibition, featuring old and new works
-  across kinetic sculpture, video art, and projection-mapped installations.
+subheading: XJ’s first international multi-work solo exhibition.
 isDateRange: true
 date: 2026-03-07
 endDate: 2026-03-19
 location: Helix Art Space
 city: Stockholm, Sweden
 eventType: Solo exhibition
-statement: >-
-  **Self—*ish***<em></em> reflects the ambiguous space of the digital self,
-  where solitude, self-expression, and exposure coexist, and where identity is
-  both something we claim and something that is claimed for us. What happens to
-  our sense of self when identity becomes a performance, existence requires
-  maintenance, and the real becomes eclipsed by the artificial?
-
-
-  Curated by Ruoxi Gao for the Helix Art Space. Co-developed with Yul Cho and
-  Daniel Daboczy.
 mainVisual:
   mediaType: image
   mediaUrl: https://media.agawen.com/news/selfish/sf-tab.jpg
