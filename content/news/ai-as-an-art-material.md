@@ -13,8 +13,6 @@ mainVisual:
 gallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/has-breakfast/hascb-1.jpg
-  - mediaType: image
-    mediaUrl: https://media.agawen.com/news/has-breakfast/hascb-2.jpg
   - mediaType: text
     textContent: >-
       XJ inaugurated [Helix Art Space](https://helixartspace.se/)’s [Creative
@@ -32,4 +30,6 @@ gallery:
 
       The talk serves as a prelude for XJ’s forthcoming solo exhibition at Helix
       Art Space, scheduled for March 2026.
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/has-breakfast/hascb-2.jpg
 ---
