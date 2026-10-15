@@ -55,5 +55,5 @@ gallery:
 
 
       The 4th iteration of Personhood is curated by So-Yeon Yoon, and supported
-      by Cornell Council for the Arts.
+      by [Cornell Council for the Arts](https://cca.cornell.edu/).
 ---
