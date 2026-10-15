@@ -1,5 +1,5 @@
 ---
-title: Self—ish
+title: Self—ish, a Solo Exhibition
 subheading: XJ’s first international multi-work solo exhibition.
 isDateRange: true
 date: 2026-03-07
