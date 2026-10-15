@@ -1,7 +1,6 @@
 ---
 title: Silent Interference
-subheading: Our new video artwork, Non-moment (2025), was exhibited on an
-  outdoor LED screen in Taiwan as a part of Silent Interference (靜噪).
+subheading: Debut of Non-moment (2025) on an outdoor LED screen in Taoyuan, Taiwan.
 isDateRange: true
 date: 2025-11-28
 endDate: 2025-11-30
