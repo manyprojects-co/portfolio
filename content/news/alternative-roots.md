@@ -13,6 +13,11 @@ mainVisual:
 gallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/alternative-roots/aroots-1.jpg
+  - mediaType: image
+    textContent: |-
+      On November 8, 2025, XJ presented a rough-cut screening of [2025PCM](https://agawen.com/art/2025pcm/) at Hoxton Hall as part of [Alternative Roots](https://mingstrike.com/posts/Alternative-Roots-2025-recap), a festival of ESEA performances and communities. Curated by [Ming Strike](https://mingstrike.com/) and co-produced by [Kakilang](https://www.kakilang.org.uk/), the day-long festival features eighteen ESEA artists and collectives, presenting experimental, process-led works spanning live performance, moving image, and sound.
+
+      Following its initial preview at [Bow Arts](https://bowarts.org/event/bow-skills-talk-screening-an-act-of-homemaking-with-esea-artist-duo-xj-in-collaboration-with-kakilang/), this rough-cut screening presented a work-in-progress of the [Kakilang](https://www.kakilang.org.uk/) commissioned piece, which utilizes architectural projection mapping and physical performance to embody themes of home, precarity, endurance, and place-making.
   - mediaType: text
     textContent: 'About the festival: "On 8 November 2025, 18 artists and
       collectives from the East and Southeast Asian (ESEA) diaspora gathered at
@@ -34,9 +39,4 @@ gallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/alternative-roots/aroots-7.jpg
     caption: Alternative Roots Festival (Images from Ming Strike)
-  - mediaType: image
-    textContent: |-
-      On November 8, 2025, XJ presented a rough-cut screening of [2025PCM](https://agawen.com/art/2025pcm/) at Hoxton Hall as part of [Alternative Roots](https://mingstrike.com/posts/Alternative-Roots-2025-recap), a festival of ESEA performances and communities. Curated by [Ming Strike](https://mingstrike.com/) and co-produced by [Kakilang](https://www.kakilang.org.uk/), the day-long festival features eighteen ESEA artists and collectives, presenting experimental, process-led works spanning live performance, moving image, and sound.
-
-      Following its initial preview at [Bow Arts](https://bowarts.org/event/bow-skills-talk-screening-an-act-of-homemaking-with-esea-artist-duo-xj-in-collaboration-with-kakilang/), this rough-cut screening presented a work-in-progress of the [Kakilang](https://www.kakilang.org.uk/) commissioned piece, which utilizes architectural projection mapping and physical performance to embody themes of home, precarity, endurance, and place-making.
 ---
