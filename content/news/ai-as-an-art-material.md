@@ -1,8 +1,6 @@
 ---
 title: AI as an Art Material
-subheading: We shared our perspective on the deliberate usage of AI as an art
-  "material" in the context of our creative practice on the first Creative
-  Breakfast series at Helix Art Space.
+subheading: Remote artist talk inaugurating Helix Art Space’s Creative Breakfast Series
 isDateRange: false
 date: 2025-11-14
 endDate: 2026-08-12
