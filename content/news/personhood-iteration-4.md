@@ -16,6 +16,24 @@ gallery:
     mediaUrl: https://media.agawen.com/news/mvr/mvr-1.jpg
   - mediaType: text
     textContent: >-
+      Tracing its origins back to ++[2024](https://agawen.com/art/personhood)++,
+      Personhood (Iteration 4) debuts a new evolution for XJ’s interactive
+      shadow installation.
+
+
+      Departing from off-the-shelf projection software and Unity engine
+      mechanics, this version integrates a custom-developed mapping application
+      built from scratch with real-time Kinect depth sensing and adjustable
+      sensitivity parameter to drive an animation branching decision tree. Prior
+      to recent breakthroughs in AI video generation, branching a complex scene
+      into several alternate paths at this degree of seamlessness would have
+      been close to impossible.
+
+
+      The 4th iteration of Personhood was curated by So-Yeon Yoon, and supported
+      by ++[Cornell Council for the Arts](https://cca.cornell.edu/)++.
+  - mediaType: text
+    textContent: >-
       Personhood (Iteration 4) relies on state-based branching animation trees
       formed via AI animations that interpolate strategically between pivotal
       keyframes. At every given moment, the artwork “decides” which character
@@ -40,22 +58,4 @@ gallery:
     mediaUrl: https://media.agawen.com/news/mvr/mvr-4.jpg
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/mvr/mvr-5.jpg
-  - mediaType: text
-    textContent: >-
-      Tracing its origins back to ++[2024](https://agawen.com/art/personhood)++,
-      Personhood (Iteration 4) debuts a new evolution for XJ’s interactive
-      shadow installation.
-
-
-      Departing from off-the-shelf projection software and Unity engine
-      mechanics, this version integrates a custom-developed mapping application
-      built from scratch with real-time Kinect depth sensing and adjustable
-      sensitivity parameter to drive an animation branching decision tree. Prior
-      to recent breakthroughs in AI video generation, branching a complex scene
-      into several alternate paths at this degree of seamlessness would have
-      been close to impossible.
-
-
-      The 4th iteration of Personhood was curated by So-Yeon Yoon, and supported
-      by ++[Cornell Council for the Arts](https://cca.cornell.edu/)++.
 ---
