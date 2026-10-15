@@ -67,4 +67,29 @@ gallery:
       Yul Cho and Daniel Daboczy."
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/selfish/sf-14.jpg
+  - mediaType: text
+    textContent: >-
+      From March 7-19, 2026, XJ presented
+      [Self—*ish*](https://helixartspace.se/previous-exhibitions/self-ish), the
+      duo’s first multi-work solo exhibition at [Helix Art
+      Space](https://helixartspace.se/) in Stockholm, Sweden. Curated as a
+      journey across kinetic sculpture, video, and video sculpture, the
+      exhibition gathered five works that explore the**** fragmentation and
+      extraction of the self in the digital age.
+
+
+      Featuring [User](https://agawen.com/art/user) (2025),
+      [Xin-1.0.36](https://agawen.com/art/xin-1036) (2026),
+      [Screentime](https://agawen.com/art/screentime) (2024),
+      [Metadata](https://agawen.com/art/metadata) (2026), and
+      [Personhood](https://agawen.com/art/personhood) (2026 edition), Self—*ish*
+      traced how human habits and gestures are observed, recorded, and
+      reconstructed within technological infrastructures. The exhibition marked
+      a major consolidation of XJ’s practice, which uses emerging technologies
+      as artistic media to critically interrogate their consequences on the
+      human condition.
+
+
+      Self—ish was curated by Ruoxi Gao, and co-developed with Yul Cho and
+      Daniel Daboczy.
 ---
