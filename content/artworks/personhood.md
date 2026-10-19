@@ -4,8 +4,8 @@ productionDate: 2024-10-01
 tagline: Interactive projection-mapped installation
 medium: Single-channel video projection, custom real-time software, Microsoft
   Kinect depth sensor, custom VCV Rack synthesized audio, and physical spotlight
-size: "Installation footprint variable. Reference: 370 × 868 × 585 cm (12.1 ×
-  28.5 × 19.2 ft)"
+size: "Installation footprint variable. Reference: 200 × 300 × 300 cm (6.6 × 9.8
+  × 9.8 ft)"
 duration: Real-time interactive loop
 featured: true
 featureOrder: 2
