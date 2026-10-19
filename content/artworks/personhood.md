@@ -58,27 +58,32 @@ cardGallery:
     mediaUrl: https://media.agawen.com/artworks/personhood/psh-art8.jpg
 technicalTagline: An iterating work
 technicalText: >-
-  As a piece that comments on our coexistence with the impacts of technology,
-  Personhood is a work that evolves with available technology through the
-  different iterations, while keeping the spotlight illusion created by a
-  physical lamp.
+  Responding to the pervasive impacts of contemporary technology, Personhood is
+  a continuously iterating work that evolves with emerging digital media, while
+  remaining consistent to its physical spotlight-illusion. In the first version
+  (++[Asian Art Museum](https://agawen.com/news/proof-of-personhood/)++, 2024),
+  shadow movements were generated live in Unity via the motion-matching
+  technique for motion-captured animations. The soundscape is generated live in
+  VCV Rack, blending ambience with an abstraction of digital chimes that evoke a
+  virtual environment.
 
 
-  In the first version (2024) for the Asian Art Museum, the shadow movements are
-  generated live in Unity via mixing and matching motion-captured animations.
-  The soundscape is generated live in VCV Rack, a virtual modular synthesizer,
-  blending an ebbing-and-flowing layer of ambience and an abstraction of digital
-  chimes reminiscent of notification sounds.
+  The subsequent versions were non-interactive video works that experimented
+  with adapting the visual grammar of the work towards more precise narratives.
+  A version of the work made for Slovenia explored the shadows as gallery
+  visitors (++[Speculum Artium](https://agawen.com/news/speculum-artium/)++,
+  2025), and a later iteration in Stockholm uses the likeness of JJ to depict an
+  artist perpetually at work—exploring the devaluation of craft by an age
+  offering disposable simulations of creativity (++[Helix Art
+  Space](https://agawen.com/news/selfish/)++, 2026).
 
 
-  In the latest version in MVR Gallery, Personhood (2026) relies on state-based
-  branching animation trees formed via AI animations that interpolate
-  strategically between pivotal keyframes. At every given moment, the artwork
-  “decides” which character animation to transition into next. Prior to recent
-  breakthroughs in video generation, branching a complex scene into several
-  alternate paths at this degree of seamlessness would have been close to
-  impossible. This iteration prioritizes human fidelity, and the shadow is
-  formed in the likeness of Xin.
+  The latest version (++[MVR
+  Gallery](https://agawen.com/news/personhood-iteration-4/)++, 2026) relies on
+  state-based branching animation trees that interpolate between pivotal
+  keyframes. At every given moment, the artwork “decides” which pre-generated
+  character animation to transition into next. The shadow is formed in the
+  likeness of Xin.
 technicalGallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/personhood/psh-tech1.jpg
