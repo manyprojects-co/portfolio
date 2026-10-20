@@ -20,7 +20,7 @@ gallery:
       duo’s first multi-work solo exhibition at [Helix Art
       Space](https://helixartspace.se/) in Stockholm, Sweden. Curated as a
       journey across kinetic sculpture, video, and video sculpture, the
-      exhibition gathered five works that explore the**** fragmentation and
+      exhibition gathered five works that explore the fragmentation and
       extraction of the self in the digital age.
 
 
