@@ -29,8 +29,9 @@ artistStatement: >-
   Mahmood](https://ahadmahmood.com/)++ (cinematography), with support from
   ++[Erving Tan](https://filmfreeway.com/ErvingTan)++ (additional videography)
   for the live interactive performance.
-institutionSupport: Special thanks to Gary Hong (Ten Square Singapore) and Ina
-  Conradi (NTU’s School of Art Design and Media).
+institutionSupport: Special thanks to Gary Hong ([Ten
+  Square](https://www.10sq.io/), Singapore), and co-curators of the ART-ACT
+  Festival, Aura Murillo and [Ina Conradi](https://inaconradi.com/).
 landingVisual:
   mediaType: image
   mediaUrl: https://media.agawen.com/artworks/box-body/bb-ld.jpg
