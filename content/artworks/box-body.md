@@ -16,12 +16,19 @@ exhibitions: >-
 
   2023 / [Ars Electronica Festival](https://agawen.com/news/ars-electronica)
   (Linz)
-artistStatement: What contemporary boxes have we trapped ourselves in? Box Body
-  is a site-specific video artwork wrapped around the Ten Square billboard in
-  Singapore, exploring the theme of constriction that defines many urban lives.
-  For a few nights in one of the busiest and fastest-growing metropolitan spaces
-  in the world, a giant crouched, wedged in a building, contemplating their
-  entrapment and ours, too.
+artistStatement: >-
+  *Box Body* displays a giant person crammed into a prominent advertising space,
+  refitting its massive curved display into a claustrophobic box. With room
+  enough to crouch, they calmly feel around to test the space’s bounds.
+  Initially built to represent individual agency against cultural and
+  environmental determinants, the work has, in public, surfaced latent biases
+  surrounding a person’s propriety, property, and place.
+
+
+  Box Body was developed in collaboration with ++[Ahad
+  Mahmood](https://ahadmahmood.com/)++ (cinematography), with support from
+  ++[Erving Tan](https://filmfreeway.com/ErvingTan)++ (additional videography)
+  for the live interactive performance.
 institutionSupport: Special thanks to Gary Hong (Ten Square Singapore) and Ina
   Conradi (NTU’s School of Art Design and Media).
 landingVisual:
