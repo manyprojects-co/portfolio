@@ -43,12 +43,26 @@ cardGallery:
       (cinematographer), with support from Erving Tan (videographer) for the
       live interactive performance.
 technicalTagline: A Living Screen
-technicalText: Anamorphic illusions are a centuries-old perspective trick, and
-  the shinjuku crossings and times squares of modern-day had adapted them for
-  the spectacle of 3D cats in curvy billboards by the time this project was
-  concieved. However, skewing and stretching filmed, non-CG footage—let alone
-  doing so live with an actor interacting with pedestrians below—seemed to us an
-  entirely novel concept.
+technicalText: >-
+  Anamorphic illusions rely on centuries-old perspective tricks, and by the time
+  this project was conceived, landmarks like Times Square and Shinjuku crossing
+  had already adapted these techniques for 3D cats and flying astronauts on
+  their curved billboards. However, skewing real-world footage—and alone doing
+  so live with an actor interacting with pedestrians below—seemed to us an
+  entirely novel concept then.
+
+
+  The process began by acquiring the billboard aspect ratio, from which a
+  transparent scale model was built in the studio. Performance footage was
+  captured from the exact angle of the street-level spectator and**** unwrapped
+  into a rectangular frame. When played back on the billboard, the flattened
+  video reconstructs the optical illusion of depth.
+
+
+  Prior to Singapore Art Week, the work’s first public appearance featured live
+  bidirectional interaction. A return monitor directly in front of the camera
+  allowed the performer to see the street in real-time and react to passerbys.
+  The performance feed was captured live and skewed in real time via MadMapper.
 technicalGallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/box-body/bb-tech1.jpg
