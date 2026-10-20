@@ -83,13 +83,16 @@ gallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/selfish/sf-13.jpg
   - mediaType: text
-    textContent: "**Self—*ish*** reflects the ambiguous space of the digital self,
-      where solitude, self-expression, and exposure coexist, and where identity
-      is both something we claim and something that is claimed for us. What
-      happens to our sense of self when identity becomes a performance,
-      existence requires maintenance, and the real becomes eclipsed by the
-      artificial?Curated by Ruoxi Gao for the Helix Art Space. Co-developed with
-      Yul Cho and Daniel Daboczy."
+    textContent: >-
+      Self—*ish* reflects the ambiguous space of the digital self, where
+      solitude, self-expression, and exposure coexist, and where identity is
+      both something we claim and something that is claimed for us. What happens
+      to our sense of self when identity becomes a performance, existence
+      requires maintenance, and the real becomes eclipsed by the artificial. 
+
+
+      Curated by Ruoxi Gao for the Helix Art Space. Co-developed with Yul Cho
+      and Daniel Daboczy.
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/selfish/sf-14.jpg
 ---
