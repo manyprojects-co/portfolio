@@ -10,14 +10,16 @@ featured: false
 premiereCity: Stockholm, Sweden
 exhibitions: 2026 / [Helix Art Space](https://agawen.com/news/selfish) (Stockholm)
 artistStatement: >-
-  Screentime jabs at several poignant aspects of our digital lives: we are all
-  constantly surveilled, we are all now more alone, and we are all made more
-  alike. The work places the viewer in a liminal space behind screens, offering
-  an intimate peek into the digital lives of strangers.
+  Normally operating as stages for the sensational, captivating, and
+  dopaminergic, the phone screens in *Screentime* are instead inverted: viewers
+  occupy a space behind the screen, peeping through to observe people in
+  unvarnished moments of private downtime. By transforming spectator into voyeur
+  across several isolated displays, the work reflects on themes of pervasive
+  surveillance and the ironically communal lonelinesses experienced on-device.
 
 
-  A special thank you to our friends who made this work possible through their
-  performances.
+  Featured performers: Arnau Donate, Liana O'Cleirigh, Aura Murillo, Clemens
+  Scherf, Rhea Thomas, Ishaan Bose Verma, Xin Wen
 landingVisual:
   mediaType: image
   mediaUrl: https://media.agawen.com/artworks/screentime/sct-ld.jpg
