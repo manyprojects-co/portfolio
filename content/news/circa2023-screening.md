@@ -34,14 +34,14 @@ gallery:
     mediaUrl: https://media.agawen.com/news/circa-screen/circa-s2.jpg
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/circa-screen/circa-s3.jpg
-  - mediaType: image
-    mediaUrl: https://media.agawen.com/news/circa-screen/circa-s4.jpg
   - mediaType: text
     textContent: The CIRCA 2023 edition is juried by a panel including Sir Frank
       Bowling, Douglas Gordon, Anne Imhof, Michèle Lamy, Shirin Neshat, Hans
       Ulrich Obrist, Josef O’Connor, Olu Odukoya, Sir Norman Rosenthal and Nadya
       Tolokonnikova of Pussy Riot, alongside an international public vote
       powered by Piccadilly Lights.
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/circa-screen/circa-s4.jpg
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/circa-screen/circa-s5.jpg
   - mediaType: image
