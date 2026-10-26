@@ -20,12 +20,12 @@ gallery:
       racial identity.
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/kakilang/kak-1.jpg
-  - mediaType: image
-    mediaUrl: https://media.agawen.com/news/kakilang/kak-2.jpg
   - mediaType: text
     textContent: The proposed video sculpture uses satirical images of miniaturized
       home living inspired by social media parody accounts as a critique of
       rising living costs and constricting living standards. The work will debut
       as a part of Kakilang’s [2025 Autumn Season
       Program](https://www.kakilang.org.uk/2025-autumn-season).
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/kakilang/kak-2.jpg
 ---
