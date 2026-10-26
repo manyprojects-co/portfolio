@@ -11,7 +11,7 @@ exhibitions: 2025 / [Turtle Chamber
   Projects](https://agawen.com/news/silent-interference/) (Taoyuan)
 artistStatement: Non-moment isolates the gestural language commonly used to
   commune with digital devices. Through the implied perspective of a phone
-  looking out, and the abandonment of all other hints of context, the work
+  looking out, and the thorough subtraction of any environmental cues, the work
   contextualizes phone usage as a mostly textureless, anonymous, and ambiguous
   string of unspent time and unmade memories.
 landingVisual:
@@ -36,7 +36,6 @@ cardGallery:
     mediaUrl: https://media.agawen.com/artworks/non-moment/nmm-art5.jpg
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/non-moment/nmm-art6.jpg
-technicalTagline: Deliberate blur
 technicalText: London's overcast sky provided the diffused light that produced
   the soft volumetric shadows cast from a hand onto a white sheet. A camera
   placed behind the sheet was used to capture the hand’s rear-projected
