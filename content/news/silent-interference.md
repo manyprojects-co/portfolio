@@ -28,18 +28,6 @@ gallery:
       touch-screen interactions within a blank white screen. Viewed from the
       perspective of the device looking back at the user, the work reflects on
       unmade memories and unspent time lost to perpetual screen immersion.
-  - mediaType: text
-    textContent: >-
-      Non-moment (2025) is a video art piece depicting the volumetric silhouette
-      of a hand choreographed according to commonplace gestures of touch-screen
-      interaction. It is a eulogy to the memories we will never make, eclipsed
-      by the deluge of non-moments spent with our thumbs fixed on flat panels of
-      light.
-
-
-      The work was exhibited as a part of Turtle Chambers Projects' exhibition,
-      Silent Interference (靜噪), amongst 27 works selected from over 150
-      submissions across 48 countries and regions.
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/silent-inteference/si-2.jpg
   - mediaType: image
