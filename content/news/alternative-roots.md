@@ -13,7 +13,7 @@ mainVisual:
 gallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/alternative-roots/aroots-1.jpg
-  - mediaType: image
+  - mediaType: text
     textContent: |-
       On November 8, 2025, XJ presented a rough-cut screening of [2025PCM](https://agawen.com/art/2025pcm/) at Hoxton Hall as part of [Alternative Roots](https://mingstrike.com/posts/Alternative-Roots-2025-recap), a festival of ESEA performances and communities. Curated by [Ming Strike](https://mingstrike.com/) and co-produced by [Kakilang](https://www.kakilang.org.uk/), the day-long festival features eighteen ESEA artists and collectives, presenting experimental, process-led works spanning live performance, moving image, and sound.
 
