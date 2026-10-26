@@ -61,8 +61,8 @@ technicalText: >-
   remaining consistent to its physical spotlight-illusion. In the first version
   (++[Asian Art Museum](https://agawen.com/news/proof-of-personhood/)++, 2024),
   shadow movements were generated live in Unity via the motion-matching
-  technique for motion-captured animations. The soundscape is generated live in
-  VCV Rack, blending ambience with an abstraction of digital chimes that evoke a
+  technique for motion-captured animations. The soundscape is generated on VCV
+  Rack, blending ambience with an abstraction of digital chimes that evoke a
   virtual environment.
 
 
