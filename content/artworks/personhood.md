@@ -20,16 +20,15 @@ exhibitions: >-
   2026 / [Helix Art Space](https://agawen.com/news/selfish/) (Stockholm)  
 
   2026 / [MVR Gallery](https://agawen.com/news/personhood-iteration-4/) (Ithaca)
-artistStatement: "Shadows are an ancient philosophical analogue for false
-  realities and a traditional medium for narrative storytelling, both of which
-  the work complicates: in *Personhood*, shadows occupy their own reality, and
-  move without a mover. Across several incarnations since conception, the work
-  has served as a space for meditation on themes of a dying internet, the
-  proliferation of evermore persuasively intelligent technologies, and an
-  erosion of the human race’s *raison d'etre*."
-institutionSupport: Developed for the Research and Development space of Asian
-  Art Museum in San Francisco (curated by Cheng Xu). Alternative forms have been
-  developed for various spaces around the globe.
+artistStatement: Shadows are an old philosophical analogue for false realities
+  and a traditional medium for storytelling, both of which *Personhood*
+  complicates. Animated in real time and projected floor-to-wall, its shadows
+  occupy their own reality and move without a mover. Across several incarnations
+  since 2024, these authorless shadows have come to represent a dying internet,
+  ever more persuasively intelligent technologies, and a challenge to the human
+  *raison d’être*.
+institutionSupport: First developed with Asian Art Museum’s RAD (Research And
+  Development) space, curated by Cheng Xu.
 landingVisual:
   mediaType: image
   mediaUrl: https://media.agawen.com/artworks/personhood/psh-ld.jpg
@@ -56,7 +55,6 @@ cardGallery:
     mediaUrl: https://media.agawen.com/artworks/personhood/psh-art7.jpg
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/personhood/psh-art8.jpg
-technicalTagline: An iterating work
 technicalText: >-
   Responding to the pervasive impacts of contemporary technology, Personhood is
   a continuously iterating work that evolves with emerging digital media, while
