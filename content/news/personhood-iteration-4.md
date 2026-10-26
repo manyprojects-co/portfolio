@@ -1,5 +1,5 @@
 ---
-title: Personhood's 4th Iteration
+title: Personhood, Version Four
 subheading: Presentation of AI-enabled interactive shadow installation at MVR
   Gallery, Ithaca.
 isDateRange: true
@@ -16,22 +16,20 @@ gallery:
     mediaUrl: https://media.agawen.com/news/mvr/mvr-1.jpg
   - mediaType: text
     textContent: >-
-      Tracing its origins back to ++[2024](https://agawen.com/art/personhood)++,
-      Personhood (Iteration 4) debuts a new evolution for XJ’s interactive
-      shadow installation.
+      Tracing its origins back to [2024](https://agawen.com/art/personhood),
+      Personhood (Version 4) debuts a new evolution for XJ’s interactive shadow
+      installation at Martha Van Rensselaer Gallery, Cornell University.
 
 
-      Departing from off-the-shelf projection software and Unity engine
-      mechanics, this version integrates a custom-developed mapping application
-      built from scratch with real-time Kinect depth sensing and adjustable
-      sensitivity parameter to drive an animation branching decision tree. Prior
-      to recent breakthroughs in AI video generation, branching a complex scene
-      into several alternate paths at this degree of seamlessness would have
-      been close to impossible.
+      This version of Personhood integrates a proprietary projection-mapping
+      tool built from scratch, marking a departure from off-the-shelf projection
+      tools and Unity engine mechanics. It features real-time Kinect depth
+      sensing and adjustable sensitivity parameters to drive a branching
+      animation decision tree.
 
 
       The 4th iteration of Personhood was curated by So-Yeon Yoon, and supported
-      by ++[Cornell Council for the Arts](https://cca.cornell.edu/)++.
+      by [Cornell Council for the Arts](https://cca.cornell.edu/).
   - mediaType: text
     textContent: >-
       Personhood (Iteration 4) relies on state-based branching animation trees
