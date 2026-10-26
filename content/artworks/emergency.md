@@ -17,17 +17,17 @@ exhibitions: >-
   2023 / [CIRCA Public Vote
   Prize](https://agawen.com/news/circa2023-public-vote-prize/) Recipient
 artistStatement: >-
-  EMERGE:NCY is an embodied reaction to the encroaching structural determinism
-  of city life within the systems and expectations that entrap us. It is a
-  site-specific film made for the London Piccadilly lights, trapping a helpless
-  giant within this monumental lynchpin for commerce and tourism. The giant
-  struggles, tired and defeated and unrelenting—then a breakthrough: light
-  floods the darkness. Its title comes from Rebecca Solnit’s ‘Hope in the Dark’,
-  which argues: “Inside the word “emergency” is “emerge”; from an emergency new
-  things come forth.”
+  EMERGE:NCY traps a monumental human within the Piccadilly Lights, from which
+  they struggle to break free. The work responds to the CIRCA 20:23 ++[Manifesto
+  of Hope](https://circa.art/manifesto-circa-2023/)++ by insisting that hope is
+  not all optimism: it is made of restlessness, despair, and confusion as well.
+  It takes its title from writer and activist Rebecca Solnit’s *Hope in the
+  Dark*, in which she elaborates on hope as action despite uncertainty and
+  posits that “Inside the word ‘emergency’ is ‘emerge’; from an emergency new
+  things come forth”.
 
 
-  EMERGE:NCY was created in collaboration with Ruishuke Chen (cinematographer)
+  EMERGE:NCY was created in collaboration with Ruishuke Chen (cinematography)
   and Luling Wang (score).
 landingVisual:
   mediaType: image
