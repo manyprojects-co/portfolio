@@ -142,7 +142,7 @@ content:
         label: Event Type
         type: select
         options:
-          values: [Award, Screening, Solo exhibition, Group exhibition, Artist Talk, Press]
+          values: [Award, Screening, Solo exhibition, Group exhibition, Artist Talk, Press, Commission]
 
       # Main News Visual
       - name: mainVisual
