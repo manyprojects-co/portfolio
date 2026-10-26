@@ -103,8 +103,7 @@ content:
           - { name: caption, label: Image/Video Caption, type: string }
           - { name: textContent, label: Text Block Content, type: rich-text }
 
-      # Technical Tagline & Text
-      - { name: technicalTagline, label: Technical Tagline, type: string }
+      # Technical Text
       - { name: technicalText, label: Technical Text, type: rich-text }
 
       # Technical Gallery (Intersperse Images, Videos, & Text)
