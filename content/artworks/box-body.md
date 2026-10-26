@@ -46,10 +46,6 @@ cardGallery:
     mediaUrl: https://media.agawen.com/artworks/box-body/bb-art1.jpg
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/box-body/bb-art2.jpg
-  - mediaType: text
-    textContent: Box Body was developed in collaboration with Ahad Mahmood
-      (cinematographer), with support from Erving Tan (videographer) for the
-      live interactive performance.
 technicalTagline: A Living Screen
 technicalText: >-
   Anamorphic illusions rely on centuries-old perspective tricks, and by the time
@@ -62,9 +58,9 @@ technicalText: >-
 
   The process began by acquiring the billboard aspect ratio, from which a
   transparent scale model was built in the studio. Performance footage was
-  captured from the exact angle of the street-level spectator and unwrapped into
-  a rectangular frame. When played back on the billboard, the flattened video
-  reconstructs the optical illusion of depth.
+  captured from the exact angle of the street-level spectator and**** unwrapped
+  into a rectangular frame. When played back on the billboard, the flattened
+  video reconstructed the optical illusion of depth.
 
 
   Prior to Singapore Art Week, the work’s first public appearance featured live
