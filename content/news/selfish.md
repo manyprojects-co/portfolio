@@ -11,6 +11,8 @@ mainVisual:
   mediaType: image
   mediaUrl: https://media.agawen.com/news/selfish/sf-tab.jpg
 gallery:
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/news/selfish/sf-1.jpg
   - mediaType: text
     textContent: >-
       From March 7 to March 19, 2026, XJ presented
@@ -40,8 +42,6 @@ gallery:
       The exhibition marked a major consolidation of XJ’s practice, which uses
       emerging technologies as artistic media to critically interrogate their
       consequences on the human condition.
-  - mediaType: image
-    mediaUrl: https://media.agawen.com/news/selfish/sf-1.jpg
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/selfish/sf-2.jpg
   - mediaType: image
