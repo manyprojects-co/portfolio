@@ -4,6 +4,7 @@ subheading: Preview of Kakilang commission and panel on migrant creative
   infrastructure in London.
 isDateRange: false
 date: 2025-10-09
+endDate: 2026-10-26
 location: Bow Arts
 city: London
 eventType: Artist Talk
