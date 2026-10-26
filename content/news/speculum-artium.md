@@ -27,11 +27,6 @@ gallery:
       silhouettes within the gallery to simulate plausible exhibition visitors,
       the work invites real visitors to reflect on what it means to share space
       with digital entities that convincingly mimic our presence.
-  - mediaType: text
-    textContent: Established in 2008, the Speculum Artium Festival is an annual
-      international event dedicated to new media art, contemporary
-      techno-culture, and the intersection of science and technology. It is
-      hosted each autumn in the post-industrial town of Trbovlje, Slovenia.
   - mediaType: image
     mediaUrl: https://media.agawen.com/news/speculum/saf-2.jpg
   - mediaType: image
