@@ -39,11 +39,16 @@ cardGallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/screentime/sct-art4.jpg
 technicalTagline: Behind the screens
-technicalText: We interviewed several friends on their nightly phone rituals,
-  which they then replicated out of habit on encased sheets of glass. Embedded
-  cameras recorded these fake digital interactions as though peering through
-  from behind each screen. We then created fake interfaces and animated them to
-  match each scene.
+technicalText: >-
+  Performers were first interviewed on their nightly digital rituals, which they
+  then replicated out of habit on a sheet of glass rigged with an embedded
+  camera. These rigs were designed to capture interactions in extremely high
+  fidelity, including the minutiae of fingertips pressed white on glass.
+
+
+  To emphasize the viewer’s position behind the screen-space, digital interfaces
+  were meticulously designed and world-built from scratch on Figma, horizontally
+  mirrored, then rendered and animated spatially through Blender.
 technicalGallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/screentime/sct-tech1.jpg
