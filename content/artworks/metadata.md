@@ -35,7 +35,6 @@ cardGallery:
     mediaUrl: https://media.agawen.com/artworks/metadata/mtdt-art3.jpg
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/metadata/mtdt-art4.jpg
-technicalTagline: Modern human nature
 technicalText: >-
   Production began with the acquisition of a medical-grade anatomical 3D model
   of a human body, which was virtually dissected to reveal only bones and nerves
