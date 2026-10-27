@@ -10,6 +10,8 @@
 import { readFileSync, existsSync } from "node:fs";
 import { normaliseMediaUrl, looksLikeVideo, MEDIA_ORIGIN, MANIFEST_PATH } from "../src/lib/media-origin.mjs";
 import { walkMediaRefs, fm, dir } from "./content-walk.mjs";
+import { EVENT_TYPES } from "../src/lib/event-types.mjs";
+import * as yaml from "js-yaml";
 
 const arts = dir("content/artworks"), news = dir("content/news");
 const has = (v) => v !== undefined && v !== null && v !== "" &&
@@ -152,6 +154,26 @@ if (legacyImg) flags.push(
 if (galEmpty) flags.push(
   `${galEmpty} news items have gallery rows that carry NOTHING — slots created in\n` +
   `     the CMS UI but no URL pasted yet. Migration in progress, not finished.`);
+// ── the eventType list, compared to .pages.yml (2026-10-27) ──────────────────────────
+/* ⛔ `.pages.yml` gained `Commission` on 2026-10-26 and the schema enum did not; the build
+ * failed on the next CMS save and nobody was told. The schema now reads `EVENT_TYPES`; this
+ * compares that list to the yml's select so the two cannot drift silently again. */
+{ const yml = yaml.load(readFileSync(".pages.yml", "utf8"));
+  const findSelect = (node) => { if (!node || typeof node !== "object") return null;
+    if (Array.isArray(node)) { for (const x of node) { const r = findSelect(x); if (r) return r; } return null; }
+    if (node.name === "eventType" && node.options?.values) return node.options.values;
+    for (const v of Object.values(node)) { const r = findSelect(v); if (r) return r; } return null; };
+  const ymlTypes = findSelect(yml);
+  if (!ymlTypes) flags.push("⛔ could not find the eventType select in .pages.yml — the report cannot compare it to the schema.");
+  else {
+    const onlyYml = ymlTypes.filter((t) => !EVENT_TYPES.includes(t));
+    const onlySchema = EVENT_TYPES.filter((t) => !ymlTypes.includes(t));
+    if (onlyYml.length) flags.push(`⛔ eventType in .pages.yml but NOT in the schema: ${onlyYml.join(", ")} — the first CMS save using it FAILS THE BUILD. Add to src/lib/event-types.mjs.`);
+    if (onlySchema.length) flags.push(`eventType in the schema but not offered by .pages.yml: ${onlySchema.join(", ")} — harmless; editors cannot pick it.`);
+  }
+  for (const n of news) if (n.d.eventType && !EVENT_TYPES.includes(n.d.eventType))
+    flags.push(`⛔ news/${n.slug}: eventType "${n.d.eventType}" is not in the schema — THIS FILE FAILS THE BUILD.`);
+}
 for (const n of news) {
   if (n.d.isDateRange === false && n.d.endDate)
     flags.push(`news/${n.slug}: isDateRange is false but endDate is set (${String(n.d.endDate).slice(0, 10)}).`);
