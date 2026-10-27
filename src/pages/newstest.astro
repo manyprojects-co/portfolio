@@ -1,0 +1,286 @@
+---
+/**
+ * /newstest — DRAFT SURFACE for the news-list redesign (2026-10-27, JJ).
+ *
+ * ⛔ NOT FOR PRODUCTION. Delete this file (or leave it uncommitted) once the changes are
+ * ported into NewsList.astro + global.css. It exists so the news work can be iterated on
+ * the same dev server as the placeholder/reflow session WITHOUT touching the files that
+ * session edits (Media.astro, global.css, site.js).
+ *
+ * What it is: the real global.css + the real news data + the real row classes, wrapped in
+ * a bare scroller (no site.js, no tab deck, no gesture arbiter), with the proposed changes
+ * layered in ONE scoped <style> block below. Everything in that block is the delta to port.
+ *
+ * THE THREE CHANGES UNDER TEST:
+ *   1. ROW ORDER — lead with title + subheading, END with `type · elapsed`.
+ *   2. THUMBNAIL CAP — `--news-img-w` cannot exceed 30vw; height follows via aspect-ratio,
+ *      so the text column stops being crushed on narrow viewports.
+ *   5. WIDE (≥932 = row + 2·frame) — meta on a THIRD column, one line, sized to the widest (subgrid);
+ *      the row widens to --art-body-w (812).
+ *   4. MOBILE GAPS — image↔text gap halves (32 → 16), entry↔entry gap ×1.5 (32 → 48).
+ *   3. MOBILE FRAME — `--frame-margin` halves (60 → 30) at a mobile breakpoint. The
+ *      vertical rhythm is already derived from it (--band = 2·frame + navH; .sub's bottom
+ *      pad; nav inset), so it follows for free in CSS. ⚠︎ site.js hardcodes `FRAME = 60`
+ *      when it measures --band — the port must make it read the token (cssNum) instead.
+ */
+import "../styles/global.css";
+import Media from "../components/Media.astro";
+import { allNews } from "../lib/content";
+import { titleCase, typeLabel, timeElapsed } from "../lib/format";
+const news = await allNews();
+
+/* VARIANT B — "grid": the Eliasson archetype (image grid, title → venue, YEAR AS A DIVIDER
+   between groups, no per-row date). Grouped here so the markup is a plain loop. UTC year,
+   same care as format.ts — authored in Manila, read anywhere. */
+const byYear: { year: string; items: typeof news }[] = [];
+for (const item of news) {
+  const y = item.date ? String(new Date(item.date).getUTCFullYear()) : "undated";
+  const g = byYear[byYear.length - 1];
+  if (g && g.year === y) g.items.push(item); else byYear.push({ year: y, items: [item] });
+}
+const place = (item: any) => [item.location, item.city && `(${item.city})`].filter(Boolean).join(" ");
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>newstest — Many Projects</title>
+    <meta name="robots" content="noindex" />
+    <script is:inline>
+      /* ?v=grid → variant B. Set on <html> before first paint so there is no flash. */
+      document.documentElement.dataset.v = new URLSearchParams(location.search).get("v") || "grid";   /* grid is the keeper (JJ, 2026-10-27); ?v=row shows the retired row draft */
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
+  </head>
+  <body id="newstest">
+    <!-- the real nav markup, for the real nav→content spacing; links are inert here -->
+    <nav class="nav" id="nav">
+      <div class="nav-track">
+        <div class="nav-left">
+          <a>Art</a>
+          <a class="nt-active">News</a>
+          <a>Bio</a>
+        </div>
+        <a class="cx-toggle">Contact</a>
+      </div>
+    </nav>
+
+    <div class="nt-sub">
+      <div class="news-list">
+        {news.map((item) => (
+          <article class="news-item">
+            <a class="ni-inner" href={`/news/${item.slug}`}>
+              <Media media={item.image} alt={item.title} class="ni-img"
+                     widths={[240, 480, 720]} sizes="min(240px, 30vw)" ratio={[4, 3]} />
+              <div class="ni-text">
+                {/* 1. HEADING FIRST */}
+                <p class="ni-heading">
+                  <span class="ni-title">{titleCase(item.title)}</span>
+                  {item.subheading && <>: <span class="ni-sub">{item.subheading}</span></>}
+                </p>
+                {/* 1. META LAST. No data-elapsed hook here (no site.js on this page), so the
+                    baked value stands — the same string first paint shows on the live site. */}
+                <div class="ni-meta">
+                  <span>{typeLabel(item.eventType)}</span>
+                  <span class="ni-sep">·</span>
+                  <span>{item.date ? timeElapsed(item.date) : ""}</span>
+                </div>
+              </div>
+            </a>
+          </article>
+        ))}
+      </div>
+
+      <!-- ============ VARIANT B: GRID (?v=grid) ============ -->
+      <div class="ng-list">
+        {byYear.map((g) => (
+          <section class="ng-group">
+            <div class="ng-year">{g.year}</div>
+            <div class="ng-grid">
+              {g.items.map((item) => (
+                <a class="ng-card" href={`/news/${item.slug}`}>
+                  <Media media={item.image} alt={item.title} class="ng-img"
+                         widths={[400, 800, 1200]} sizes="(max-width: 600px) 100vw, (max-width: 931px) 50vw, 33vw"
+                         ratio={[4, 3]} />
+                  <p class="ng-cap">
+                    <span class="ng-title">{titleCase(item.title)}</span>
+                    {place(item) && <span class="ng-venue">{place(item)}</span>}
+                    <span class="ng-type">{typeLabel(item.eventType)}</span>
+                  </p>
+                </a>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+    </div>
+
+    <!-- the test rig's own knobs, bottom-right -->
+    <div class="nt-hud" aria-hidden="true">
+<b id="ntV"></b> · <span id="ntVw"></span> · frame <span id="ntFrame"></span> · img <span id="ntImg"></span>
+    </div>
+
+    <style is:global>
+      /* ================= THE DELTA TO PORT — everything below is the proposal ================= */
+      :root {
+        /* [TUNE] 2. the thumbnail's viewport cap, as a fraction of vw */
+        --news-img-vw-max: 30vw;
+        /* 2. the cap applied: the SAME formula as before, bounded by the viewport.
+           Height follows through .ni-img's aspect-ratio; --news-text-w (1.5×) and
+           --news-row-w follow through their own formulas, so nothing else changes. */
+        --news-img-w: min(calc(var(--art-side-w) * var(--news-img-scale)), var(--news-img-vw-max));
+        /* [TUNE] 3. the mobile frame: HALF the desktop frame. ⚠︎ The 60 is repeated here on
+           purpose — `calc(var(--frame-margin) / 2)` would be a cycle once the media query
+           assigns it back to --frame-margin, and a cyclic custom property computes to the
+           guaranteed-invalid value (every inset collapses to 0). */
+        --frame-margin-mobile: calc(60px / 2);
+      }
+      /* 3. the breakpoint. ⚠︎ A media query cannot read a token; this number is a choice,
+         not a derivation. 600 is below the 812 card-stack point so a tablet keeps the full
+         frame — ❓ JJ to confirm, or align to 812 for one breakpoint site-wide. */
+      :root {
+        /* [TUNE] 4. at the breakpoint, the row's two gaps move in OPPOSITE directions (JJ,
+           2026-10-27): image↔text tightens to half, entry↔entry opens to 1.5×. Rows read
+           as single objects again once the thumbnail is small, and the extra air between
+           them is what keeps the list scannable without the wide frame. */
+        --news-img-gap-mobile-scale: 0.5;
+        --news-gap-mobile-scale: 1.5;
+      }
+      @media (max-width: 600px) {
+        :root {
+          --frame-margin: var(--frame-margin-mobile);
+          /* 4. formulas off their desktop inputs, not new numbers. --news-img-gap is
+             --art-col-gap on desktop, so scale THAT (scaling --news-img-gap itself would
+             be a cycle). ⚠︎ --news-gap is a bare 32px in global.css with no input token
+             to scale, hence the repeated literal — same reason as --frame-margin-mobile. */
+          --news-img-gap: calc(var(--art-col-gap) * var(--news-img-gap-mobile-scale));
+          --news-gap: calc(32px * var(--news-gap-mobile-scale));
+        }
+      }
+
+      /* 5. WIDE: a THIRD COLUMN for the meta (JJ, 2026-10-27) — image | heading | type · year.
+         `type · year` stays ONE UNBROKEN LINE, and the column is as wide as the WIDEST of
+         them across the whole list (JJ). A per-row grid cannot know the other rows'
+         widths, so the LIST becomes the grid and each row is a SUBGRID of it: the third
+         track is `max-content`, which the browser sizes from every row at once. The row
+         stays --art-body-w (812 — the card it opens); the text column absorbs whatever the
+         meta column does not need.
+             812 = 240 + 32 + (1fr) + 32 + max-content
+         ⚠︎ `subgrid` — Safari 16+, Chrome 117+, Firefox 71+. Fine for this site.
+         ⭐ THE BREAKPOINT IS DERIVED, NEVER PICKED (JJ, 2026-10-27): the first width at
+         which all three columns fit inside the frame margins —
+             --news-wide-at = --art-body-w + 2 · --frame-margin = 812 + 120 = 932px
+         exactly the arithmetic --art-stack-at uses, in the other direction. ⚠︎ A media
+         query cannot read a token, so the 932 below is a literal: if --art-side-w,
+         --art-col-gap, --art-main-max or --frame-margin change, recompute it (same
+         standing rule as the two 812 queries in global.css). The token is documentation. */
+      :root { --news-wide-at: calc(var(--art-body-w) + 2 * var(--frame-margin)); }   /* = 932px */
+      @media (min-width: 932px) {
+        .news-list {
+          display: grid;
+          grid-template-columns: var(--news-img-w) 1fr max-content;
+          column-gap: var(--news-img-gap);
+          row-gap: var(--news-gap);
+          width: min(var(--art-body-w), 100%);
+          margin: 0 auto;                       /* was centred by flex align-items */
+        }
+        .news-item { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; width: auto; }
+        .ni-inner  { grid-column: 1 / -1; grid-template-columns: subgrid; }
+        /* dissolve the text wrapper so heading and meta become sibling grid items */
+        .ni-text   { display: contents; }
+        .ni-meta   { white-space: nowrap; line-height: 1.4; }   /* = .ni-heading: first lines align */
+      }
+
+      /* ================= VARIANT B — GRID (?v=grid), 2026-10-27 =================
+         The Eliasson archetype, on this site's tokens: an image grid spanning the frame,
+         caption = title → venue → type, and the YEAR stated ONCE per group as a divider
+         instead of once per row. Three columns ≥932, two 601–931, one ≤600. Shares the
+         mobile frame/gap rules above. */
+      :root {
+        --ng-cols: 3;                                  /* [TUNE] wide */
+        --ng-col-gap: var(--art-col-gap);              /* 32 — the site's column gap */
+        --ng-row-gap: var(--news-gap);                 /* 32, 48 on mobile */
+        --ng-cap-gap: var(--caption-gap);              /* 12 — image ↔ caption, as the ART grid */
+        --ng-year-gap: calc(var(--news-gap) * 1.5);    /* [TUNE] air around the year divider */
+      }
+      html[data-v="row"]  .ng-list   { display: none; }
+      html[data-v="grid"] .news-list { display: none; }
+      .ng-list { display: flex; flex-direction: column; }
+      /* ⛔ STICKY YEAR — TRIED AND REMOVED the same hour (JJ, 2026-10-27: "a tad odd").
+         It pinned at --band (the sticky-offset trap made that `top: 0`); the record is in
+         git on `news-list`. The year is a static divider. */
+      .ng-year {
+        text-align: center;
+        font-size: var(--type-size);
+        line-height: 1;
+        color: var(--muted);
+        padding: 0 0 var(--ng-year-gap);     /* air BELOW the label; air above = the group's margin */
+      }
+      .ng-group + .ng-group { margin-top: var(--ng-year-gap); }
+      /* no ground behind the glyphs (JJ): the label sits over whatever scrolls beneath it */
+      .ng-grid {
+        display: grid;
+        grid-template-columns: repeat(var(--ng-cols), minmax(0, 1fr));
+        column-gap: var(--ng-col-gap);
+        row-gap: var(--ng-row-gap);
+      }
+      @media (max-width: 931px) { :root { --ng-cols: 2; } }
+      @media (max-width: 600px) { :root { --ng-cols: 1; } }
+      .ng-card { display: block; color: inherit; text-decoration: none; min-width: 0; }
+      .ng-img  { width: 100%; aspect-ratio: var(--news-img-ratio); height: auto; object-fit: cover; display: block; }
+      .ng-img.media-empty { --media-empty-ratio: var(--news-img-ratio); }
+      .ng-cap  { margin: var(--ng-cap-gap) 0 0; font-size: var(--type-size); line-height: 1.4; }
+      .ng-cap span { display: block; }
+      .ng-title { font-weight: 700; color: var(--fg); }
+      .ng-venue { color: var(--news-sub); }
+      .ng-type  { color: var(--news-sub); }   /* same grey as the venue (JJ, 2026-10-27) — one secondary voice, not two */
+
+      /* ================= TEST-RIG ONLY — not for porting ================= */
+      /* a bare scroller standing in for .sub, with .sub's padding rhythm */
+      #newstest .nt-sub {
+        height: 100%;
+        overflow-y: auto;
+        box-sizing: border-box;
+        padding: var(--band) var(--frame-margin) var(--frame-margin);
+        scrollbar-width: none;                 /* as .sub — a visible bar steals 15px from the frame */
+      }
+      #newstest .nt-sub::-webkit-scrollbar { display: none; }
+      #newstest .nav { pointer-events: none; }
+      #newstest .nav a:not(.nt-active) { color: var(--muted); }
+      #newstest .nt-hud {
+        position: fixed; right: 8px; bottom: 8px;
+        font: 10px/1 ui-monospace, monospace; color: var(--muted);
+        background: rgba(255,255,255,.7); padding: 4px 6px; border-radius: 3px;
+      }
+    </style>
+
+    <script>
+      /* Mirror of site.js measureGeom() for --band ONLY — but reading --frame-margin from
+         the token rather than a hardcoded 60, which is what the port needs site.js to do. */
+      const root = document.documentElement;
+      const nav = document.getElementById("nav")!;
+      function measure() {
+        /* ⚠︎ NOT getComputedStyle(root).getPropertyValue("--frame-margin"): an unregistered
+           custom property computes to its TOKEN, so on mobile that string is
+           "calc(60px / 2)" and parseFloat gives NaN (caught on this rig's first run — the
+           band stayed 132 while the frame was 30). Read a RESOLVED length instead: the
+           nav's `left` is `var(--frame-margin)` and computes to px. The port needs site.js
+           to do the same, or to register the property with @property like --safe-bottom. */
+        const frame = parseFloat(getComputedStyle(nav).left) || 60;
+        const navH = nav.getBoundingClientRect().height;
+        root.style.setProperty("--band", frame * 2 + navH + "px");
+        const img = document.querySelector(".ni-img") as HTMLElement | null;
+        document.getElementById("ntV")!.textContent = root.dataset.v || "grid";
+        document.getElementById("ntVw")!.textContent = innerWidth + "vw";
+        document.getElementById("ntFrame")!.textContent = frame + "px";
+        document.getElementById("ntImg")!.textContent = img ? Math.round(img.getBoundingClientRect().width) + "px" : "–";
+      }
+      measure();
+      addEventListener("resize", measure);
+      document.fonts?.ready.then(measure);
+    </script>
+  </body>
+</html>
