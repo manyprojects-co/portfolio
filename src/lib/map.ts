@@ -17,6 +17,8 @@
  * leaked and the question is open again.
  */
 import type { CollectionEntry } from "astro:content";
+import { looksLikeVideo } from "./media-origin";
+export { looksLikeVideo };
 
 /** A gallery row is either a legacy path string or a (possibly empty) new-shape object. */
 export type Media =
@@ -45,8 +47,8 @@ export type Media =
  * so a hand-typed field is a claim to be checked, not a fact. `.mp4` in `imageUrl` is not
  * an ambiguous case — it is an unambiguous video in the wrong box.
  */
-const VIDEO_EXT = /\.(mp4|webm|mov|m4v|ogv)(?:[?#]|$)/i;
-export const looksLikeVideo = (u: string): boolean => VIDEO_EXT.test(u);
+// `looksLikeVideo` moved to media-origin.mjs (2026-10-27) so the manifest script skips
+// videos by the SAME rule before fetching — see the note there. Re-exported at the top.
 
 export function media(v: unknown): Media {
   if (!v) return null;

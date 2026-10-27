@@ -877,7 +877,13 @@
     align-items: center;
     cursor: pointer;
   }
-  .gcard img { max-width: 100%; max-height: var(--square); height: auto; display: block; }
+  /* ⚠︎ `width: 100%` + `object-fit: contain` (2026-10-27): the real <img> now carries HTML
+     `width`/`height` attributes (the manifest). With no CSS width, the attribute's width
+     became the box width and `max-height` then STRETCHED any tall image to a square (measured:
+     a 1200×1800 came out 400×400). Setting the width lets the ratio derive the height; a tall
+     image is clamped to the square and letterboxed inside it — the same picture as before,
+     in a box that no longer moves when it loads. */
+  .gcard img { width: 100%; max-width: 100%; max-height: var(--square); height: auto; object-fit: contain; display: block; }
 
   .gcap {
     margin-top: var(--caption-gap);
@@ -1527,9 +1533,13 @@
    ============================================================================ */
 
 /* ---- 1. THE EMPTY MEDIA STATE -------------------------------------------------
-   ⚠︎ NOT a nicety — it is the state EVERY visual is in right now. The repo's images
-   were deleted on 2026-08-10 and no Cloudflare URLs have been pasted yet, so all 26
-   content files render this today.
+   ⭐ PENDING, NOT LOADING (2026-10-27). This is the "no URL in the CMS" state — a to-do
+   addressed to JJ, meant to be loud. It was every visual on the site when written (images
+   deleted 2026-08-10); as of 2026-09-07 every URL is filled and it is the rare case. The
+   LOADING state (URL present, bytes in flight) is a different thing with a different
+   mechanism: `width`/`height` attributes from `content/media-dimensions.json` on the real
+   <img>, so the box is right before the bytes land. Keep the two paths separate
+   (placeholder-fork-brief.md, R4) — share them and "missing" becomes a loading state again.
 
    It must carry a SIZE. v6's images sized their own boxes from intrinsic dimensions
    (`.artwork { height: var(--card-h); width: auto }`), so an empty <div> collapsed the
