@@ -1542,7 +1542,7 @@ import { createTrace } from "../lib/trace.mjs";
     }
     detailContent.innerHTML = html;
     syncTechTail();
-    refreshElapsed(detailContent);
+    refreshElapsed(detailContent);                // (§ LQIP needs no call here: the head's capturing listener sees the injected gallery)
     if (push) { history.pushState({ detail: path }, "", `/${path}`); pushedByUs = true; }
     openDetail();
   }
@@ -1622,6 +1622,12 @@ import { createTrace } from "../lib/trace.mjs";
     }
   }
   refreshElapsed();
+
+  // ---- § LQIP lives in `layouts/Site.astro` <head>, inline — NOT here. It has to be listening
+  // before the first <img> is parsed; this module runs after the parse and after its own
+  // download, and on a cold load the eager carousel images were already `complete` by then,
+  // so the blur-up never showed on the landing (JJ, 2026-10-27). One capturing `load`
+  // listener on the document covers every image, including the gallery injected below.
 
   // ============================================================================
   // INIT + RESIZE

@@ -69,6 +69,18 @@
     --dur: 500ms;            /* landing↔tab lerp, detail open/close */
     --tab-dur: 500ms;        /* nav-driven tab slide ONLY; manual swipe is native */
     --ease: cubic-bezier(0.5, 0, 0, 1);
+    /* [TUNE] LQIP blur-up (placeholder-fork-brief.md § BLUR/FADE, 2026-10-27). While an image
+       is in flight it shows its own 16px impression (inlined by Media.astro); when the bytes
+       land, the real picture arrives BLURRED by this radius and sharpens over --lqip-unblur.
+       It is a blur-up, not an opacity fade, for a structural reason: the impression lives in
+       the <img>'s own background (R3, no wrapper), and `opacity` on the <img> would fade the
+       impression out WITH the picture — a flash of bare ground. `filter` is the one property
+       that touches the picture and leaves the background alone. Cost: one small composited
+       blur per image for --lqip-unblur, then nothing (the class is dropped on transitionend).
+       0ms = a cut: the LQIP still shows while loading, there is just no sharpen.
+       ⚠︎ Never start the picture at opacity 0 — Chromium drops opacity-0 paints from LCP. */
+    --lqip-blur: 12px;
+    --lqip-unblur: 240ms;    /* Carbon's moderate-02; ease-out via --ease */
 
     --bg: #E7E7E7;
     --detail-bg: #EFEFEF;    /* art/news cards sit a step lighter than the site */
@@ -1535,6 +1547,29 @@
     45deg, #cfcfcf, #cfcfcf 10px, #c7c7c7 10px, #c7c7c7 20px);
   display: block;
 }
+/* ---- 1b. THE LOADING STATE (BLUR/FADE, 2026-10-27) ----------------------------------
+   `.media-lqip` is a real <img> whose inline style carries its own 16px impression as a
+   background (Media.astro). The impression is the browser's upscale of 16px — already soft,
+   no filter (brief N4). `background-size: cover` matches the picture's own box on every
+   surface, because the box IS the picture's aspect (width/height attributes) except where
+   `.gcard img`'s max-height letterboxes a tall one, and there the bars show the ground.
+   The three classes are set by the inline `§ LQIP` script in layouts/Site.astro <head>:
+     .lqip-wait  set by JS INSIDE the load handler, for one style resolve: the frame about to
+                 paint is blurred. ⛔ Never a standing state — a parked blur is a render
+                 surface the compositor carries through every tween frame (19 of them
+                 stuttered the landing, 2026-10-27).
+     .lqip-done  swapped in immediately after: sharpen. Dropped on transitionend so no image
+                 keeps a filter.
+     (none)      JS absent or image already complete: the picture simply paints over the
+                 impression — a cut, never a hang. Nothing here depends on JS to be visible.
+   Alpha: the impression of a transparent PNG is itself transparent; JS clears the
+   background on load so nothing shows through the holes afterwards (T6). */
+.media-lqip { background-size: cover; background-position: center; background-repeat: no-repeat; }
+@media (prefers-reduced-motion: no-preference) {
+  .media-lqip.lqip-wait { filter: blur(var(--lqip-blur)); }
+  .media-lqip.lqip-done { filter: blur(0); transition: filter var(--lqip-unblur) var(--ease); }
+}
+
 /* the carousel and grid size by height, so the empty box must too */
 .card .media-empty { height: var(--card-h); max-height: calc(var(--landing-h) - 80px); width: auto; }
 .gcard .media-empty { width: 100%; height: auto; }
