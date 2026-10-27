@@ -61,10 +61,28 @@ interface Props {
   ratio?: [number, number];
   class?: string;
   loading?: "lazy" | "eager";
+  /**
+   * ⭐ A SECOND SOURCE FOR SMALL VIEWPORTS (the mobile cover, 2026-10-27, JJ). When BOTH
+   * `media` and `mobile` are images with a usable URL, the <img> is wrapped in a
+   * `<picture>` whose `<source media={mobileQuery}>` carries the mobile file; the browser
+   * picks it below the query and the desktop file above, and swaps on resize. Otherwise
+   * nothing changes — no wrapper, no `<picture>` — so every other surface renders exactly
+   * as before (R3: the carousel sizes the <img> from its intrinsic size; a wrapper that is
+   * not `display: contents` would take that over. `.media-picture` IS `display: contents`).
+   * ⚠︎ `mobileQuery` MUST MATCH the CSS mobile query in global.css (`max-width: 600px`), or
+   * the picture and its 4:5 crop switch at different widths. Convention for the file:
+   * `<slug>-mcard.<ext>` next to `<slug>-card.<ext>` (`.pages.yml`, `data:report` lints it).
+   * The `width`/`height` hint and the lqip stay those of the DESKTOP master: on mobile the
+   * CSS fixes the box with `aspect-ratio: 4/5` anyway, and the impression is a blurred
+   * wash of the same picture — close enough, and the load handler clears it either way.
+   */
+  mobile?: Props["media"];
+  mobileQuery?: string;
 }
 const {
   media = null, alt = "", widths = [640, 1280, 1920], sizes = "100vw",
   ratio, class: cls = "", loading = "lazy",
+  mobile = null, mobileQuery = "(max-width: 600px)",
 } = Astro.props;
 
 /**
@@ -102,6 +120,15 @@ const emptyStyle = ratio ? `aspect-ratio:${ratio[0]}/${ratio[1]}` : undefined;
  * behaves exactly as it did before the manifest existed.
  */
 const dim = transformable && media?.kind === "image" ? dims[src] : undefined;
+/* The mobile source: same normalisation, same transform rule, its own verdict. */
+const mv = normaliseMediaUrl(mobile?.src);
+const mobileSrc = mv.ok ? mv.url : (mobile?.src?.trim() ?? "");
+const hasMobile = ok && media?.kind === "image" && mobile?.kind === "image" && mobileSrc.length > 0;
+if (!mv.ok && mv.url && import.meta.env.DEV) {
+  console.warn(`[Media] (mobile) ${mv.reason}\n         ${mv.url}`);
+}
+const txm = (w: number) =>
+  !import.meta.env.PROD || !mv.ok ? mobileSrc : `https://${TRANSFORM_HOST}/cdn-cgi/image/width=${w},format=auto/${mobileSrc}`;
 /* The <img> below carries `width`/`height` = the master's TRUE pixel size from `dim` — a
  * RATIO hint, not a size. CSS still owns the box on every surface (`.artwork { height;
  * width: auto }`, `.detail-hero { width: 100% }`, `.ni-img { aspect-ratio }`), and the browser
@@ -110,7 +137,21 @@ const dim = transformable && media?.kind === "image" ? dims[src] : undefined;
  * presentational hint) — `.gcard img` had exactly that and is now `width: 100%` because of it.
  * This is NOT the `ratio` prop: that shapes the empty placeholder only (see above).
  * ⛔ Comments stay up here, not inside the ternary below — a comment inside `( … )` in the
- * template broke the production build once already (hooks.md, 2026-09-30). */
+ * template broke the production build once already (hooks.md, 2026-09-30).
+ * ⭐ THE <img> ATTRIBUTES ARE BUILT ONCE and spread in both branches below (plain and
+ * <picture>), so the two renderings cannot drift. Anything that goes on the <img> — class,
+ * style, the manifest hint — goes HERE, not in the template. */
+const imgAttrs = {
+  class: cls,
+  width: dim?.w,
+  height: dim?.h,
+  src: tx(src, widths[Math.floor(widths.length / 2)]),
+  srcset: widths.map((w) => `${tx(src, w)} ${w}w`).join(", "),
+  sizes,
+  alt,
+  loading,
+  decoding: "async" as const,
+};
 ---
 
 {
@@ -128,17 +169,14 @@ const dim = transformable && media?.kind === "image" ? dims[src] : undefined;
     <div class={`media-empty ${cls}`} style={emptyStyle} role="img" aria-label={alt || "Image pending"} />
   ) : media!.kind === "video" ? (
     <video class={cls} src={src} muted loop playsinline autoplay preload="metadata" />
+  ) : hasMobile ? (
+    <picture class="media-picture">
+      <source media={mobileQuery}
+              srcset={widths.map((w) => `${txm(w)} ${w}w`).join(", ")}
+              sizes="100vw" />
+      <img {...imgAttrs} />
+    </picture>
   ) : (
-    <img
-      class={cls}
-      width={dim?.w}
-      height={dim?.h}
-      src={tx(src, widths[Math.floor(widths.length / 2)])}
-      srcset={widths.map((w) => `${tx(src, w)} ${w}w`).join(", ")}
-      sizes={sizes}
-      alt={alt}
-      loading={loading}
-      decoding="async"
-    />
+    <img {...imgAttrs} />
   )
 }

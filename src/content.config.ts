@@ -109,6 +109,9 @@ const artworks = defineCollection({
     landingVisual: visual,
     tabArtVisual: visual,
     cardCoverVisual: visual,
+    /* ⭐ MOBILE COVER (2026-10-27). Optional on every work; Work.astro falls back to a CSS
+     * crop of cardCoverVisual when it is absent. Convention: `<slug>-mcard.<ext>`. */
+    cardCoverMobileVisual: visual,
     cardGallery: gallery,
     technicalGallery: gallery,
   }),

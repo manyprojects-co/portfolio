@@ -28,7 +28,7 @@ for (const f of ["title", "productionDate", "tagline", "medium", "size", "durati
                  "featureOrder", "technicalTagline", "technicalText"])
   row(f, count(arts, f), arts.length);
 console.log("  ── visuals ──");
-for (const f of ["landingVisual", "tabArtVisual", "cardCoverVisual", "cardGallery", "technicalGallery"])
+for (const f of ["landingVisual", "tabArtVisual", "cardCoverVisual", "cardCoverMobileVisual", "cardGallery", "technicalGallery"])
   row(f, count(arts, f), arts.length);
 
 console.log("\n═══ NEWS (%d) ═══════════════════════════════════════════", news.length);
@@ -142,6 +142,27 @@ if (manifest) {
 }
 console.log("\n═══ ⚠︎  FLAGS ═══════════════════════════════════════════");
 const flags = [...badUrls, ...manifestFlags];
+/**
+ * ⭐ THE MOBILE COVER CONVENTION (2026-10-27, JJ): `cardCoverMobileVisual.mediaUrl` is the
+ * card cover's URL with `m` in front of `card` — `…/bb-card.jpg` → `…/bb-mcard.jpg`. Two
+ * checks: a mobile URL that is set but is NOT the convention's expansion of the cover URL
+ * (a typo, or a file that belongs to another work), and a one-line count of works still
+ * waiting for their `-mcard` (those fall back to a CSS centre-crop of the 16:9 cover, which
+ * keeps ~45% of its width — not a flag per work, just the number).
+ */
+const mcardOf = (u) => String(u ?? "").trim().replace(/-card(\.[a-z0-9]+)$/i, "-mcard$1");
+let noMcard = 0;
+for (const a of arts) {
+  const cover = a.d.cardCoverVisual?.mediaUrl ?? a.d.cardCoverVisual?.imageUrl;
+  const mob = a.d.cardCoverMobileVisual?.mediaUrl ?? a.d.cardCoverMobileVisual?.imageUrl;
+  if (!has(mob)) { if (has(cover)) noMcard++; continue; }
+  const want = mcardOf(cover);
+  if (!has(cover) || want === String(cover).trim())
+    flags.push(`artworks/${a.slug}: mobile cover set but the card cover ${has(cover) ? "does not end in -card.<ext>" : "is empty"} — cannot check the -mcard convention.`);
+  else if (String(mob).trim() !== want)
+    flags.push(`artworks/${a.slug}: mobile cover breaks the -mcard convention.\n     expected ${want}\n     got      ${String(mob).trim()}`);
+}
+if (noMcard) flags.push(`${noMcard}/${arts.length} works have no mobile cover (cardCoverMobileVisual) — phones centre-crop the 16:9 cover to 4:5. Upload <slug>-mcard.<ext> and paste it.`);
 const totalVisuals = ["landingVisual", "tabArtVisual", "cardCoverVisual"]
   .reduce((a, f) => a + count(arts, f), 0);
 if (!totalVisuals) flags.push(

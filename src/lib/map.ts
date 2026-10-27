@@ -141,6 +141,7 @@ export function mapWork(e: CollectionEntry<"artworks">) {
       landing: media(d.landingVisual),     // landing carousel
       tabArt: media(d.tabArtVisual),       // ART grid (site-specific)
       cardCover: media(d.cardCoverVisual), // detail hero (16:9)
+      cardCoverMobile: media(d.cardCoverMobileVisual), // detail hero on phones (4:5, `-mcard`)
     },
     gallery: mediaList(d.cardGallery),
   };

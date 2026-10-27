@@ -1062,6 +1062,10 @@
     margin-inline: auto;
   }
 
+  /* Media.astro wraps an <img> in <picture> ONLY when a mobile source exists; `contents`
+     keeps the <img> a direct grid/flow child so every rule below still addresses it. */
+  .media-picture { display: contents; }
+
   /* imagery fills that column; height always proportional (width-driven, height:auto) */
   .detail-hero,
   .detail-figs img {

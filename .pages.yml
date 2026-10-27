@@ -88,6 +88,24 @@ content:
               values: [image, video]
           - { name: mediaUrl, label: Cloudflare Media URL, type: string }
 
+      # ⭐ MOBILE COVER (2026-10-27, JJ). Shown INSTEAD of cardCoverVisual on phones (≤600px),
+      # where the cover is full-bleed and 4:5 (4 wide, 5 high). Optional: when empty, the 16:9
+      # cover is centre-cropped to 4:5, which keeps only ~45% of its width.
+      # ⭐ NAMING CONVENTION: same URL as the card cover with `m` in front of `card` —
+      #   …/box-body/bb-card.jpg  →  …/box-body/bb-mcard.jpg
+      #   …/xin-1.0.36/xin1-card.jpg  →  …/xin-1.0.36/xin1-mcard.jpg
+      # `npm run data:report` flags a mobile URL that does not follow it.
+      - name: cardCoverMobileVisual
+        label: Card-Cover Visual, MOBILE (4:5 portrait — same URL as the card cover, "-card" → "-mcard")
+        type: object
+        fields:
+          - name: mediaType
+            label: Media Type
+            type: select
+            options:
+              values: [image, video]
+          - { name: mediaUrl, label: Cloudflare Media URL (…/<slug>-mcard.jpg), type: string }
+
   # Art Gallery (Intersperse Images, Videos, & Text)
       - name: cardGallery
         label: Art Gallery
