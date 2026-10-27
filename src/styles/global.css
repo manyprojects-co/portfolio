@@ -916,6 +916,33 @@
       --frame-margin: var(--frame-margin-mobile);
       --news-gap: calc(32px * var(--news-gap-mobile-scale));
     }
+
+    /* ---- ART CARD COVER ON MOBILE (2026-10-27, JJ — TEST) ----
+       Full-bleed and taller. Desktop keeps the width-driven 16:9 cover inside the frame;
+       below 600 the picture breaks out to the CARD edge and is cropped to a portrait box.
+       ⚠︎ Lives in THIS query, not next to .detail-hero, so the mobile query stays the one
+       place mobile happens (see the note above the query).
+       ▪︎ margin-inline = -(frame + bleed): the same reach as .art-ground, so the picture
+         covers the overhang too — at --card-zoom-min mid-reveal the card is wider than the
+         viewport, and a frame-only bleed would show grey slivers at both edges.
+       ▪︎ margin-top = -frame: flush under the tile's rest line, the way .art-ground already
+         pulls the grey up. Zero it to keep the 30px breathing room instead.
+       ▪︎ The crop is CSS's job (Media.astro: never `fit=cover` in the transform). The source
+         is still the 16:9 cardCoverVisual — a 16:9 master cropped to 4:5 keeps ~45% of its
+         width, which is the whole reason a mobile-specific cover field is on the table.
+       ▪︎ `.media-empty.detail-hero` carries an inline 16:9 from `ratio`; `!important` is
+         scoped to that one case so the pending box matches the real one. */
+    .detail-hero {
+      --cover-mobile-ratio: 4 / 5;                              /* [TUNE] 4/5, 3/4, 1/1 … */
+      width: calc(100% + 2 * var(--detail-pad-x));
+      max-width: none;
+      margin-inline: calc(-1 * var(--detail-pad-x));
+      margin-top: calc(-1 * var(--frame-margin));               /* [TUNE] 0 = keep the gap */
+      aspect-ratio: var(--cover-mobile-ratio) !important;
+      height: auto;
+      object-fit: cover;
+      object-position: center;                                   /* [TUNE] per-work later? */
+    }
   }
 
   /* ===================== ART-NEWS DETAIL VIEW =====================
