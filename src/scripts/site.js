@@ -132,7 +132,10 @@ import { createTrace } from "../lib/trace.mjs";
   // ============================================================================
   // GEOMETRY — one measurement drives every state
   // ============================================================================
-  const FRAME = 60;                 // the 60px rhythm
+  // ⚠︎ `let`, RE-READ in measureGeom() (2026-10-27): the frame is 60 on desktop and 30 at
+  // ≤600px (news-grid-port.md § M1). A const 60 would put every tab's content 60px too low
+  // on a phone and make --landing-h wrong by the same amount.
+  let FRAME = 60;                   // the frame rhythm
   // ⭐ TILE COMPOSITION (2026-09-29): the card fills the viewport and the site lifts off it into
   // a shrunken rounded tile whose bottom edge rests at --site-rest. DETAIL_TOP is that line —
   // the card's CONTENT viewport starts there, and --detail-top is published from it.
@@ -171,8 +174,13 @@ import { createTrace } from "../lib/trace.mjs";
 
   function measureGeom() {
     VH = window.innerHeight;
+    /* ⚠︎ A RESOLVED length, not getPropertyValue("--frame-margin"): an unregistered custom
+     * property computes to its TOKEN, which on mobile is the string "calc(60px / 2)", and
+     * parseFloat of that is NaN (the /newstest rig hit exactly this). The nav's `left` IS
+     * var(--frame-margin), resolved to px. Same family as css-time.ts's 500ms → .5s. */
+    FRAME = parseFloat(getComputedStyle(nav).left) || 60;
     const navH = nav.getBoundingClientRect().height;
-    BAND = FRAME * 2 + navH;            // 60 above the nav, the nav, 60 below it
+    BAND = FRAME * 2 + navH;            // frame above the nav, the nav, frame below it
     // ⭐ minus the safe-area inset (2026-09-30): the nav's gap to the viewport floor is 60 +
     // whatever iOS Safari's collapsed bar occludes. BAND itself is unchanged, so the tab
     // view's 60 above the nav and .sub's padding are untouched; only the hero shrinks.
@@ -1604,6 +1612,9 @@ import { createTrace } from "../lib/trace.mjs";
 
   // ---- `timeElapsed` is relative to now and was baked at build time. Refresh it so a page
   // built in August doesn't still read "3d" in December. See lib/format.ts.
+  // ▪︎ 2026-10-27: no element carries [data-elapsed] any more — the news list dropped the date
+  // with the grid port and the card dropped it on 2026-08-23. Left in place as a no-op so the
+  // next surface that wants a live elapsed time gets it for free; delete if that never comes.
   function refreshElapsed(scope) {
     for (const el of (scope || document).querySelectorAll("[data-elapsed]")) {
       const d = el.getAttribute("data-elapsed");
