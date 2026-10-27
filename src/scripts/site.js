@@ -1542,8 +1542,7 @@ import { createTrace } from "../lib/trace.mjs";
     }
     detailContent.innerHTML = html;
     syncTechTail();
-    refreshElapsed(detailContent);
-    armLqip(detailContent);                       // § LQIP — the gallery arrived by innerHTML
+    refreshElapsed(detailContent);                // (§ LQIP needs no call here: the head's capturing listener sees the injected gallery)
     if (push) { history.pushState({ detail: path }, "", `/${path}`); pushedByUs = true; }
     openDetail();
   }
@@ -1624,51 +1623,11 @@ import { createTrace } from "../lib/trace.mjs";
   }
   refreshElapsed();
 
-  // ---- § LQIP — the loading state's two jobs (placeholder-fork-brief.md § BLUR / FADE,
-  // 2026-10-27). Media.astro inlines each image's 16px impression as its own background
-  // (`.media-lqip`); this is the only JS the feature has, and both jobs hang off ONE fact:
-  // whether the bytes have landed.
-  //   1. FADE — blur-up. When an in-flight image lands, the picture ARRIVES blurred
-  //      (`.lqip-wait`, set inside the load handler — the event runs before that first paint)
-  //      and sharpens over --lqip-unblur (`.lqip-done`, dropped on transitionend). So the
-  //      filter exists for ~240ms per image, around its arrival, and at no other time. The
-  //      CSS is under prefers-reduced-motion: no-preference — under `reduce` the classes do
-  //      nothing and the picture just paints.
-  //      ⛔ NEVER PARK A WAITING IMAGE IN THE BLURRED STATE. The first version armed every
-  //      in-flight image with `.lqip-wait` up front; lazy images below the fold then sat
-  //      blurred until they scrolled near — 19 blurred render surfaces on the landing, carried
-  //      through every frame of the world and tab tweens. JJ: "stuttery, in a framerate sort
-  //      of way" (2026-10-27). The 50px site blur was removed for exactly this (hooks.md).
-  //   2. T6 — clear the background on load. 20 of the 27 PNGs are transparent and so are
-  //      their impressions; left in place, the smear would show through the holes forever.
-  //      Clearing on load (not on transitionend) means the holes show clean ground while the
-  //      picture is still blurred, and a blurred alpha edge feathers into it.
-  // ⚠︎ T7 — GUARD ON STATE, NOT THE EVENT. On a warm revisit every image is `complete`
-  //   before this runs; arming those would blur a picture that was already sharp and fade it
-  //   back in. `complete` is checked and the listener attached in the same synchronous pass,
-  //   so an image cannot finish between the two. (`complete` is also true for a FAILED image —
-  //   `error` is handled like `load`: nothing to blur, clear the smear, move on.)
-  // ▪︎ Runs on the document at init and on `#detailContent` after each injection — the card's
-  //   gallery arrives by innerHTML (openPath), which runs no scripts of its own.
-  function armLqip(scope) {
-    for (const img of (scope || document).querySelectorAll("img.media-lqip")) {
-      if (img.dataset.lqip) continue;                          // already armed (re-entry)
-      img.dataset.lqip = "1";
-      if (img.complete) { img.style.backgroundImage = ""; continue; }   // T7: state, not event — cached: nothing to blur
-      const land = () => {
-        img.style.backgroundImage = "";                        // T6
-        if (!img.naturalWidth) return;                         // `error`: nothing arrived, nothing to sharpen
-        img.classList.add("lqip-wait");                        // the frame about to paint is blurred…
-        void img.offsetWidth;                                  // …resolve that style so the swap below transitions
-        img.classList.remove("lqip-wait");
-        img.classList.add("lqip-done");                        // …and sharpens from it
-        img.addEventListener("transitionend", () => img.classList.remove("lqip-done"), { once: true });
-      };
-      img.addEventListener("load", land, { once: true });
-      img.addEventListener("error", land, { once: true });
-    }
-  }
-  armLqip();
+  // ---- § LQIP lives in `layouts/Site.astro` <head>, inline — NOT here. It has to be listening
+  // before the first <img> is parsed; this module runs after the parse and after its own
+  // download, and on a cold load the eager carousel images were already `complete` by then,
+  // so the blur-up never showed on the landing (JJ, 2026-10-27). One capturing `load`
+  // listener on the document covers every image, including the gallery injected below.
 
   // ============================================================================
   // INIT + RESIZE

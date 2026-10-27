@@ -1517,7 +1517,7 @@
    no filter (brief N4). `background-size: cover` matches the picture's own box on every
    surface, because the box IS the picture's aspect (width/height attributes) except where
    `.gcard img`'s max-height letterboxes a tall one, and there the bars show the ground.
-   The three classes are site.js's (`§ LQIP`):
+   The three classes are set by the inline `§ LQIP` script in layouts/Site.astro <head>:
      .lqip-wait  set by JS INSIDE the load handler, for one style resolve: the frame about to
                  paint is blurred. ⛔ Never a standing state — a parked blur is a render
                  surface the compositor carries through every tween frame (19 of them

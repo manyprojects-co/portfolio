@@ -43,6 +43,41 @@ const faviconType = /\.svg(\?|$)/i.test(favicon) ? "image/svg+xml" : /\.png(\?|$
       href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
       rel="stylesheet"
     />
+    {/* § LQIP — the loading state's only JS (placeholder-fork-brief.md § BLUR / FADE).
+        INLINE and IN THE HEAD on purpose: it must be listening before the first <img> is
+        parsed. site.js is a module — it runs after the parse and after its own download —
+        and on a cold load the six eager carousel images are usually `complete` by then, so a
+        hook that lives there sees them as cached and the picture just jumps in (JJ, 2026-10-27).
+        `load` does not bubble but it does CAPTURE, so one listener on the document sees every
+        image on the page, including the card's gallery injected later by innerHTML.
+        Two jobs off one event:
+          T6  clear the inlined impression once the picture is there, so a transparent PNG's
+              holes never show the smear afterwards;
+          FADE  the picture ARRIVES blurred (.lqip-wait for one style resolve) and sharpens
+              (.lqip-done, drops itself on transitionend). A filter exists for ~240ms per
+              image around its arrival and at no other time — never a standing state.
+        T7  cached vs fetched is decided by the fetch's DURATION (resource timing — the
+            `duration` field is exposed cross-origin, so it works on previews), not by
+            `img.complete`: a picture that took under LQIP_MIN_MS was ready before anyone was
+            looking and must not be hazed. No timing entry → treated as cached → no blur.
+        A failed image keeps its impression (❓2's interim: better than a broken icon). */}
+    <script is:inline>
+      (function () {
+        var MIN_MS = 40; /* [TUNE] loads faster than this are "cached": no blur-up (T7) */
+        function land(e) {
+          var img = e.target;
+          if (!(img instanceof HTMLImageElement) || !img.classList.contains("media-lqip") || img.dataset.lqip) return;
+          img.dataset.lqip = "1";
+          img.style.backgroundImage = "";                                   /* T6 */
+          var rt = performance.getEntriesByName(img.currentSrc);
+          if (!rt.length || rt[rt.length - 1].duration < MIN_MS) return;   /* T7 */
+          img.classList.add("lqip-wait"); void img.offsetWidth;            /* the frame about to paint: blurred */
+          img.classList.remove("lqip-wait"); img.classList.add("lqip-done"); /* …and sharpening from it */
+          img.addEventListener("transitionend", function () { img.classList.remove("lqip-done"); }, { once: true });
+        }
+        document.addEventListener("load", land, true);
+      })();
+    </script>
   </head>
   <body>
     <!-- BELOW: the detail card. Rises over the site; #detail owns the grey->black ground. -->
