@@ -1,5 +1,6 @@
 import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
+import { EVENT_TYPES } from "./lib/event-types.mjs";
 
 /**
  * content.config.ts — typed against the REAL `.pages.yml` at commit 2cd3e2d (2026-08-13).
@@ -123,12 +124,12 @@ const news = defineCollection({
     endDate: z.coerce.date().optional(),
     location: z.string().optional(),
     city: z.string().optional(),
-    // All 5 values in use are valid. Kept as an enum deliberately: a sixth should FAIL the
-    // build rather than render as a raw string, which is how the old off-schema
-    // "Screening" value reached the site in the first place.
-    eventType: z
-      .enum(["Award", "Screening", "Solo exhibition", "Group exhibition", "Artist Talk", "Press"])
-      .optional(),
+    // Kept as an enum deliberately: a value outside the list should FAIL the build rather
+    // than render as a raw string, which is how the old off-schema "Screening" value reached
+    // the site in the first place. ⚠︎ The list lives in `src/lib/event-types.mjs` so the report
+    // can compare it to `.pages.yml` — a `Commission` added to the yml alone killed every
+    // deploy from 2026-10-26 11:53 UTC until it was noticed (see that file).
+    eventType: z.enum(EVENT_TYPES).optional(),
     statement: z.string().optional(),
     mainVisual: visual,
     gallery,
