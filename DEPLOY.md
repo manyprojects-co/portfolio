@@ -134,6 +134,16 @@ can't be stale. Or **purge the cache on deploy** — one more moving part, and e
 no discipline beyond "don't reuse a name". Worth telling Xin once, now, rather than
 debugging a stale image later.
 
+**Filename conventions per work** (R2 folder `artworks/<slug>/`, prefix = the work's short
+code, e.g. `bb` for box-body):
+- `<code>-card.<ext>` — the card cover, 16:9, desktop and tablet.
+- `<code>-mcard.<ext>` — ⭐ the **mobile** card cover, **4:5 portrait** (4 wide, 5 high), shown
+  full-bleed under the shelf on phones (≤600px). Same name with `m` in front of `card`:
+  `bb-card.jpg` → `bb-mcard.jpg`, `xin1-card.jpg` → `xin1-mcard.jpg`. Paste it into
+  *Card-Cover Visual, MOBILE*. Optional — without it the phone centre-crops the 16:9 cover,
+  keeping ~45% of its width. `npm run data:report` flags a mobile URL off-convention and
+  counts the works still missing one.
+
 ### 3b. Straight to main, or a PR gate
 
 Pages CMS commits to `main`, which builds and deploys — so **an edit in the CMS is live in
