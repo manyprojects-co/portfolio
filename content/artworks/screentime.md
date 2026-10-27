@@ -29,6 +29,9 @@ tabArtVisual:
 cardCoverVisual:
   mediaType: image
   mediaUrl: https://media.agawen.com/artworks/screentime/sct-card.jpg
+cardCoverMobileVisual:
+  mediaType: image
+  mediaUrl: https://media.agawen.com/artworks/screentime/sct-mcard.jpg
 cardGallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/screentime/sct-art1.jpg

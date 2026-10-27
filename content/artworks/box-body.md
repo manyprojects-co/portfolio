@@ -41,6 +41,9 @@ tabArtVisual:
 cardCoverVisual:
   mediaType: image
   mediaUrl: https://media.agawen.com/artworks/box-body/bb-card.jpg
+cardCoverMobileVisual:
+  mediaType: image
+  mediaUrl: https://media.agawen.com/artworks/box-body/bb-mcard.jpg
 cardGallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/box-body/bb-art1.jpg

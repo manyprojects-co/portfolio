@@ -23,6 +23,9 @@ tabArtVisual:
 cardCoverVisual:
   mediaType: image
   mediaUrl: https://media.agawen.com/artworks/non-moment/nmm-card.jpg
+cardCoverMobileVisual:
+  mediaType: image
+  mediaUrl: https://media.agawen.com/artworks/non-moment/nmm-mcard.jpg
 cardGallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/non-moment/nmm-art1.jpg

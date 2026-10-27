@@ -34,6 +34,9 @@ tabArtVisual:
 cardCoverVisual:
   mediaType: image
   mediaUrl: https://media.agawen.com/artworks/beam/beam-card.jpg
+cardCoverMobileVisual:
+  mediaType: image
+  mediaUrl: https://media.agawen.com/artworks/beam/beam-mcard.jpg
 cardGallery:
   - mediaType: video
     mediaUrl: https://media.agawen.com/artworks/beam/beam-art-v1.mp4

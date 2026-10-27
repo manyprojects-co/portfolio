@@ -38,6 +38,9 @@ tabArtVisual:
 cardCoverVisual:
   mediaType: image
   mediaUrl: https://media.agawen.com/artworks/personhood/psh-card.jpg
+cardCoverMobileVisual:
+  mediaType: image
+  mediaUrl: https://media.agawen.com/artworks/personhood/psh-mcard.jpg
 cardGallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/personhood/psh-art1.jpg

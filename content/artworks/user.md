@@ -25,6 +25,9 @@ tabArtVisual:
 cardCoverVisual:
   mediaType: image
   mediaUrl: https://media.agawen.com/artworks/user/user-card.jpg
+cardCoverMobileVisual:
+  mediaType: image
+  mediaUrl: https://media.agawen.com/artworks/user/user-mcard.jpg
 cardGallery:
   - mediaType: video
     mediaUrl: https://media.agawen.com/artworks/user/user-art-v1.mp4
