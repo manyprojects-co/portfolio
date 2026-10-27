@@ -925,8 +925,11 @@
        ▪︎ margin-inline = -(frame + bleed): the same reach as .art-ground, so the picture
          covers the overhang too — at --card-zoom-min mid-reveal the card is wider than the
          viewport, and a frame-only bleed would show grey slivers at both edges.
-       ▪︎ margin-top = -frame: flush under the tile's rest line, the way .art-ground already
-         pulls the grey up. Zero it to keep the 30px breathing room instead.
+       ▪︎ margin-top = -(detail-top + frame) = the scroller's whole top padding, so the
+         picture starts at the CARD'S TOP EDGE and the shelf (the site tile) floats over its
+         first --detail-top px (JJ, 2026-10-27: "flush against frame top, beneath the shelf").
+         That is still inside #detailScroll's padding box, so nothing is clipped. -frame alone
+         would stop at the shelf's rest line; 0 keeps the 30px gap.
        ▪︎ The crop is CSS's job (Media.astro: never `fit=cover` in the transform). The source
          is still the 16:9 cardCoverVisual — a 16:9 master cropped to 4:5 keeps ~45% of its
          width, which is the whole reason a mobile-specific cover field is on the table.
@@ -939,7 +942,7 @@
       width: calc(100% + 2 * var(--detail-pad-x));
       max-width: none;
       margin-inline: calc(-1 * var(--detail-pad-x));
-      margin-top: calc(-1 * var(--frame-margin));               /* [TUNE] 0 = keep the gap */
+      margin-top: calc(-1 * (var(--detail-top) + var(--frame-margin)));  /* [TUNE] see note */
       aspect-ratio: var(--cover-mobile-ratio) !important;
       height: auto;
       object-fit: cover;
