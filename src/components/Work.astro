@@ -49,9 +49,9 @@ const GAL_W = [900, 1400, 1920];
 ---
 <div class:list={["art-ground", hasTech && "has-tech"]}>
   <div class="detail-body art-body">
-    {/* ⭐ `mobile`: the 4:5 `-mcard` file, served below 600px instead of the 16:9 cover
-        (Media.astro emits a <picture> only when it is set). Absent → the CSS crops the
-        16:9 cover to 4:5 (global.css, the mobile query). */}
+    {/* ⭐ `mobile`: the 5:6 `-mcard` file, served wherever the card is single-column (≤812px)
+        instead of the 16:9 cover (Media.astro emits a <picture> only when it is set).
+        Absent → the CSS crops the 16:9 cover to the same box (global.css, the stack query). */}
     <Media media={wk.visuals.cardCover ?? wk.visuals.landing} mobile={wk.visuals.cardCoverMobile}
            alt={wk.title} class="detail-hero" widths={GAL_W} sizes="min(812px, 100vw)"
            ratio={[16, 9]} loading="eager" />

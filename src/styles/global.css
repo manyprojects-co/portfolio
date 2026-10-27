@@ -928,38 +928,6 @@
       --frame-margin: var(--frame-margin-mobile);
       --news-gap: calc(32px * var(--news-gap-mobile-scale));
     }
-
-    /* ---- ART CARD COVER ON MOBILE (2026-10-27, JJ — TEST) ----
-       Full-bleed and taller. Desktop keeps the width-driven 16:9 cover inside the frame;
-       below 600 the picture breaks out to the CARD edge and is cropped to a portrait box.
-       ⚠︎ Lives in THIS query, not next to .detail-hero, so the mobile query stays the one
-       place mobile happens (see the note above the query).
-       ▪︎ margin-inline = -(frame + bleed): the same reach as .art-ground, so the picture
-         covers the overhang too — at --card-zoom-min mid-reveal the card is wider than the
-         viewport, and a frame-only bleed would show grey slivers at both edges.
-       ▪︎ margin-top = -(detail-top + frame) = the scroller's whole top padding, so the
-         picture starts at the CARD'S TOP EDGE and the shelf (the site tile) floats over its
-         first --detail-top px (JJ, 2026-10-27: "flush against frame top, beneath the shelf").
-         That is still inside #detailScroll's padding box, so nothing is clipped. -frame alone
-         would stop at the shelf's rest line; 0 keeps the 30px gap.
-       ▪︎ The crop is CSS's job (Media.astro: never `fit=cover` in the transform). The source
-         is still the 16:9 cardCoverVisual — a 16:9 master cropped to 4:5 keeps ~45% of its
-         width, which is the whole reason a mobile-specific cover field is on the table.
-       ▪︎ `.media-empty.detail-hero` carries an inline 16:9 from `ratio`; `!important` is
-         scoped to that one case so the pending box matches the real one.
-       ⚠︎ `.art-body .detail-hero`, NOT `.detail-hero`: the base rule (`width: 100%`, further
-         down) is later in the file and would win on equal specificity — it did, once. */
-    .art-body .detail-hero {
-      --cover-mobile-ratio: 4 / 5;                              /* [TUNE] 4/5, 3/4, 1/1 … */
-      width: calc(100% + 2 * var(--detail-pad-x));
-      max-width: none;
-      margin-inline: calc(-1 * var(--detail-pad-x));
-      margin-top: calc(-1 * (var(--detail-top) + var(--frame-margin)));  /* [TUNE] see note */
-      aspect-ratio: var(--cover-mobile-ratio) !important;
-      height: auto;
-      object-fit: cover;
-      object-position: center;                                   /* [TUNE] per-work later? */
-    }
   }
 
   /* ===================== ART-NEWS DETAIL VIEW =====================
@@ -1217,6 +1185,43 @@
     .detail-heading { margin-bottom: 0; }
     .detail-spec    { margin: 0; }
     .detail-figs    { margin-top: 0; }
+
+    /* ---- THE SINGLE-COLUMN COVER (2026-10-27, JJ) ----
+       Wherever the card stacks (this query), the cover is full-bleed, portrait and flush
+       under the shelf. It lives HERE, in the stack query, and not in the 600 phone query,
+       because it is a property of the single-column card, not of phones: a 700px tablet
+       stacks and gets it too. ⚠︎ Media.astro's `mobileQuery` default is the same 812 — the
+       `<picture>` switches the FILE (-mcard) at the width this switches the BOX; keep them equal.
+       ▪︎ margin-inline = -(frame + bleed): the same reach as .art-ground, so the picture
+         covers the overhang too — at --card-zoom-min mid-reveal the card is wider than the
+         viewport, and a frame-only bleed would show grey slivers at both edges.
+       ▪︎ margin-top = -(detail-top + frame) = the scroller's whole top padding, so the
+         picture starts at the CARD'S TOP EDGE and the shelf (the site tile) floats over its
+         first --detail-top px. Still inside #detailScroll's padding box, nothing clipped.
+       ▪︎ 5/6 = the -mcard files as exported (1000×1200, measured 2026-10-27), so with the
+         mobile file in place nothing is cropped by the ratio. Without one (the 16:9 cover
+         as fallback) the crop is CSS's job — Media.astro never sends `fit=cover`.
+       ▪︎ --cover-max-h: the box may not exceed 60% of the viewport (JJ). When it is capped,
+         `object-fit: cover` crops — and `object-position: bottom` keeps the BOTTOM of the
+         picture as-is and takes the overflow off the TOP. `svh`, not `dvh`: the iOS URL bar
+         collapsing must not re-crop the hero mid-scroll (hooks § K).
+       ▪︎ `.media-empty.detail-hero` carries an inline 16:9 from `ratio`; `!important` is
+         scoped to that one case so the pending box matches the real one.
+       ⚠︎ `.art-body .detail-hero`, NOT `.detail-hero`: the base rule (`width: 100%`, further
+         down) is later in the file and would win on equal specificity — it did, once. */
+    .art-body .detail-hero {
+      --cover-mobile-ratio: 5 / 6;                              /* [TUNE] = the -mcard export */
+      --cover-max-h: 60svh;                                     /* [TUNE] share of the viewport */
+      width: calc(100% + 2 * var(--detail-pad-x));
+      max-width: none;
+      margin-inline: calc(-1 * var(--detail-pad-x));
+      margin-top: calc(-1 * (var(--detail-top) + var(--frame-margin)));
+      aspect-ratio: var(--cover-mobile-ratio) !important;
+      height: auto;
+      max-height: var(--cover-max-h);
+      object-fit: cover;
+      object-position: center bottom;                           /* crop the top, keep the bottom */
+    }
   }
 
   /* ---- the sticky column's own rhythm (JJ, 2026-08-23) ----

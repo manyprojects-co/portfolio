@@ -69,11 +69,12 @@ interface Props {
    * nothing changes — no wrapper, no `<picture>` — so every other surface renders exactly
    * as before (R3: the carousel sizes the <img> from its intrinsic size; a wrapper that is
    * not `display: contents` would take that over. `.media-picture` IS `display: contents`).
-   * ⚠︎ `mobileQuery` MUST MATCH the CSS mobile query in global.css (`max-width: 600px`), or
-   * the picture and its 4:5 crop switch at different widths. Convention for the file:
+   * ⚠︎ `mobileQuery` MUST MATCH the art card's STACK query in global.css (`max-width: 812px`,
+   * `@media` above `.art-grid { grid-template-columns: 1fr }`), or the picture and its
+   * portrait box switch at different widths. It is the single-column card, not "phones". Convention for the file:
    * `<slug>-mcard.<ext>` next to `<slug>-card.<ext>` (`.pages.yml`, `data:report` lints it).
    * The `width`/`height` hint and the lqip stay those of the DESKTOP master: on mobile the
-   * CSS fixes the box with `aspect-ratio: 4/5` anyway, and the impression is a blurred
+   * CSS fixes the box with its own `aspect-ratio` anyway, and the impression is a blurred
    * wash of the same picture — close enough, and the load handler clears it either way.
    */
   mobile?: Props["media"];
@@ -82,7 +83,7 @@ interface Props {
 const {
   media = null, alt = "", widths = [640, 1280, 1920], sizes = "100vw",
   ratio, class: cls = "", loading = "lazy",
-  mobile = null, mobileQuery = "(max-width: 600px)",
+  mobile = null, mobileQuery = "(max-width: 812px)",
 } = Astro.props;
 
 /**

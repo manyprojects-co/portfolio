@@ -170,7 +170,7 @@ for (const a of arts) {
   else if (String(mob).trim() !== want)
     flags.push(`artworks/${a.slug}: mobile cover breaks the -mcard convention.\n     expected ${want}\n     got      ${String(mob).trim()}`);
 }
-if (noMcard) flags.push(`${noMcard}/${arts.length} works have no mobile cover (cardCoverMobileVisual) — phones centre-crop the 16:9 cover to 4:5. Upload <slug>-mcard.<ext> and paste it.`);
+if (noMcard) flags.push(`${noMcard}/${arts.length} works have no mobile cover (cardCoverMobileVisual) — the single-column card centre-crops the 16:9 cover to portrait. Upload <slug>-mcard.<ext> and paste it.`);
 const totalVisuals = ["landingVisual", "tabArtVisual", "cardCoverVisual"]
   .reduce((a, f) => a + count(arts, f), 0);
 if (!totalVisuals) flags.push(

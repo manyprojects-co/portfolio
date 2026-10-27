@@ -137,8 +137,10 @@ debugging a stale image later.
 **Filename conventions per work** (R2 folder `artworks/<slug>/`, prefix = the work's short
 code, e.g. `bb` for box-body):
 - `<code>-card.<ext>` — the card cover, 16:9, desktop and tablet.
-- `<code>-mcard.<ext>` — ⭐ the **mobile** card cover, **4:5 portrait** (4 wide, 5 high), shown
-  full-bleed under the shelf on phones (≤600px). Same name with `m` in front of `card`:
+- `<code>-mcard.<ext>` — ⭐ the **mobile** card cover, **5:6 portrait** (1000×1200), shown
+  full-bleed under the shelf wherever the card is single-column (phones and small tablets,
+  ≤812px), capped at 60% of the screen height and cropped from the top if taller. Same name
+  with `m` in front of `card`:
   `bb-card.jpg` → `bb-mcard.jpg`, `xin1-card.jpg` → `xin1-mcard.jpg`. Paste it into
   *Card-Cover Visual, MOBILE*. Optional — without it the phone centre-crops the 16:9 cover,
   keeping ~45% of its width. `npm run data:report` flags a mobile URL off-convention and
