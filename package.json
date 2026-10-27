@@ -9,6 +9,7 @@
     "check": "astro check",
     "data:diff": "node scripts/diff-v6.mjs",
     "data:report": "node scripts/content-report.mjs",
+    "media:dims": "node scripts/media-dims.mjs",
     "deploy": "astro build && wrangler deploy",
     "preview:remote": "astro build && wrangler versions upload",
     "test": "node --test src/lib/css-time.test.mjs"

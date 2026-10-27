@@ -1,43 +1,50 @@
 ---
 /**
- * NEWS panel — reverse-chronological (DECIDED 2026-08-06; no CMS field for order).
- * `timeElapsed` is baked for first paint and refreshed by site.js — see format.ts.
+ * NEWS panel — an image grid, YEAR AS A DIVIDER (JJ, 2026-10-27; replaces the row list of
+ * 2026-08-23). Reverse-chronological (DECIDED 2026-08-06; no CMS field for order), grouped
+ * by UTC year — same care as format.ts: authored in Manila, read anywhere.
+ * Caption = title → venue → type. Subheading and date are the CARD's; the list leads with
+ * the picture and the year divider carries the time.
+ * Port brief: MP_CMS_CF/news-grid-port.md. `timeElapsed` / `data-elapsed` left with the row.
  */
 import Media from "./Media.astro";
-import { titleCase, typeLabel, timeElapsed } from "../lib/format";
-/* ⛔ `specialTypes` REMOVED (2026-08-23, JJ) — see the note in global.css. The prop drove a
-   raised-panel treatment that had been switched off and would have matched one item. */
+import { titleCase, typeLabel } from "../lib/format";
 interface Props { news: any[] }
 const { news } = Astro.props;
+
+const byYear: { year: string; items: any[] }[] = [];
+for (const item of news) {
+  const y = item.date ? String(new Date(item.date).getUTCFullYear()) : "undated";
+  const g = byYear[byYear.length - 1];
+  if (g && g.year === y) g.items.push(item); else byYear.push({ year: y, items: [item] });
+}
+/* "Venue (City)" — the convention NewsItem.astro and the artwork exhibitions already use */
+const place = (item: any) => [item.location, item.city && `(${item.city})`].filter(Boolean).join(" ");
+/* ⚠︎ `ratio` shapes the EMPTY placeholder only; the real image is shaped by .nc-img's
+   aspect-ratio. Keep both in step with --news-img-ratio. (Comment up here, not inside the
+   map — a comment inside `( … )` in the template broke the production build once.) */
 ---
 <div class="sub" id="news">
   <div class="news-list" id="newsList">
-    {news.map((item) => (
-      <article class="news-item">
-        <a class="ni-inner" href={`/news/${item.slug}`} data-detail={`news/${item.slug}`}>
-          {/* ⚠︎ `ratio` SHAPES THE EMPTY PLACEHOLDER ONLY — the real image is shaped by
-              `.ni-img`'s aspect-ratio. Keep this in step with --news-img-ratio in
-              global.css or an empty row is a different shape from a filled one.
-              ⚠︎ `sizes` tracks --news-img-w (0.8 x --art-side-w = 240). It said "200px"
-              when the thumbnail was 220, so the browser had been picking one candidate too
-              small and upscaling it all along. */}
-          <Media media={item.image} alt={item.title} class="ni-img"
-                 widths={[240, 480, 720]} sizes="240px" ratio={[4, 3]} />
-          <div class="ni-text">
-            <div class="ni-meta">
-              <span>{typeLabel(item.eventType)}</span>
-              <span class="ni-sep">·</span>
-              <span data-elapsed={item.date?.toISOString().slice(0, 10)}>
-                {item.date ? timeElapsed(item.date) : ""}
-              </span>
-            </div>
-            <p class="ni-heading">
-              <span class="ni-title">{titleCase(item.title)}</span>
-              {item.subheading && <>: <span class="ni-sub">{item.subheading}</span></>}
-            </p>
-          </div>
-        </a>
-      </article>
+    {byYear.map((g) => (
+      <section class="news-group">
+        <div class="news-year">{g.year}</div>
+        <div class="news-cards">
+          {g.items.map((item) => (
+            <a class="news-card" href={`/news/${item.slug}`} data-detail={`news/${item.slug}`}>
+              <Media media={item.image} alt={item.title} class="nc-img"
+                     widths={[400, 800, 1200]}
+                     sizes="(max-width: 600px) 100vw, (max-width: 931px) 50vw, 33vw"
+                     ratio={[4, 3]} />
+              <p class="nc-cap">
+                <span class="nc-title">{titleCase(item.title)}</span>
+                {place(item) && <span class="nc-venue">{place(item)}</span>}
+                <span class="nc-type">{typeLabel(item.eventType)}</span>
+              </p>
+            </a>
+          ))}
+        </div>
+      </section>
     ))}
   </div>
 </div>

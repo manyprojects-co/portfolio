@@ -13,18 +13,28 @@
  * thing preview URLs exist for. Pinning the host costs nothing on the live site (same
  * zone, same edge) and makes previews work. Open question 6 in `motion-fork-brief.md`.
  *
- * ⚠︎ THE EMPTY STATE IS THE DEFAULT CASE, NOT THE EDGE CASE. Every visual field is
- * empty in all 26 content files as of 2026-08-13 — the repo's images were deleted on
- * 2026-08-10 and the CMS has no media picker, so URLs are hand-pasted and most are not
- * pasted yet. A missing, blank, or malformed src must render a placeholder, never a
- * broken <img>. This is what lets P3/P4 be reviewed before a single image exists.
+ * ⚠︎ THE EMPTY STATE MUST STAY SAFE. It was the default case when this was written (every
+ * visual empty as of 2026-08-13); every URL has been filled since 2026-09-07, but the CMS
+ * still has no media picker, so a missing, blank, or malformed src must render a placeholder,
+ * never a broken <img>. That placeholder is PENDING ("no URL"), not LOADING — the loading
+ * state is handled by `width`/`height` from the manifest below (brief, R4).
  *
  * ⚠︎ Sources must be on an ALLOWED ORIGIN or the transform is rejected. `media.agawen.com`
  * requires `*.agawen.com` under Images -> Transformations -> Sources; a root domain does
  * NOT cover its subdomains. And `r2.dev` can never work here — it is outside the zone.
  */
-import { normaliseMediaUrl, TRANSFORM_HOST } from "../lib/media-origin";
+import { normaliseMediaUrl, TRANSFORM_HOST, type MediaDims } from "../lib/media-origin";
 import { blocksHtml } from "../lib/format";
+/**
+ * ⭐ THE MANIFEST (2026-10-27, placeholder-fork-brief.md § MANIFEST). `{ url: { w, h } }` for
+ * every image the content refers to, measured once at the edge by `npm run media:dims` and
+ * committed. Imported as plain JSON through Vite — deliberately NOT through
+ * `content.config.ts`, whose `.astro/data-store.json` cache survives HMR and makes a new
+ * field read as absent (brief, T5). The file always exists (`{}` at minimum) because a
+ * missing JSON import would fail the build, and the manifest must never be able to (R1).
+ */
+import manifest from "../../content/media-dimensions.json";
+const dims = manifest as Record<string, MediaDims>;
 
 interface Props {
   media?: { kind: "image" | "video" | "text"; src: string; text?: string; caption?: string } | null;
@@ -83,6 +93,24 @@ if (!verdict.ok && verdict.url && import.meta.env.DEV) {
 }
 // applied to the placeholder ONLY — see the note on `ratio`
 const emptyStyle = ratio ? `aspect-ratio:${ratio[0]}/${ratio[1]}` : undefined;
+/**
+ * ⚠︎ T1 — LOOK UP BY `verdict.url`, NEVER BY THE RAW STRING. `media-dims.mjs` keys the
+ * manifest by `normaliseMediaUrl(raw).url`, and a bare path and an absolute URL normalise to
+ * different string shapes. Same function, same key, both sides; a wrong key here would not
+ * throw — every image would just quietly keep its zero-width load.
+ * ⛔ R1 — a miss is `undefined`, and Astro omits an undefined attribute. The image then
+ * behaves exactly as it did before the manifest existed.
+ */
+const dim = transformable && media?.kind === "image" ? dims[src] : undefined;
+/* The <img> below carries `width`/`height` = the master's TRUE pixel size from `dim` — a
+ * RATIO hint, not a size. CSS still owns the box on every surface (`.artwork { height;
+ * width: auto }`, `.detail-hero { width: 100% }`, `.ni-img { aspect-ratio }`), and the browser
+ * combines the hint with whichever side CSS fixes, so the box is right before any bytes land.
+ * ⚠︎ On a surface that sets NO CSS width, the `width` attribute becomes the width (it is a
+ * presentational hint) — `.gcard img` had exactly that and is now `width: 100%` because of it.
+ * This is NOT the `ratio` prop: that shapes the empty placeholder only (see above).
+ * ⛔ Comments stay up here, not inside the ternary below — a comment inside `( … )` in the
+ * template broke the production build once already (hooks.md, 2026-09-30). */
 ---
 
 {
@@ -103,6 +131,8 @@ const emptyStyle = ratio ? `aspect-ratio:${ratio[0]}/${ratio[1]}` : undefined;
   ) : (
     <img
       class={cls}
+      width={dim?.w}
+      height={dim?.h}
       src={tx(src, widths[Math.floor(widths.length / 2)])}
       srcset={widths.map((w) => `${tx(src, w)} ${w}w`).join(", ")}
       sizes={sizes}
