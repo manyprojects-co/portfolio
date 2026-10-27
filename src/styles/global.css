@@ -1518,8 +1518,12 @@
    surface, because the box IS the picture's aspect (width/height attributes) except where
    `.gcard img`'s max-height letterboxes a tall one, and there the bars show the ground.
    The three classes are site.js's (`§ LQIP`):
-     .lqip-wait  armed by JS before the bytes land: the picture will ARRIVE blurred
-     .lqip-done  set on load: sharpen. Dropped on transitionend so no image keeps a filter.
+     .lqip-wait  set by JS INSIDE the load handler, for one style resolve: the frame about to
+                 paint is blurred. ⛔ Never a standing state — a parked blur is a render
+                 surface the compositor carries through every tween frame (19 of them
+                 stuttered the landing, 2026-10-27).
+     .lqip-done  swapped in immediately after: sharpen. Dropped on transitionend so no image
+                 keeps a filter.
      (none)      JS absent or image already complete: the picture simply paints over the
                  impression — a cut, never a hang. Nothing here depends on JS to be visible.
    Alpha: the impression of a transparent PNG is itself transparent; JS clears the

@@ -1628,10 +1628,17 @@ import { createTrace } from "../lib/trace.mjs";
   // 2026-10-27). Media.astro inlines each image's 16px impression as its own background
   // (`.media-lqip`); this is the only JS the feature has, and both jobs hang off ONE fact:
   // whether the bytes have landed.
-  //   1. FADE — blur-up. An image that is still in flight gets `.lqip-wait` (arrives blurred);
-  //      on load it swaps to `.lqip-done` (sharpens over --lqip-unblur), which is dropped on
-  //      transitionend so no image keeps a filter. The CSS is under prefers-reduced-motion:
-  //      no-preference — under `reduce` the classes do nothing and the picture just paints.
+  //   1. FADE — blur-up. When an in-flight image lands, the picture ARRIVES blurred
+  //      (`.lqip-wait`, set inside the load handler — the event runs before that first paint)
+  //      and sharpens over --lqip-unblur (`.lqip-done`, dropped on transitionend). So the
+  //      filter exists for ~240ms per image, around its arrival, and at no other time. The
+  //      CSS is under prefers-reduced-motion: no-preference — under `reduce` the classes do
+  //      nothing and the picture just paints.
+  //      ⛔ NEVER PARK A WAITING IMAGE IN THE BLURRED STATE. The first version armed every
+  //      in-flight image with `.lqip-wait` up front; lazy images below the fold then sat
+  //      blurred until they scrolled near — 19 blurred render surfaces on the landing, carried
+  //      through every frame of the world and tab tweens. JJ: "stuttery, in a framerate sort
+  //      of way" (2026-10-27). The 50px site blur was removed for exactly this (hooks.md).
   //   2. T6 — clear the background on load. 20 of the 27 PNGs are transparent and so are
   //      their impressions; left in place, the smear would show through the holes forever.
   //      Clearing on load (not on transitionend) means the holes show clean ground while the
@@ -1647,15 +1654,16 @@ import { createTrace } from "../lib/trace.mjs";
     for (const img of (scope || document).querySelectorAll("img.media-lqip")) {
       if (img.dataset.lqip) continue;                          // already armed (re-entry)
       img.dataset.lqip = "1";
+      if (img.complete) { img.style.backgroundImage = ""; continue; }   // T7: state, not event — cached: nothing to blur
       const land = () => {
         img.style.backgroundImage = "";                        // T6
-        if (!img.classList.contains("lqip-wait")) return;      // was never blurred: nothing to sharpen
+        if (!img.naturalWidth) return;                         // `error`: nothing arrived, nothing to sharpen
+        img.classList.add("lqip-wait");                        // the frame about to paint is blurred…
+        void img.offsetWidth;                                  // …resolve that style so the swap below transitions
         img.classList.remove("lqip-wait");
-        img.classList.add("lqip-done");
+        img.classList.add("lqip-done");                        // …and sharpens from it
         img.addEventListener("transitionend", () => img.classList.remove("lqip-done"), { once: true });
       };
-      if (img.complete) { land(); continue; }                  // T7: state, not event
-      img.classList.add("lqip-wait");
       img.addEventListener("load", land, { once: true });
       img.addEventListener("error", land, { once: true });
     }
