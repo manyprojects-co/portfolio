@@ -1543,6 +1543,7 @@ import { createTrace } from "../lib/trace.mjs";
     detailContent.innerHTML = html;
     syncTechTail();
     refreshElapsed(detailContent);
+    armLqip(detailContent);                       // § LQIP — the gallery arrived by innerHTML
     if (push) { history.pushState({ detail: path }, "", `/${path}`); pushedByUs = true; }
     openDetail();
   }
@@ -1622,6 +1623,44 @@ import { createTrace } from "../lib/trace.mjs";
     }
   }
   refreshElapsed();
+
+  // ---- § LQIP — the loading state's two jobs (placeholder-fork-brief.md § BLUR / FADE,
+  // 2026-10-27). Media.astro inlines each image's 16px impression as its own background
+  // (`.media-lqip`); this is the only JS the feature has, and both jobs hang off ONE fact:
+  // whether the bytes have landed.
+  //   1. FADE — blur-up. An image that is still in flight gets `.lqip-wait` (arrives blurred);
+  //      on load it swaps to `.lqip-done` (sharpens over --lqip-unblur), which is dropped on
+  //      transitionend so no image keeps a filter. The CSS is under prefers-reduced-motion:
+  //      no-preference — under `reduce` the classes do nothing and the picture just paints.
+  //   2. T6 — clear the background on load. 20 of the 27 PNGs are transparent and so are
+  //      their impressions; left in place, the smear would show through the holes forever.
+  //      Clearing on load (not on transitionend) means the holes show clean ground while the
+  //      picture is still blurred, and a blurred alpha edge feathers into it.
+  // ⚠︎ T7 — GUARD ON STATE, NOT THE EVENT. On a warm revisit every image is `complete`
+  //   before this runs; arming those would blur a picture that was already sharp and fade it
+  //   back in. `complete` is checked and the listener attached in the same synchronous pass,
+  //   so an image cannot finish between the two. (`complete` is also true for a FAILED image —
+  //   `error` is handled like `load`: nothing to blur, clear the smear, move on.)
+  // ▪︎ Runs on the document at init and on `#detailContent` after each injection — the card's
+  //   gallery arrives by innerHTML (openPath), which runs no scripts of its own.
+  function armLqip(scope) {
+    for (const img of (scope || document).querySelectorAll("img.media-lqip")) {
+      if (img.dataset.lqip) continue;                          // already armed (re-entry)
+      img.dataset.lqip = "1";
+      const land = () => {
+        img.style.backgroundImage = "";                        // T6
+        if (!img.classList.contains("lqip-wait")) return;      // was never blurred: nothing to sharpen
+        img.classList.remove("lqip-wait");
+        img.classList.add("lqip-done");
+        img.addEventListener("transitionend", () => img.classList.remove("lqip-done"), { once: true });
+      };
+      if (img.complete) { land(); continue; }                  // T7: state, not event
+      img.classList.add("lqip-wait");
+      img.addEventListener("load", land, { once: true });
+      img.addEventListener("error", land, { once: true });
+    }
+  }
+  armLqip();
 
   // ============================================================================
   // INIT + RESIZE

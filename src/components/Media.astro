@@ -102,6 +102,21 @@ const emptyStyle = ratio ? `aspect-ratio:${ratio[0]}/${ratio[1]}` : undefined;
  * behaves exactly as it did before the manifest existed.
  */
 const dim = transformable && media?.kind === "image" ? dims[src] : undefined;
+/**
+ * ⭐ THE LQIP (BLUR, 2026-10-27, brief § tier 3). `dim.lqip` is a ~200–600 B data: URL of the
+ * image at 16px, inlined as a `background-image` ON THE <img> ITSELF (R3: no wrapper — the
+ * carousel sizes the <img> from its intrinsic dimensions, and a wrapper would take that over).
+ * `background-size: cover` and the browser's own upscale are the blur (N4); no `filter` here.
+ * The real pixels paint over it when they land. Two things this is NOT:
+ *   · not the PENDING stripes — those are `!ok` and only `!ok` (R4);
+ *   · not self-clearing for transparent images. 20 of the 27 PNGs carry alpha, and the
+ *     impression would show through their holes forever (T6). `site.js § LQIP` clears the
+ *     background once `img.complete`, and runs the blur-up (FADE) in the same place.
+ * A missing `lqip` (manifest written before BLUR, or the entry is missing) emits nothing and
+ * the image loads exactly as it did on 2026-10-27 morning (R1).
+ */
+const lqipStyle = dim?.lqip ? `background-image:url('${dim.lqip}')` : undefined;
+const imgClass = dim?.lqip ? `${cls} media-lqip`.trim() : cls;
 /* The <img> below carries `width`/`height` = the master's TRUE pixel size from `dim` — a
  * RATIO hint, not a size. CSS still owns the box on every surface (`.artwork { height;
  * width: auto }`, `.detail-hero { width: 100% }`, `.ni-img { aspect-ratio }`), and the browser
@@ -130,7 +145,8 @@ const dim = transformable && media?.kind === "image" ? dims[src] : undefined;
     <video class={cls} src={src} muted loop playsinline autoplay preload="metadata" />
   ) : (
     <img
-      class={cls}
+      class={imgClass}
+      style={lqipStyle}
       width={dim?.w}
       height={dim?.h}
       src={tx(src, widths[Math.floor(widths.length / 2)])}

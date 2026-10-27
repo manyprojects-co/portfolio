@@ -132,13 +132,21 @@ if (!manifest) {
     `     so these entries can never match. First: ${badKeys[0]}`);
   if (badShape.length) manifestFlags.push(
     `⛔ ${badShape.length} manifest entr${badShape.length === 1 ? "y" : "ies"} without w/h > 0 — first: ${badShape[0]}`);
+  // BLUR (2026-10-27): an entry without `lqip` is not broken — the image reserves its box and
+  // loads with no impression (R1) — so this is a count, not a flag. A malformed lqip IS one.
+  const badLqip = keys.filter((k) => "lqip" in manifest[k] && !/^data:image\/[a-z+.-]+;base64,[A-Za-z0-9+/]+=*$/.test(manifest[k].lqip));
+  if (badLqip.length) manifestFlags.push(
+    `⛔ ${badLqip.length} manifest entr${badLqip.length === 1 ? "y" : "ies"} with a malformed \`lqip\` (not a base64 data: image URL) — first: ${badLqip[0]}`);
 }
 
 console.log("\n═══ MANIFEST ════════════════════════════════════════════");
 if (manifest) {
   const n = Object.keys(manifest).length, covered = [...imageKeys].filter((k) => k in manifest).length;
   row("image URLs w/ dims", covered, imageKeys.size);
-  console.log(`  ${String(n).padStart(4)} entries in ${MANIFEST_PATH}`);
+  const withLqip = [...imageKeys].filter((k) => typeof manifest[k]?.lqip === "string").length;
+  row("image URLs w/ lqip", withLqip, imageKeys.size);
+  const lqipKB = Object.values(manifest).reduce((a, e) => a + (e.lqip?.length ?? 0), 0) / 1024;
+  console.log(`  ${String(n).padStart(4)} entries in ${MANIFEST_PATH}${lqipKB ? `; ${lqipKB.toFixed(1)} KB of lqip` : ""}`);
 }
 console.log("\n═══ ⚠︎  FLAGS ═══════════════════════════════════════════");
 const flags = [...badUrls, ...manifestFlags];
