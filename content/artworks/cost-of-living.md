@@ -8,17 +8,16 @@ size: 17.56 × 44.62 m (57.6 × 146.4 ft)
 duration: 02 min. 30 sec.
 featured: false
 artistStatement: >-
-  Cost of Living is a site-specific new media film made for the Piccadilly
-  Lights screen. It depicts a home in cycles of order and increasingly violent
-  disarray before its walls come apart and its contents break free. The work
-  gestures to the precarious nature of ‘home’—a universal right challenged by
-  predatory housing markets and violent invasions causing mass displacement.
+  Cost of Living is a video sculpture that embodies the angst of an age that
+  normalizes precarity, through a living room locked in cycles of chaos and
+  order. Within the space’s bounds its furnishings thrash about violently until
+  lights flicker off and on to reveal them miraculously rearranged in tidy new
+  configurations every time. Only after sustained attempts to shake up the room
+  do its walls collapse and its furnishings break free—leaving behind a
+  boundless white.
 
 
-  However, instability also invites possibility, carving out a space for radical
-  reimagination and a departure from the status quo. The film presents cycles of
-  disorder that eventually culminate in the dismantling of the boundaries that
-  confined the ‘home,’ embracing the void and endless possibilities it holds.
+  In collaboration with Luling Wang (score).
 landingVisual:
   mediaType: image
   mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-ld.jpg
@@ -48,14 +47,17 @@ cardGallery:
     mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-art7.jpg
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-art8.jpg
-technicalTagline: A volatile home
-technicalText: Cost of Living took a technique that we developed for Box Body
-  and Emerge:ncy and brought it to an unprecedented miniature scale. We began
-  with a tiny ~120:1 model of the Piccadilly Lights, filled it with store-bought
-  pieces of realistic dollhouse homeware, rigged cameras and lights, and flailed
-  it about while filming in slow-motion. Careful foley design brought the
-  illusion to life, and a meandering score by Luling Wang tied each scene
-  together. This piece has yet to debut on the screen it was envisioned for.
+technicalText: >-
+  Cost of Living took a technique developed for [Box
+  Body](https://agawen.com/art/box-body/) (2023) and
+  [EMERGE:NCY](https://agawen.com/art/emergency/) (2023) to a new miniature
+  scale. The production began with a 1:120 physical model reproducing the
+  geometric architecture of the Piccadilly Lights screen, furnished with
+  store-bought pieces of realistic dollhouse homeware. The entire unit was
+  flailed about while filming in slow-motion with a custom camera rig.
+
+
+  The work has not yet been screened on the intended site.
 technicalGallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-tech1.jpg
