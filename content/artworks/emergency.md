@@ -17,14 +17,14 @@ exhibitions: >-
   2023 / [CIRCA Public Vote
   Prize](https://agawen.com/news/circa2023-public-vote-prize/) Recipient
 artistStatement: >-
-  EMERGE:NCY traps a monumental human within the Piccadilly Lights, from which
-  they struggle to break free. The work responds to the CIRCA 20:23 ++[Manifesto
-  of Hope](https://circa.art/manifesto-circa-2023/)++ by insisting that hope is
-  not all optimism: it is made of restlessness, despair, and confusion as well.
-  It takes its title from writer and activist Rebecca Solnit’s *Hope in the
-  Dark*, in which she elaborates on hope as action despite uncertainty and
-  posits that “Inside the word ‘emergency’ is ‘emerge’; from an emergency new
-  things come forth”.
+  EMERGE:NCY traps a monumental human within the London Piccadilly Lights, from
+  which they struggle to break free. The work responds to the CIRCA 20:23
+  [Manifesto of Hope](https://circa.art/manifesto-circa-2023/) by insisting that
+  hope is not all optimism: it is also made of restlessness, despair, and
+  confusion. The title is drawn from writer and activist Rebecca Solnit’s *Hope
+  in the Dark*, in which she elaborates on hope as action despite uncertainty
+  and posits that “Inside the word ‘emergency’ is ‘emerge’; from an emergency
+  new things come forth”.
 
 
   EMERGE:NCY was created in collaboration with Ruishuke Chen (cinematography)
@@ -54,7 +54,6 @@ cardGallery:
     mediaUrl: https://media.agawen.com/artworks/emergency/emgc-art5.jpg
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/emergency/emgc-art6.jpg
-technicalTagline: Light beyond the dark
 technicalText: "This award-winning artwork was made in the shared basement
   entertainment room of an east london flat complex. It builds on a technique
   previously tested in Singapore through [Box
