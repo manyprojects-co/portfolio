@@ -51,13 +51,16 @@ cardGallery:
     mediaUrl: https://media.agawen.com/artworks/beam/beam-art4.jpg
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/beam/beam-art5.jpg
-technicalTagline: A lamp that feels alive
-technicalText: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-  eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-  veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-  commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit
-  esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat
-  non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+technicalText: >-
+  The sculptural form consists of a custom 3D-printed shell modeled after
+  organic branching structures. Movement is actuated by four NEMA17 stepper
+  motors operating along collinear joints, driven by a microcontroller to
+  execute bio-mimetic, low-velocity animations initially prototyped in Blender.
+
+
+  Light is treated as a kinetic element through a custom LED panel tube, with
+  the possibility to transition from ambient diffusion to directional
+  spotlighting, adding an additional dimension to BEAM’s movement language.
 technicalGallery:
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/beam/beam-tech1.jpg
