@@ -72,6 +72,19 @@ import { createTrace } from "../lib/trace.mjs";
     return bezier(0.5, 0, 0, 1);   // the curve v6 actually rode
   }
   let ease = easeFromToken();
+  /**
+   * The SAME token, as the string the compositor takes. `element.animate()` wants a CSS
+   * <easing-function>, not a solver — so the token is handed over verbatim (the minifier's
+   * `cubic-bezier(.5,0,0,1)` is still valid CSS) and the solver above stays for the path that
+   * still runs on the main thread (scrollLeft, and the no-WAAPI fallback). One token, two
+   * consumers, which is what makes a JS lerp and a CSS transition ride one curve.
+   */
+  function easeString() {
+    const raw = getComputedStyle(root).getPropertyValue("--ease").trim();
+    return /^cubic-bezier\([^)]+\)$/.test(raw) || raw === "linear" || /^ease(-in|-out|-in-out)?$/.test(raw)
+      ? raw : "cubic-bezier(0.5, 0, 0, 1)";
+  }
+  let EASE_STR = easeString();
 
   /**
    * ⚠︎ UNIT-AWARE, and it must stay that way. v6 used a bare parseFloat here, which is
@@ -127,6 +140,70 @@ import { createTrace } from "../lib/trace.mjs";
       else if (done) done();
     })(performance.now());
     return { cancel() { cancelled = true; } };
+  }
+
+  /**
+   * ⭐ COMPOSITOR TWEEN (2026-11-03, JJ) — the same lerp, run by the compositor.
+   *
+   * WHY. On ProMotion iPhones WebKit caps requestAnimationFrame near 60 Hz ("Prefer Page
+   * Rendering Updates Near 60fps", on by default; WKWebView always) while native scroll and
+   * accelerated animations run at 120. Measured on JJ's phone with a side-by-side probe:
+   * rAF 59 Hz, p95 28 ms, visibly juddering next to an `element.animate()` bar on the SAME
+   * path and curve. That — not GPU load — was the "poor frame rate on certain devices" next
+   * to an "always smooth" tab swipe (`hooks.md § TRANSITION FRAME RATE, MEASURED`). So the
+   * post-release lerp goes to the compositor; the finger-down drive stays 1:1 on the main
+   * thread, because touch events arrive at 60 Hz on iOS web content whatever we do.
+   *
+   * HOW, and what it preserves:
+   *   · `frames(y)` is the SAME formula `applyWorld`/`applyStage` write inline — it is sampled
+   *     N times along the path into keyframes, one Animation PER PROPERTY (WebKit accelerates
+   *     transform/opacity only if they are not sharing an effect with something it cannot),
+   *     `easing` = the `--ease` token verbatim, so the secondary channels (scale, fade, veil)
+   *     stay position-derived by construction: they are functions of y, sampled at y.
+   *   · THE SCALAR STAYS LIVE. A rAF shadow loop derives y from `anim.currentTime` through the
+   *     same `ease()` and hands it to `track(y)` — which sets worldY/stageY and tints the nav
+   *     (colour is not a compositor property; three text links, trivially cheap). So
+   *     `tabTopY()`, `revealP()`, the arbiter's mid-lerp routing and the touch handoff read
+   *     the live position exactly as they do today, at most one rAF behind the compositor.
+   *     ⚠︎ This is what `hooks.md § Motion audit` said WAAPI could not do. It can; it just has
+   *     to be done explicitly.
+   *   · CATCH MID-FLIGHT is the same contract as tween().cancel(): read the live position,
+   *     write it inline, cancel the animations. Whatever catches it (a touch drive, a reversed
+   *     commit, a resize re-aim) continues from there.
+   *   · AT REST the inline styles are written FIRST and the animations cancelled SECOND, so a
+   *     `fill: forwards` animation never reverts to a stale inline value for a frame.
+   *   · `spanDur` is unchanged — duration is just the argument.
+   *
+   * ⛔ transform / opacity / border-radius ONLY in `frames()`. A `filter` or `clip-path` here
+   * would drag the whole thing back to the main thread (measured: clip-path keyframes on
+   * #stage still commit per frame in Chromium). border-radius IS main-thread, and it is kept
+   * for the first 10 % of the reveal to preserve "square at rest"; it rides its own
+   * Animation so it cannot de-accelerate the transform next to it.
+   * ⏪ No `Element.animate` (nothing current) → tween() exactly as before.
+   */
+  function ctween(from, to, dur, frames, track, apply, done) {
+    if (typeof Element === "undefined" || !Element.prototype.animate) {
+      return tween(from, to, dur, apply, done);
+    }
+    const N = 24;
+    const kf = new Map();                       // el → { prop → keyframes[] }
+    for (let i = 0; i <= N; i++) {
+      const y = from + (to - from) * (i / N);
+      for (const [el, props] of frames(y)) {
+        let per = kf.get(el); if (!per) { per = {}; kf.set(el, per); }
+        for (const [prop, val] of Object.entries(props)) (per[prop] ||= []).push({ [prop]: val });
+      }
+    }
+    const opts = { duration: Math.max(1, dur), easing: EASE_STR, fill: "forwards" };
+    const anims = [];
+    for (const [el, per] of kf) for (const frames of Object.values(per)) anims.push(el.animate(frames, opts));
+    const lead = anims[0];
+    const at = () => from + (to - from) * ease(Math.min(1, (lead.currentTime ?? 0) / dur));
+    let raf = 0, over = false;
+    const settle = (y) => { over = true; cancelAnimationFrame(raf); apply(y); for (const a of anims) a.cancel(); };
+    (function shadow() { if (over) return; track(at()); raf = requestAnimationFrame(shadow); })();
+    lead.onfinish = () => { if (over) return; settle(to); if (done) done(); };
+    return { cancel() { if (over) return; settle(at()); } };
   }
 
   // ============================================================================
@@ -290,34 +367,70 @@ import { createTrace } from "../lib/trace.mjs";
   // Tab contents fade out over the last 80% of the return to landing and stay at 0
   // once settled. Driven off POSITION, not tween time — so catching or reversing a
   // lerp mid-flight keeps the fade exactly in step with where the world actually is.
-  function paintTrack() {
-    const o = Math.min(1, Math.max(0, (revealP() - FADE_FLOOR) / (1 - FADE_FLOOR)));
-    track.style.opacity = o;
-  }
+  const revealPAt = (y) => (LANDING_H ? Math.min(1, Math.max(0, -y / LANDING_H)) : 0);
+  const trackOpacityAt = (y) =>
+    Math.min(1, Math.max(0, (revealPAt(y) - FADE_FLOOR) / (1 - FADE_FLOOR)));
+  function paintTrack() { track.style.opacity = trackOpacityAt(worldY); }
+
+  /**
+   * ⭐ THE FORMULA, SEPARATED FROM THE WRITE (2026-11-03). `worldFrames(y)` / `stageFrames(y)`
+   * return [element, { property: value }] pairs for a given position. `applyWorld` /
+   * `applyStage` write them inline (the single writers, as before); `ctween` samples them
+   * into keyframes. One formula, two consumers — the compositor cannot drift from the drag.
+   * ⛔ Compositor-safe properties only in here (see ctween). The nav tint lives in paintNav.
+   */
+  const worldFrames = (y) => [
+    [world, { transform: `translateY(${y}px)` }],
+    [track, { opacity: String(trackOpacityAt(y)) }],
+  ];
 
   // single writer for the world offset: transform + fade + nav tint always agree
   function applyWorld(y) {
     worldY = y;
-    world.style.transform = `translateY(${y}px)`;
-    paintTrack();
+    for (const [el, props] of worldFrames(y)) Object.assign(el.style, props);
     paintNav();
   }
   // 0 (card closed) → 1 (card fully revealed). Every reveal dynamic keys off this, so
   // they stay in lockstep with where the stage ACTUALLY is — including when the lerp is
   // caught or reversed mid-flight. Position-derived, never tween-time-derived.
-  function detailP() {
-    const open = stageOpenY();
-    return open ? Math.min(1, Math.max(0, stageY / open)) : 0;
+  const detailPAt = (y) => { const open = stageOpenY(); return open ? Math.min(1, Math.max(0, y / open)) : 0; };
+  function detailP() { return detailPAt(stageY); }
+
+  function stageFrames(y) {
+    const p = detailPAt(y);
+    const f = [
+      // SITE: rises, enlarges to --site-zoom-max. The tile's corners: square at rest,
+      // --site-corner by 10% of the reveal. ⚠︎ border-radius is not a compositor property —
+      // the stage repaints while it changes; hence the short ramp (and in ctween, its own
+      // Animation so it cannot de-accelerate the transform).
+      [stage, { transform: `translateY(${y}px) scale(${1 + (SITE_ZOOM - 1) * p})`,
+                borderRadius: `${(SITE_CORNER * Math.min(1, p / 0.1)).toFixed(1)}px` }],
+      // CARD: zooms --card-zoom-min → 1. Because (0.95 + 0.05p) >= p for all p <= 1, the
+      // card's growing top edge stays tucked behind the rising stage edge the whole way,
+      // and the two arrive on the 120px line together.
+      [detailEl, { transform: `scale(${CARD_ZOOM + (1 - CARD_ZOOM) * p})` }],
+    ];
+    /* CARD BLUR: the progressive plane over the departing site. The GEOMETRY is free —
+     * #cardBlur is a child of #stage pinned to its bottom edge, so it inherits this same
+     * translate and scale and stays welded to the card boundary. Only opacity is written,
+     * and opacity is composited without repaint.
+     * ⚠︎ It must reach 0 at rest or it blurs the landing page: the stage fills the
+     * viewport when the card is closed. Position-derived off detailP() like everything
+     * else here, so a caught or reversed lerp keeps it exactly in step.
+     * One ramp, two modes. The blur runs to full strength; the solid scrim tops out at
+     * --card-veil-op so the site never quite disappears into the ground. Same curve,
+     * same position-derived source, so switching modes cannot change the TIMING — only
+     * what is painted. That is what makes the two comparable. */
+    if (CARD_BLUR && cardBlur) {
+      const ceil = VEIL_MODE ? 1 : VEIL_OP;
+      f.push([cardBlur, { opacity: p > 0.001 ? (Math.min(1, p / (CARD_BLUR_IN || 1)) * ceil).toFixed(3) : "0" }]);
+    }
+    return f;
   }
 
   function applyStage(y) {
     stageY = y;
-    const p = detailP();
-    // SITE: rises, enlarges to --site-zoom-max, blurs to --site-blur-max.
-    stage.style.transform = `translateY(${y}px) scale(${1 + (SITE_ZOOM - 1) * p})`;
-    // the tile's corners: square at rest, --site-corner by 10% of the reveal. ⚠︎ Not a
-    // compositor property — the stage repaints while this changes; hence the short ramp.
-    stage.style.borderRadius = `${(SITE_CORNER * Math.min(1, p / 0.1)).toFixed(1)}px`;
+    for (const [el, props] of stageFrames(y)) Object.assign(el.style, props);
     /* ⛔ BLUR OFF (2026-08-18, JJ) — a DESIGN decision, not a bug fix.
      * `hooks.md`: "the 50px full-viewport blur is the most expensive thing in the file",
      * applied per frame to the whole viewport simultaneously with a scale() and an opacity
@@ -334,33 +447,14 @@ import { createTrace } from "../lib/trace.mjs";
      * BLUR_FLOOR all stay live and unread — so this is a one-line revert, and every tuning
      * note in `hooks.md` that references those tokens stays executable.
      *
-     *   const bp = Math.min(1, Math.max(0, (p - BLUR_FLOOR) / (1 - BLUR_FLOOR)));
+     *   const bp = Math.min(1, Math.max(0, (detailPAt(y) - BLUR_FLOOR) / (1 - BLUR_FLOOR)));
      *   world.style.filter = bp > 0.001 ? `blur(${(SITE_BLUR * bp).toFixed(2)}px)` : "none";
+     * ⛔ If it ever comes back it goes HERE, in the writer — never into stageFrames(): a
+     * filter in the keyframes would put the whole tween back on the main thread (ctween).
      */
     // ⚠︎ Still written every frame, and it must be: the property is inline, so a stale
     // blur() from a previous build or a hot reload would otherwise never be cleared.
     world.style.filter = "none";
-    /* CARD BLUR: the progressive plane over the departing site. The GEOMETRY is free —
-     * #cardBlur is a child of #stage pinned to its bottom edge, so it inherits this same
-     * translate and scale and stays welded to the card boundary. Only opacity is written,
-     * and opacity is composited without repaint.
-     * ⚠︎ It must reach 0 at rest or it blurs the landing page: the stage fills the
-     * viewport when the card is closed. Position-derived off detailP() like everything
-     * else here, so a caught or reversed lerp keeps it exactly in step. */
-    if (CARD_BLUR && cardBlur) {
-      /* One ramp, two modes. The blur runs to full strength; the solid scrim tops out at
-       * --card-veil-op so the site never quite disappears into the ground. Same curve,
-       * same position-derived source, so switching modes cannot change the TIMING — only
-       * what is painted. That is what makes the two comparable. */
-      const ceil = VEIL_MODE ? 1 : VEIL_OP;
-      cardBlur.style.opacity = p > 0.001
-        ? (Math.min(1, p / (CARD_BLUR_IN || 1)) * ceil).toFixed(3)
-        : "0";
-    }
-    // CARD: zooms --card-zoom-min → 1. Because (0.95 + 0.05p) >= p for all p <= 1, the
-    // card's growing top edge stays tucked behind the rising stage edge the whole way,
-    // and the two arrive on the 120px line together.
-    detailEl.style.transform = `scale(${CARD_ZOOM + (1 - CARD_ZOOM) * p})`;
   }
 
   // nav active state = grey, lerped continuously with the horizontal swipe AND
@@ -485,7 +579,10 @@ import { createTrace } from "../lib/trace.mjs";
 
   function worldTo(target, done) {
     if (worldTween) worldTween.cancel();          // catch whatever is in flight
-    worldTween = tween(worldY, target, spanDur(worldY, target, LANDING_H), applyWorld,
+    // ⭐ compositor-driven (ctween). The shadow track keeps worldY live and tints the nav;
+    // the transform and the track fade ride the compositor at the display's own rate.
+    worldTween = ctween(worldY, target, spanDur(worldY, target, LANDING_H), worldFrames,
+      (y) => { worldY = y; paintNav(); }, applyWorld,
       () => { worldTween = null; if (done) done(); });
   }
 
@@ -808,7 +905,10 @@ import { createTrace } from "../lib/trace.mjs";
     const dur = target === 0
       ? Math.max(CARD_CLOSE * 0.3, CARD_CLOSE * (span ? left / span : 1))
       : spanDur(stageY, target, span);
-    stageTween = tween(stageY, target, dur, applyStage,
+    // ⭐ compositor-driven (ctween). Nothing but stageY itself needs the shadow track here —
+    // the nav does not depend on it, and every visual is in stageFrames().
+    stageTween = ctween(stageY, target, dur, stageFrames,
+      (y) => { stageY = y; }, applyStage,
       () => { stageTween = null; if (done) done(); });
   }
 
@@ -1701,6 +1801,7 @@ import { createTrace } from "../lib/trace.mjs";
    */
   function retune() {
     ease = easeFromToken();
+    EASE_STR = easeString();
     DUR        = cssMs("--dur", 500);
     SITE_ZOOM  = cssNum("--site-zoom-max", 1.1);
     SITE_BLUR  = cssNum("--site-blur-max", 50);
