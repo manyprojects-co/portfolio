@@ -129,7 +129,7 @@
        compositing — no sampling, no repaint, nothing that scales with viewport area or
        GPU throttling. It is the floor on cost, which is why it is the mobile answer if
        the knobs do not get there. */
-    --card-veil-mode: 1;
+    --card-veil-mode: 0;
     --card-veil-op: 0.9;     /* [TUNE] mode 0 only: peak opacity of the grey. 1 = opaque */
     /* [TUNE] mode 0 only: what the scrim fades TO.
        ⚠︎ --bg (#E7E7E7) and --detail-bg (#EFEFEF) are one step apart, so fading the site
