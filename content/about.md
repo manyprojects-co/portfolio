@@ -48,6 +48,10 @@ pressMentions: |-
   2023 - Artplugged / [Shortlist for CIRCA2023](https://artplugged.co.uk/30-global-artists-shortlisted-for-the-circa-prize-2023/)
 
   2023 - FAD Magazine / [Shortlist for CIRCA 2023](https://fadmagazine.com/2023/08/31/the-circa-prize-2023-artist-shortlist-revealed/)
+education: |-
+  2023 - Royal College of Art & Imperial College London
+
+  MA/MSc Global Innovation Design
 mediaUrl: https://media.agawen.com/about/xj-profile.jpg
 faviconUrl: https://media.agawen.com/about/xj-favicon.png
 ---
