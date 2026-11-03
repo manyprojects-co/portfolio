@@ -46,11 +46,20 @@ exhibitionsAppearances: |-
   2023 Ars Electronica Festival 2023 (Linz, Austria)
 
   2023 ART-ACT Festival, Singapore Art Week (Singapore)
-awardsCommissions: |-
-  2025 Kakilang [Commission](https://www.kakilang.org.uk/2025-autumn-season)  
-  2024 Artsted 99 Future Blue-Chip Artists  
-  2023 CIRCA20:23 [Public Vote Prize](https://circa.art/press/press-release-circa-prize-2020-award-ceremony/)  
-  2023 Interplay Kinetic Design: Major Award & Grant  
+awardsCommissions: >-
+  2025 Kakilang [Commission](https://www.kakilang.org.uk/2025-autumn-season)
+
+
+  2024 Artsted 99 Future Blue-Chip Artists
+
+
+  2023 CIRCA20:23 [Public Vote
+  Prize](https://circa.art/press/press-release-circa-prize-2020-award-ceremony/)
+
+
+  2023 Interplay Kinetic Design: Major Award & Grant
+
+
   2023 Media Architecture Biennale 2023 Finalist
 pressMentions: |-
   2025 A Youngish Perspective / [Review: Alternative Roots Festival](https://ayoungishperspective.co.uk/2025/11/11/review-alternative-roots-festival/?noamp=mobile)
