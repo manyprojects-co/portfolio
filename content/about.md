@@ -49,7 +49,7 @@ exhibitionsAppearances: |-
 awardsCommissions: |-
   2025 Kakilang [Commission](https://www.kakilang.org.uk/2025-autumn-season)  
   2024 Artsted 99 Future Blue-Chip Artists  
-  2023 CIRCA 20:23 [Public Vote Prize](https://circa.art/press/press-release-circa-prize-2020-award-ceremony/)  
+  2023 CIRCA20:23 [Public Vote Prize](https://circa.art/press/press-release-circa-prize-2020-award-ceremony/)  
   2023 Interplay Kinetic Design: Major Award & Grant  
   2023 Media Architecture Biennale 2023 Finalist
 pressMentions: |-
@@ -59,9 +59,9 @@ pressMentions: |-
 
   2023 Wallpaper* / [Winning the Public Vote Prize for EMERGE:NCY](https://www.wallpaper.com/art/circa-prize-2023-cemile-sahin-piccadilly-london)
 
-  2023 Artplugged / [Shortlist for CIRCA2023](https://artplugged.co.uk/30-global-artists-shortlisted-for-the-circa-prize-2023/)
+  2023 Artplugged / [Shortlist for CIRCA20:23](https://artplugged.co.uk/30-global-artists-shortlisted-for-the-circa-prize-2023/) 
 
-  2023 FAD Magazine / [Shortlist for CIRCA 2023](https://fadmagazine.com/2023/08/31/the-circa-prize-2023-artist-shortlist-revealed/)
+  2023 FAD Magazine / [Shortlist for CIRCA 20:23](https://fadmagazine.com/2023/08/31/the-circa-prize-2023-artist-shortlist-revealed/)
 education: |-
   2023 Royal College of Art & Imperial College London
 
