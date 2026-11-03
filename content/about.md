@@ -59,9 +59,9 @@ pressMentions: |-
 
   2023 Wallpaper* / [Winning the Public Vote Prize for EMERGE:NCY](https://www.wallpaper.com/art/circa-prize-2023-cemile-sahin-piccadilly-london)
 
-  2023 Artplugged / [Shortlist for CIRCA20:23](https://artplugged.co.uk/30-global-artists-shortlisted-for-the-circa-prize-2023/) 
+  2023 Artplugged / [Shortlist for CIRCA20:23](https://artplugged.co.uk/30-global-artists-shortlisted-for-the-circa-prize-2023/)
 
-  2023 FAD Magazine / [Shortlist for CIRCA 20:23](https://fadmagazine.com/2023/08/31/the-circa-prize-2023-artist-shortlist-revealed/)
+  2023 FAD Magazine / [Shortlist for CIRCA20:23](https://fadmagazine.com/2023/08/31/the-circa-prize-2023-artist-shortlist-revealed/)
 education: |-
   2023 Royal College of Art & Imperial College London
 
