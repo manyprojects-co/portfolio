@@ -1,11 +1,22 @@
 ---
-bio: "Xin Wen and JJ Agcaoili operate as **XJ**: a Chinese-American and Filipino
-  artistic duo grown out of London, now working internationally. Their
-  award-winning practice reckons with the human subject in collision with the
-  material and digital structures that determine contemporary life. This focus
-  is embodied in their expansive body of work across experimental video, kinetic
-  sculpture, and immersive installation, which has been exhibited in Stockholm,
-  San Francisco, Taiwan, Linz, Singapore, London, and more."
+bio: >-
+  Agawen is the studio practice of J. Aga (PH) and Xin Wen (CN/US). Their
+  collaboration began in London, where they were both completing a joint
+  postgraduate program between the Royal College of Art and Imperial College
+  London. They made their artistic debut during a term abroad in Singapore,
+  followed by a UK debut later that year on the Piccadilly Lights, where they
+  received the CIRCA Public Vote Prize.
+
+
+  Their current body of work is about how contemporary life is structurally
+  determined by cities and screens, and it draws from their experience as
+  diasporic artists and their technical foundation as design-engineers. These
+  experimental videos, kinetic sculptures, and immersive installations have been
+  exhibited at the Asian Art Museum (San Francisco), Ars Electronica (Linz),
+  Helix Art Space (Stockholm), and Speculum Artium (Trbovlje, Slovenia).
+
+
+  *Formerly XJ.*
 exhibitionsAppearances: |-
   2026 - Solo exhibition, MVR Gallery (Ithaca, NY, USA)  
   2026 - Solo exhibition, Helix Art Space (Stockholm, Sweden)  
