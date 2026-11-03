@@ -10,6 +10,7 @@ content:
       - { name: exhibitionsAppearances, label: Exhibitions & Appearances, type: rich-text }
       - { name: awardsCommissions, label: Awards & Commissions, type: rich-text }
       - { name: pressMentions, label: Press & Mentions, type: rich-text }
+      - { name: education, label: Education, type: rich-text }
       - { name: mediaUrl, label: Profile Picture (Cloudflare URL), type: string }
       - { name: faviconUrl, label: Favicon (Cloudflare URL — square PNG or SVG), type: string }
 
