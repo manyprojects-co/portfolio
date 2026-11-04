@@ -60,10 +60,20 @@ const faviconType = /\.svg(\?|$)/i.test(favicon) ? "image/svg+xml" : /\.png(\?|$
             `duration` field is exposed cross-origin, so it works on previews), not by
             `img.complete`: a picture that took under LQIP_MIN_MS was ready before anyone was
             looking and must not be hazed. No timing entry → treated as cached → no blur.
+        The STARTING RADIUS IS PER IMAGE (2026-11-04, JJ: "the swap is noticeable"). The
+            impression's softness is the browser's upscale of 16px, so it scales with the
+            rendered width; a fixed 12px matched only at ~400px wide. Measured on the live
+            site (mean abs diff, impression vs blurred picture): best match 12px at 400,
+            24px at 800, 40–48px at 1400 — about width ÷ 33. So the picture arrives at
+            width / MATCH, clamped, set as --lqip-r on the element; the CSS falls back to
+            --lqip-blur when it is unset (an image laid out at 0 wide). The cost of a larger
+            radius is one composited blur per image for --lqip-unblur, then nothing.
         A failed image keeps its impression (❓2's interim: better than a broken icon). */}
     <script is:inline>
       (function () {
-        var MIN_MS = 40; /* [TUNE] loads faster than this are "cached": no blur-up (T7) */
+        var MIN_MS = 40;  /* [TUNE] loads faster than this are "cached": no blur-up (T7) */
+        var MATCH = 33;   /* [TUNE] rendered px per 1px of starting blur — measured, see above */
+        var R_MAX = 48;   /* [TUNE] radius cap; the hero at 1400px wants ~44 */
         function land(e) {
           var img = e.target;
           if (!(img instanceof HTMLImageElement) || !img.classList.contains("media-lqip") || img.dataset.lqip) return;
@@ -71,6 +81,8 @@ const faviconType = /\.svg(\?|$)/i.test(favicon) ? "image/svg+xml" : /\.png(\?|$
           img.style.backgroundImage = "";                                   /* T6 */
           var rt = performance.getEntriesByName(img.currentSrc);
           if (!rt.length || rt[rt.length - 1].duration < MIN_MS) return;   /* T7 */
+          var w = img.clientWidth;
+          if (w > 0) img.style.setProperty("--lqip-r", Math.min(R_MAX, Math.max(4, w / MATCH)).toFixed(1) + "px");
           img.classList.add("lqip-wait"); void img.offsetWidth;            /* the frame about to paint: blurred */
           img.classList.remove("lqip-wait"); img.classList.add("lqip-done"); /* …and sharpening from it */
           img.addEventListener("transitionend", function () { img.classList.remove("lqip-done"); }, { once: true });
