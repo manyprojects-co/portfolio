@@ -80,15 +80,17 @@
        0ms = a cut: the LQIP still shows while loading, there is just no sharpen.
        ⚠︎ Never start the picture at opacity 0 — Chromium drops opacity-0 paints from LCP. */
     --lqip-blur: 12px;
-    --lqip-unblur: 600ms;    /* 240 → 600 on 2026-11-04 (JJ: "less jarring"). Perceived
+    --lqip-unblur: 800ms;    /* 240 → 600 → 800 on 2026-11-04 (JJ: "less jarring"). Perceived
                                 sharpness goes roughly as 1/radius, so nearly all of the
                                 visible change happens in the LAST few px — a short tween
                                 reads as a snap at the end however it is eased. */
-    --lqip-ease: cubic-bezier(0.2, 0, 0, 1);
-                             /* [TUNE] its own curve, not --ease (0.5,0,0,1): leave the
-                                12px start quickly — nobody needs to dwell on the blur —
-                                and spend the time on the long decelerating approach to
-                                sharp, where the eye actually sees the change. */
+    --lqip-ease: cubic-bezier(0.6, 0, 0.2, 1);
+                             /* [TUNE] its own curve, not --ease. Generous ease-in AND
+                                ease-out (JJ, 2026-11-04): the picture dwells blurred for a
+                                beat, moves through the middle radii quickly (the eye can't
+                                tell 8px from 5px anyway), then settles into sharp over the
+                                long tail where the change is actually visible. A pure
+                                ease-out (0.2,0,0,1) at 600ms still felt abrupt. */
 
     --bg: #E7E7E7;
     --detail-bg: #EFEFEF;    /* art/news cards sit a step lighter than the site */
