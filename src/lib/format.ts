@@ -85,11 +85,20 @@ export const blocksHtml = (paras: string[]): string => {
  * artwork exhibitions so the two cannot drift apart visually — they now produce byte-
  * identical markup and differ ONLY in how the year is found.
  */
+/**
+ * ⭐ TWO CELLS, NOT ONE LINE (JJ, 2026-11-04). `.about-list` is a two-track grid and
+ * `.about-item` is `display: contents`, so `.yr` and `.ev` land in the year and event
+ * tracks: a wrapping event stays indented under its own first word, with the year hanging
+ * in the margin like a bullet. The literal space between the spans is deliberate — it is
+ * what keeps the row readable anywhere the grid rule does not reach (copy/paste, reader
+ * mode, a container that is not `.about-list`). `.about-item-plain` (no year) opts out of
+ * `display: contents` and spans both tracks.
+ */
 const yearItem = (year: string, rest: string): string =>
-  `<div class="about-item"><span class="yr">${year}</span> ${inlineMd(rest.trim())}</div>`;
+  `<div class="about-item"><span class="yr">${year}</span> <span class="ev">${inlineMd(rest.trim())}</span></div>`;
 
 const plainItem = (line: string): string =>
-  `<div class="about-item">${inlineMd(line.trim())}</div>`;
+  `<div class="about-item about-item-plain">${inlineMd(line.trim())}</div>`;
 
 /**
  * An ARTWORK exhibitions row. ⚠︎ THE YEAR IS TYPED LAST AND RENDERS FIRST.
@@ -109,10 +118,16 @@ export function exhibitionItem(line: string): string {
   return m ? yearItem(m[2], m[1]) : plainItem(line);
 }
 
-/** A bio list row: "2025 - Thing" splits the year into its own span. */
+/**
+ * A bio list row: the year leads, with or without a dash — "2025 - Thing" (how the CMS
+ * was written until 2026-10) and "2025 Thing" (how it is written now). ⚠︎ The dash used to
+ * be REQUIRED, so when JJ dropped it from the content every row fell through to plainItem
+ * and the grey year vanished site-wide (found 2026-11-04). A "2024 - 2026 Thing" range is
+ * kept whole as the year. A row with no leading year renders whole and untouched.
+ */
 export function aboutItem(line: string): string {
-  const m = line.match(/^\s*(\d{4})\s*-\s*(.*)$/);
-  return m ? yearItem(m[1], m[2]) : plainItem(line);
+  const m = line.match(/^\s*(\d{4}(?:\s*[–—-]\s*\d{4})?)(?:\s*[–—-]\s*|\s+)(.*)$/);
+  return m && m[2].trim() ? yearItem(m[1], m[2]) : plainItem(line);
 }
 
 /**

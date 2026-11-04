@@ -323,12 +323,21 @@ import { createTrace } from "../lib/trace.mjs";
     const listW = Math.ceil(col2.getBoundingClientRect().width);
     col2.style.width = prevW;
     col2.style.maxWidth = prevMax;
-    // the two-column layout needs: sticky column + gap + the longest entry + both margins
+    // ⭐ THREE STATES FROM ONE MEASUREMENT (JJ, 2026-11-04). The bio column is now as wide
+    // as the list (global.css --bio-col-w: the list width, clamped to [--art-side-w,
+    // --art-main-max]), so the wide layout needs bioW + gap + listW + margins. When that
+    // does not fit but the OLD layout (a 300px bio) still does, `.bio-narrow` falls back to
+    // it; only when even that fails does the panel stack. bioW >= sideW by construction, so
+    // needWide >= needNarrow and the two classes can never both be set.
     const sideW = cssNum("--art-side-w", 300);
     const gap = cssNum("--art-col-gap", 32);
-    const need = sideW + gap + listW + FRAME * 2;
+    const bioW = Math.max(sideW, Math.min(listW, cssNum("--art-main-max", 480)));
+    const needWide = bioW + gap + listW + FRAME * 2;
+    const needNarrow = sideW + gap + listW + FRAME * 2;
+    const w = window.innerWidth;
     root.style.setProperty("--bio-list-w", listW + "px");
-    root.classList.toggle("bio-stacked", window.innerWidth < need);
+    root.classList.toggle("bio-narrow", w < needWide && w >= needNarrow);
+    root.classList.toggle("bio-stacked", w < needNarrow);
   }
 
   /**

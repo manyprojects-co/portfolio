@@ -10,8 +10,8 @@
  * Both rules live in global.css. A layout that sets panel padding from a shared rule
  * WILL silently bring the bug back. Signature: displacement at rest == `top`, exactly.
  */
-import { inlineMd, aboutItem } from "../lib/format";
-import { lines, media } from "../lib/map";
+import { blocksHtml, aboutItem } from "../lib/format";
+import { lines, paragraphs, media } from "../lib/map";
 import Media from "./Media.astro";
 interface Props { about: any }
 const { about } = Astro.props;
@@ -30,7 +30,12 @@ const portrait = media(about.mediaUrl ?? about.imageUrl ?? "");
 ---
 <div class="sub" id="bio">
   <div class="about" id="about">
-    <p class="about-bio" set:html={inlineMd(about.bio ?? "")} />
+    {/* ⭐ REAL PARAGRAPHS (JJ, 2026-11-04). The bio used to be poured into ONE <p> through
+        inlineMd, so the blank lines the CMS editor shows were lost and "Formerly XJ." ran on
+        from the previous sentence. `paragraphs()` + `blocksHtml()` is the same path the card
+        prose takes: one <p> per blank-line break, `- ` runs become a <ul>, and bold/italic/
+        links/underline render inline. A <div> now, so it can hold blocks; sticky is unchanged. */}
+    <div class="about-bio" set:html={blocksHtml(paragraphs(about.bio ?? ""))} />
     <div class="about-col2">
       {sections.map((sec) => (
         <section class="about-sec">

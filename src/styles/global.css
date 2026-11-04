@@ -1414,13 +1414,34 @@
     --about-head-gap: 12px;
     --about-item-gap: 6px;
     --about-year: #b3b3b3;
+    /* ⭐ THE YEAR IS A COLUMN (JJ, 2026-11-04): the gap between the year track and the
+       event track. 0.28em is the width of a space in Inter at this size, measured — so a
+       one-line row is pixel-identical to the old "year, space, event" run of text, and
+       only a WRAPPING row looks different (it now indents under its own first word). */
+    --about-year-gap: 0.28em;  /* [TUNE] */
+    --about-para-gap: 1em;     /* [TUNE] between bio paragraphs; the card's .dn-sub uses 1em too */
+    /* ⭐ THE BIO IS AS WIDE AS THE LIST (JJ, 2026-11-04). --bio-list-w is the measured
+       max-content width of column 2 (measureBioStack, site.js); column 2's rendered width
+       is that, capped at --art-main-max — so this is column 2's width, derived from the same
+       number, and never less than the old 300px sticky column. Three states, all set by the
+       SAME measurement, so they cannot disagree:
+         (none)        wide:   bio = --bio-col-w, list hugs    needs 2·bioW + gap + margins
+         .bio-narrow   as before 2026-11-04: bio = --art-side-w  needs sideW + listW + …
+         .bio-stacked  one column (unchanged)
+       Before JS runs --bio-list-w is unset and the fallback is the cap; the bio tab is never
+       on screen at load, so the one-frame difference is never painted. */
+    --bio-col-w: max(var(--art-side-w), min(var(--bio-list-w, var(--art-main-max)), var(--art-main-max)));
   }
   /* ⭐ THE ART CARD'S GRID, EXACTLY — same tracks, same gap, same cap, same breakpoint.
      `width` + `margin-inline: auto` replaces the old `justify-content: center`: the pair
      used to be centred with no cap, so its outer edges floated with the content. Capping
      it is what makes the bio and an art card share an edge. */
   .about {
-    width: min(var(--art-body-w), 100%);
+    /* ⚠︎ WIDER THAN --art-body-w WHEN THE LIST IS WIDER THAN 300 (2026-11-04): two equal
+       columns of 405 + 32 = 842, not 812. The bio's left edge therefore sits up to 15px left
+       of an art card's at the same viewport; JJ chose equal columns over edge registration.
+       .bio-narrow restores the old 812 box and the old registration. */
+    width: min(calc(2 * var(--bio-col-w) + var(--art-col-gap)), 100%);
     margin-inline: auto;
     display: grid;
     /* ⭐ COLUMN 2 HUGS ITS LONGEST ENTRY (JJ, 2026-08-23) — `fit-content(limit)` is
@@ -1433,11 +1454,16 @@
        though it is often narrower. Left edges still register: the track pair starts at the
        left edge of the same --art-body-w box the sheet uses, so the two surfaces share an
        origin and only the ragged right edge differs. */
-    grid-template-columns: var(--art-side-w) fit-content(var(--art-main-max));
+    grid-template-columns: var(--bio-col-w) fit-content(var(--art-main-max));
     gap: var(--art-col-gap);
     align-items: start;
     font-size: var(--type-size);
     line-height: 1.5;
+  }
+  /* the pre-2026-11-04 layout, now the middle state: a 300px bio next to an unwrapped list */
+  :root.bio-narrow .about {
+    width: min(var(--art-body-w), 100%);
+    grid-template-columns: var(--art-side-w) fit-content(var(--art-main-max));
   }
   .about-bio,
   .about-col2 { min-width: 0; }
@@ -1467,11 +1493,31 @@
     top: var(--bio-pin-top);
   }
   .about-bio strong { font-weight: 700; }
+  /* real paragraphs (Bio.astro, 2026-11-04): same rhythm as the card's prose, flush bottom */
+  .about-bio p { margin: 0 0 var(--about-para-gap); }
+  .about-bio p:last-child { margin-bottom: 0; }
+  .about-bio ul { margin: 0 0 var(--about-para-gap); padding-left: 1.2em; }
+  .about-bio ul:last-child { margin-bottom: 0; }
   .about-col2 { display: flex; flex-direction: column; gap: var(--about-sec-gap); }
 
   .about-sec { display: flex; flex-direction: column; gap: var(--about-head-gap); }
   .about-h { margin: 0; font-size: var(--type-size); font-weight: 400; }
-  .about-list { display: flex; flex-direction: column; gap: var(--about-item-gap); }
+  /* ⭐ YEAR TRACK + EVENT TRACK (JJ, 2026-11-04). Was a flex column of one-line rows, so a
+     row that wrapped came back under the YEAR; now the event wraps under itself and the
+     year hangs in the margin like a bullet. `max-content` makes the year track as wide as
+     the widest year, so every event starts on one vertical line. `.about-item` dissolves
+     into its two spans (`display: contents`); a row with no year (`.about-item-plain`) is
+     a normal block spanning both tracks. The card's exhibitions share this class and so
+     get the same treatment — format.ts renders both. */
+  .about-list {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    column-gap: var(--about-year-gap);
+    row-gap: var(--about-item-gap);
+    align-items: baseline;
+  }
+  .about-item { display: contents; }
+  .about-item-plain { display: block; grid-column: 1 / -1; }
   /* the portrait easter egg (Bio.astro): one more .about-sec, so the column gap spaces it
      exactly like the lists above it. Full column width, natural aspect, no crop. */
   .about-portrait img, .about-portrait video { width: 100%; height: auto; display: block; }
