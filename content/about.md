@@ -29,6 +29,8 @@ exhibitionsAppearances: |-
 
   2025 Alternative Roots, Hoxton Hall (London, UK)
 
+  2025 Artist talk, Bow Arts (London, UK)
+
   2025 Speculum Artium Festival (Trbovlje, Slovenia)
 
   2025 Artist talk, Cornell University (Ithaca, NY, USA)
