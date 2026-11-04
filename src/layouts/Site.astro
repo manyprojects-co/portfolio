@@ -56,10 +56,17 @@ const faviconType = /\.svg(\?|$)/i.test(favicon) ? "image/svg+xml" : /\.png(\?|$
           FADE  the picture ARRIVES blurred (.lqip-wait for one style resolve) and sharpens
               (.lqip-done, drops itself on transitionend). A filter exists for ~240ms per
               image around its arrival and at no other time — never a standing state.
-        T7  cached vs fetched is decided by the fetch's DURATION (resource timing — the
-            `duration` field is exposed cross-origin, so it works on previews), not by
-            `img.complete`: a picture that took under LQIP_MIN_MS was ready before anyone was
-            looking and must not be hazed. No timing entry → treated as cached → no blur.
+        T7  WHETHER TO ANIMATE IS "DID THE VIEWER SEE THE IMPRESSION WAITING", measured
+            directly — not `img.complete` (true too early on a cold load) and not the fetch's
+            duration (an eager image's request starts at parse time, so a true cache hit still
+            reports ~100–150ms of queueing behind CSS and scripts; measured on the live site,
+            2026-11-04, after the blur-up played on every warm reload). The script records
+            the FIRST PAINTED FRAME with one requestAnimationFrame; on load, the wait is now
+            minus the later of that frame and the image's own request start (resource-timing
+            `startTime`, exposed cross-origin, so previews and dev work). No frame yet → the
+            picture is in the first frame → nothing to animate. A lazy or injected image
+            that comes from cache lands within a few ms of its request → nothing to animate.
+            Only a picture that visibly arrived late blurs up.
         The STARTING RADIUS IS PER IMAGE (2026-11-04, JJ: "the swap is noticeable"). The
             impression's softness is the browser's upscale of 16px, so it scales with the
             rendered width; a fixed 12px matched only at ~400px wide. Measured on the live
@@ -71,7 +78,9 @@ const faviconType = /\.svg(\?|$)/i.test(favicon) ? "image/svg+xml" : /\.png(\?|$
         A failed image keeps its impression (❓2's interim: better than a broken icon). */}
     <script is:inline>
       (function () {
-        var MIN_MS = 40;  /* [TUNE] loads faster than this are "cached": no blur-up (T7) */
+        var MIN_MS = 150; /* [TUNE] a wait shorter than this is not worth an 800ms animation (T7) */
+        var FIRST = 0;    /* time of the first painted frame; 0 until there has been one */
+        requestAnimationFrame(function (t) { FIRST = t || performance.now(); });
         var MATCH = 33;   /* [TUNE] rendered px per 1px of starting blur — measured, see above */
         var R_MAX = 48;   /* [TUNE] radius cap; the hero at 1400px wants ~44 */
         function land(e) {
@@ -79,8 +88,10 @@ const faviconType = /\.svg(\?|$)/i.test(favicon) ? "image/svg+xml" : /\.png(\?|$
           if (!(img instanceof HTMLImageElement) || !img.classList.contains("media-lqip") || img.dataset.lqip) return;
           img.dataset.lqip = "1";
           img.style.backgroundImage = "";                                   /* T6 */
+          if (!FIRST) return;                                              /* T7: in the first frame anyway */
           var rt = performance.getEntriesByName(img.currentSrc);
-          if (!rt.length || rt[rt.length - 1].duration < MIN_MS) return;   /* T7 */
+          var start = rt.length ? rt[rt.length - 1].startTime : 0;
+          if (performance.now() - Math.max(start, FIRST) < MIN_MS) return;  /* T7: nobody saw it wait */
           var w = img.clientWidth;
           if (w > 0) img.style.setProperty("--lqip-r", Math.min(R_MAX, Math.max(4, w / MATCH)).toFixed(1) + "px");
           img.classList.add("lqip-wait"); void img.offsetWidth;            /* the frame about to paint: blurred */
