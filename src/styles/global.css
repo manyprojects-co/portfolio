@@ -82,7 +82,9 @@
     --lqip-blur: 12px;       /* FALLBACK only since 2026-11-04 — the head script sets a per-image
                                 --lqip-r from the rendered width (≈ width ÷ 33, cap 48px), so the
                                 arriving picture starts as soft as the impression it replaces. */
-    --lqip-unblur: 800ms;    /* 240 → 600 → 800 on 2026-11-04 (JJ: "less jarring"). Perceived
+    --lqip-unblur: 800ms;    /* THE CAP. Since 2026-11-05 the head script sets this inline per
+                                image = how long the viewer actually waited, up to this value.
+                                240 → 600 → 800 on 2026-11-04 (JJ: "less jarring"). Perceived
                                 sharpness goes roughly as 1/radius, so nearly all of the
                                 visible change happens in the LAST few px — a short tween
                                 reads as a snap at the end however it is eased. */

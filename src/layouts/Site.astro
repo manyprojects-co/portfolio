@@ -67,6 +67,9 @@ const faviconType = /\.svg(\?|$)/i.test(favicon) ? "image/svg+xml" : /\.png(\?|$
             picture is in the first frame → nothing to animate. A lazy or injected image
             that comes from cache lands within a few ms of its request → nothing to animate.
             Only a picture that visibly arrived late blurs up.
+        The DURATION IS PER IMAGE TOO (2026-11-05): the sharpen lasts as long as the viewer
+            waited, capped at --lqip-unblur, set inline on the element. Ready in a few ms →
+            nothing; a 200ms revalidation → a 200ms settle; a slow load → the full token.
         The STARTING RADIUS IS PER IMAGE (2026-11-04, JJ: "the swap is noticeable"). The
             impression's softness is the browser's upscale of 16px, so it scales with the
             rendered width; a fixed 12px matched only at ~400px wide. Measured on the live
@@ -78,7 +81,16 @@ const faviconType = /\.svg(\?|$)/i.test(favicon) ? "image/svg+xml" : /\.png(\?|$
         A failed image keeps its impression (❓2's interim: better than a broken icon). */}
     <script is:inline>
       (function () {
-        var MIN_MS = 150; /* [TUNE] a wait shorter than this is not worth an 800ms animation (T7) */
+        var MIN_MS = 50;  /* [TUNE] below this (≈3 frames) nothing is animated at all (T7) */
+        /* THE SHARPEN LASTS AS LONG AS THE WAIT DID, capped at --lqip-unblur (2026-11-05, JJ:
+           "if it's ready in a few ms we don't want the animation"). A 200ms revalidation gets a
+           200ms settle you barely register; a 2s cold load gets the full token. No threshold
+           to tune between "ready" and "late" — the animation is proportional to the delay. */
+        function capMs() {   /* the token, parsed by UNIT (the minifier writes .8s for 800ms — css-time.ts) */
+          var v = getComputedStyle(document.documentElement).getPropertyValue("--lqip-unblur").trim();
+          var n = parseFloat(v); if (!isFinite(n)) return 800;
+          return /ms$/i.test(v) ? n : /s$/i.test(v) ? n * 1000 : n;
+        }
         var FIRST = 0;    /* time of the first painted frame; 0 until there has been one */
         requestAnimationFrame(function (t) { FIRST = t || performance.now(); });
         var MATCH = 33;   /* [TUNE] rendered px per 1px of starting blur — measured, see above */
@@ -91,7 +103,9 @@ const faviconType = /\.svg(\?|$)/i.test(favicon) ? "image/svg+xml" : /\.png(\?|$
           if (!FIRST) return;                                              /* T7: in the first frame anyway */
           var rt = performance.getEntriesByName(img.currentSrc);
           var start = rt.length ? rt[rt.length - 1].startTime : 0;
-          if (performance.now() - Math.max(start, FIRST) < MIN_MS) return;  /* T7: nobody saw it wait */
+          var wait = performance.now() - Math.max(start, FIRST);
+          if (wait < MIN_MS) return;                                       /* T7: nobody saw it wait */
+          img.style.setProperty("--lqip-unblur", Math.min(wait, capMs()).toFixed(0) + "ms");
           var w = img.clientWidth;
           if (w > 0) img.style.setProperty("--lqip-r", Math.min(R_MAX, Math.max(4, w / MATCH)).toFixed(1) + "px");
           img.classList.add("lqip-wait"); void img.offsetWidth;            /* the frame about to paint: blurred */
