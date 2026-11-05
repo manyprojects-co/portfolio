@@ -23,7 +23,7 @@ exhibitionsAppearances: |-
 
   2026 Solo exhibition, Helix Art Space (Stockholm, Sweden)
 
-  2026 Artist talk, Helix Art Space (Stockholm, Sweden)
+  2025 Artist talk, Helix Art Space (Stockholm, Sweden)
 
   2025 Silent Interference, Turtle Chamber Projects (Taoyuan, Taiwan)
 
