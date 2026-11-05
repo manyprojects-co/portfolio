@@ -149,6 +149,10 @@ const about = defineCollection({
     exhibitionsAppearances: z.string().optional(),
     awardsCommissions: z.string().optional(),
     pressMentions: z.string().optional(),
+    /** ⚠︎ was MISSING from this schema (found 2026-11-05): the CMS has carried `education`
+     *  since August, and zod strips any key not declared here, so Bio.astro could never have
+     *  rendered it even if it had asked. Declare every About field the CMS writes. */
+    education: z.string().optional(),
     // renamed from `image` on 2026-08-10; absent from the file today, so no profile picture
     // renders anywhere. Was already true before the rename — flagged in v4-cms-audit §3.
     // ⚠︎ and possibly renamed again to `mediaUrl` — both accepted, same reason as `visual`.
