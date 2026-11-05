@@ -1,6 +1,6 @@
 ---
 bio: >-
-  Agawen is the studio practice of J. Aga (PH) and Xin Wen (CN/USA). Their
+  Agawen is the studio practice of J. Aga (PH) and Xin Wen (CN/US). Their
   collaboration began in London, where they completed a joint postgraduate
   programme between the Royal College of Art and Imperial College London. They
   made their artistic debut during a term abroad in Singapore, followed by a UK
