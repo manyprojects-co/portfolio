@@ -1532,6 +1532,12 @@
   }
   .about-item { display: contents; }
   .about-item-plain { display: block; grid-column: 1 / -1; }
+  /* ⭐ ON THE BIO PAGE a year-less row is a CONTINUATION of the entry above it (JJ,
+     2026-11-05: Education's "MA/MSc …" under "Royal College …"), so it starts in the event
+     track, not under the year. Scoped to .about-col2: the card's exhibitions share
+     .about-list and its rows are currently ALL year-less ("2025 / Hoxton Hall"), so there a
+     continuation rule would indent every row by the gap and nothing else. */
+  .about-col2 .about-item-plain { grid-column: 2; }
   /* the portrait easter egg (Bio.astro): one more .about-sec, so the column gap spaces it
      exactly like the lists above it. Full column width, natural aspect, no crop. */
   .about-portrait img, .about-portrait video { width: 100%; height: auto; display: block; }

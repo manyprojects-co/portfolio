@@ -20,6 +20,10 @@ const sections = [
   { heading: "Exhibitions & Appearances", rows: lines(about.exhibitionsAppearances) },
   { heading: "Awards & Commissions", rows: lines(about.awardsCommissions) },
   { heading: "Press & Mentions", rows: lines(about.pressMentions) },
+  // Education (2026-11-05): fourth list, same renderer. Its second row ("MA/MSc …") has no
+  // year, so aboutItem renders it as `.about-item-plain`, which on this page sits in the
+  // event track under the entry above (global.css, `.about-col2 .about-item-plain`).
+  { heading: "Education", rows: lines(about.education) },
 ].filter((s) => s.rows.length);
 // ⭐ THE EASTER EGG (JJ, 2026-09-30): the About file's profile picture, which the CMS has
 // carried since August and nothing rendered, sits at the very bottom of column 2 — after
