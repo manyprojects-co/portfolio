@@ -10,13 +10,15 @@ featured: true
 featureOrder: 5
 premiereCity: Stockholm, Sweden
 exhibitions: 2026 / [Helix Art Space](https://agawen.com/news/selfish/) (Stockholm)
-artistStatement: "Metadata is a radical portrait of the contemporary individual:
-  surveilled, anonymized, dehumanized, and subsumed into naked clouds of
-  datapoints. By implying much about the quantified person while saying nothing
-  of the unique individual, the work embodies three layers of psychopolitical
-  exploitation: the intimate surveillance of the self, the reduction of that
-  self into data, and the commodification of this data for the consolidation of
-  power."
+artistStatement: "To create the addictive algorithm, the persuasive LLM, or the
+  servile home robot, one first has to transform the confusing flesh of a human
+  being into rich, reliable data. Here’s how: feel the cadence of their every
+  swipe, watch their eyes traverse around each screen, and listen to whatever
+  you can, within legal limits. Metadata is a video sculpture that celebrates
+  the resulting heatmaps, flowcharts, and datasheets that emerge from such
+  fastidious extraction by letting these loose data points take the form they
+  came from—in this case: a bone-naked human figure casually scrolling on their
+  phone, hunched over the loo."
 landingVisual:
   mediaType: image
   mediaUrl: https://media.agawen.com/artworks/metadata/mtdt-ld.jpg
