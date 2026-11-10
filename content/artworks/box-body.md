@@ -29,6 +29,9 @@ artistStatement: >-
   Mahmood](https://ahadmahmood.com/)++ (cinematography), with support from
   ++[Erving Tan](https://filmfreeway.com/ErvingTan)++ (additional videography)
   for the live interactive performance.
+
+
+  *Documentation photography by Ahad Mahmood and Arnau Donate.*
 institutionSupport: Special thanks to Gary Hong ([Ten
   Square](https://www.10sq.io/), Singapore), and co-curators of the ART-ACT
   Festival, Aura Murillo and [Ina Conradi](https://inaconradi.com/).
