@@ -1639,6 +1639,13 @@
 @media (prefers-reduced-motion: no-preference) {
   .media-lqip.lqip-wait { filter: blur(var(--lqip-r, var(--lqip-blur))); }   /* --lqip-r: per image, set on load by the head script (width ÷ 33); --lqip-blur is the fallback */
   .media-lqip.lqip-done { filter: blur(0); transition: filter var(--lqip-unblur) var(--lqip-ease); }
+  /* A blur bleeds past the box — the filter's output is wider than the element by its radius
+     on every side, so a sharpening picture briefly haloes over the frame margin and its
+     neighbours (JJ, 2026-11-05). `clip-path` clips the FILTERED output to the element's own
+     box, on the element itself, so no wrapper (R3) and nothing else is clipped. Present only
+     while the transition classes are, so at rest there is no clip either. No image surface
+     has a border-radius; if one ever does, this becomes `inset(0 round <radius>)`. */
+  .media-lqip.lqip-wait, .media-lqip.lqip-done { clip-path: inset(0); }
 }
 
 /* the carousel and grid size by height, so the empty box must too */
