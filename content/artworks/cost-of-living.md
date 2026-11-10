@@ -32,21 +32,19 @@ cardCoverMobileVisual:
   mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-mcard.jpg
 cardGallery:
   - mediaType: image
-    mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-art1.jpg
+    mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-art1.png
   - mediaType: image
-    mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-art2.jpg
+    mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-art2.png
   - mediaType: image
-    mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-art3.jpg
+    mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-art3.png
   - mediaType: image
-    mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-art4.jpg
+    mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-art4.png
   - mediaType: image
-    mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-art5.jpg
+    mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-art5.png
   - mediaType: image
-    mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-art6.jpg
+    mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-art6.png
   - mediaType: image
-    mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-art7.jpg
-  - mediaType: image
-    mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-art8.jpg
+    mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-art7.png
 technicalText: >-
   Cost of Living took a technique developed for [Box
   Body](https://agawen.com/art/box-body/) (2023) and
