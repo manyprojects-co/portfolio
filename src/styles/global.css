@@ -655,9 +655,18 @@
   /* Full viewport height, sitting directly below the hero in world coordinates.
      At landing only its top BAND shows (nav + its two 60px gaps); at tab state
      the world has moved up by LANDING_H and this frame fills the screen. */
+  /* 🐞 --vh-live, NOT 100vh (JJ, 2026-11-10: "a chunk of the art/news tabs slips under the
+     mobile chrome toolbars, which doesn't happen in the cards"). On a phone `100vh` is the
+     LARGEST viewport — toolbars hidden — and html/body never scroll here, so the toolbars
+     never hide: the section was permanently taller than the screen by their height, #stage
+     clipped the excess, and the end of every tab's scroller sat under the toolbar,
+     unreachable. The card never had this because #detail is `position: fixed; bottom: 0`,
+     which is the VISIBLE viewport. --vh-live is site.js's measured innerHeight, the number
+     the world travel (LANDING_H) is already built on, re-measured on every resize.
+     The 100vh fallback only applies before site.js runs. */
   .section {
     position: relative;
-    height: 100vh;
+    height: var(--vh-live, 100vh);
     overflow: hidden;
   }
 
