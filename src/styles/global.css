@@ -113,10 +113,14 @@
                                 ⚠︎ border-radius repaints; the short range is why. */
     --card-close: 300ms;     /* [TUNE] the card CLOSE's own duration (opens use --dur). Distance-
                                 scaled like every lerp, floored at 30%. */
-    --site-rest: 90px;       /* [TUNE] where the tile's BOTTOM EDGE rests at full open, from the
+    --site-rest: 60px;       /* [TUNE] where the tile's BOTTOM EDGE rests at full open, from the
                                 viewport top. This IS --detail-top now (site.js sets it from
                                 here): the card's content begins --frame-margin below it and
-                                scrolls UNDER the tile. 120 = the old sliver line. */
+                                scrolls UNDER the tile. 120 = the old sliver line; 90 until
+                                2026-11-10 (JJ: "more card and less text").
+                                ⚠︎ 40px at ≤600 — overridden in the phone query beside
+                                --frame-margin. site.js re-reads it in measureGeom(), so a
+                                resize across 600 retunes it. */
     --site-blur-max: 50px;   /* [TUNE] ...and blurs to this over the same lerp */
     --card-zoom-min: 1;      /* [TUNE] the card zooms from this up to 1 as it is revealed.
                                 1 = OFF (2026-09-29): the card is pinned full-viewport under
@@ -322,8 +326,8 @@
     /* ---- v2 geometry (JS writes --band and --landing-h on load + resize) ---- */
     --band: 132px;           /* 60 + navH + 60 — the top of the tab frame */
     --landing-h: calc(100vh - 132px);
-    --detail-top: 90px;      /* the card's CONTENT viewport starts here (= --site-rest; site.js
-                                keeps them equal). The card box itself now starts at 0. */
+    --detail-top: var(--site-rest);  /* the card's CONTENT viewport starts here (= --site-rest;
+                                site.js keeps them equal, in px). The card box itself starts at 0. */
     --detail-img-max: 900px; /* [TUNE] card content column: image cap AND the info block's left edge */
 
     /* ⚠︎ DERIVED, not a free knob. The card scales from --card-zoom-min up to 1 about
@@ -377,7 +381,9 @@
                                 bottom edge. = --card-gap ON PURPOSE (JJ, 2026-09-30): the gap
                                 tile→title equals the gap cover→title (.art-grid margin-top),
                                 so the pinned and unpinned states share one rhythm. */
-    --art-stack-gap: 16px;   /* [TUNE] the single gap between every block when stacked */
+    --art-stack-gap: 16px;   /* [TUNE] title → metadata, and tagline → text, at EVERY width.
+                                ⚠︎ Misnamed since 2026-11-10: it was the one gap between every
+                                stacked block; stacked now keeps desktop's spacing. */
 
     /* ---- technical section (v5): the inverse of the site ---- */
     /* [TUNE] Dark grey, not black (JJ, 2026-08-23 — "let's try a dark gray").
@@ -390,12 +396,11 @@
        --tech-fg starts to feel too bright against it. */
     --tech-bg: #141414;
     --tech-fg: var(--bg);    /* the site's own grey, inverted onto the dark ground */
-    /* [TUNE] Technical gallery captions. ⚠︎ RENAMED FROM --tech-muted (2026-08-23): it is
-       WHITE now, and a token called "muted" holding #FFF is the kind of name that misleads
-       whoever reads it next. It is also BRIGHTER than --tech-fg (#E7E7E7), which is
-       deliberate and the opposite of the usual caption treatment — at --cap-size the extra
-       contrast is buying back legibility that the size gives away. */
-    --tech-cap: #FFFFFF;
+    /* [TUNE] Technical gallery captions. #848484 since 2026-11-10 (JJ): captions on a dark
+       ground are grey, not white — quieter than --tech-fg (#E7E7E7), so the text column
+       leads and the caption annotates. ~5:1 on --tech-bg. History: was --tech-muted, then
+       renamed and set to #FFF on 2026-08-23 to buy legibility back at --cap-size. */
+    --tech-cap: #848484;
     --tech-top: 60px;        /* [TUNE] gap between the gallery above and the black */
     --tech-pad: 60px;        /* [TUNE] inner inset — matches the frame margin */
     --bio-pin-top: var(--band);  /* [TUNE] where bio column 1 pins. = exactly where it loads,
@@ -940,6 +945,7 @@
     :root {
       --news-cols: 1;
       --frame-margin: var(--frame-margin-mobile);
+      --site-rest: 40px;     /* [TUNE] the tile on a phone (JJ, 2026-11-10); 60 above */
       --news-gap: calc(32px * var(--news-gap-mobile-scale));
     }
   }
@@ -1173,32 +1179,55 @@
   .detail-body u, .tech u { text-underline-offset: 2px; }
   .detail-body s, .tech s { text-decoration-thickness: 1px; }
 
-  /* ---- STACKED. One column, one gap, and an order that is NOT the source order. ----
+  /* ---- STACKED. One column, DESKTOP'S OWN SPACING, text before pictures. ----
      `display: contents` dissolves both column wrappers so every leaf becomes a direct
-     grid item — which is the only way the lead gallery image can rise above the statement
-     while exhibitions and acknowledgements fall to the bottom. */
+     grid item — which is the only way exhibitions and acknowledgements can fall to the
+     bottom, below the gallery.
+
+     ⭐ REWRITTEN 2026-11-10 (JJ): "mobile text spacing identical to that of desktop,
+     including the header image → title; text first, followed by the first image."
+       cover → 32 → title → 16 → metadata → 32 → statement → 32 → image → 32 → images
+       → 32 → exhibitions → 32 → acknowledgements
+     🐞 WHAT IT REPLACES. The old block was "one 16px grid gap, and kill the rhythm margins".
+     The kills never landed: `.detail-heading { margin-bottom: 0 }` here was beaten by the
+     base `.detail-heading` rule FURTHER DOWN the file (same specificity, later wins), and
+     `.detail-spec` / `.detail-figs` lost the same way. So every margin ADDED to the gap:
+     title → metadata was 32 (16 on desktop), metadata → image 48, news meta → title 48.
+     ⚠︎ So: NO grid gap here. The desktop margins already ARE the spacing and they survive
+     `display: contents`; this block only adds the gaps a single column creates that two
+     columns never had. Every selector carries `.art-grid` so source order cannot beat it. */
   @media (max-width: 812px) {
     .art-grid {
       grid-template-columns: 1fr;
-      gap: var(--art-stack-gap);
-      margin-top: var(--art-stack-gap);
+      gap: 0;
+      margin-top: var(--card-gap);            /* 32 under the cover, as desktop */
     }
+    .art-grid.news-grid { margin-top: 0; }    /* news has no cover; the grid IS the top */
     .art-side, .art-main { display: contents; }
     .art-side { height: auto; }               /* belt: the sticky sizing must not survive */
 
+    /* text first, then the first image (was: lead image above the statement) */
     .detail-heading    { order: 1; }
     .detail-spec       { order: 2; }
-    .fig-lead          { order: 3; }
-    .detail-statement  { order: 4; }
+    .detail-statement  { order: 3; }
+    .fig-lead          { order: 4; }
     .fig-rest          { order: 5; }
     .detail-exh        { order: 6; }
-    .detail-ack        { order: 7; margin-top: 0; }   /* no floor to pin to when stacked */
+    .detail-ack        { order: 7; }
 
-    /* every block is separated by the one grid gap; kill the rhythm margins that the
-       two-column layout uses, or they add to it */
-    .detail-heading { margin-bottom: 0; }
-    .detail-spec    { margin: 0; }
-    .detail-figs    { margin-top: 0; }
+    /* Carried over untouched from desktop: title → 16 → metadata (.detail-heading),
+       metadata → 32 → next (.detail-spec, --spec-gap), statement → 32 → image → 32 → images
+       (`.art-main > * + *`). Added: the two blocks that leave the side column. */
+    .art-grid .detail-exh { margin-top: var(--card-gap); }
+    .art-grid .detail-ack { margin-top: var(--card-gap); }   /* no floor to pin to when stacked */
+    /* a work with no spec line: the title's 16 would be all there is above the statement */
+    .art-grid .detail-heading:not(:has(+ .detail-spec)) { margin-bottom: var(--card-gap); }
+
+    /* NEWS: meta → 32 → title → 32 → subheading are the desktop margins, kept. The gallery
+       was BESIDE the text; stacked it follows it, at the same 32. The last text block drops
+       its own bottom margin so a card with no subheading does not get 32 + 32. */
+    .art-grid.news-grid .art-side > :last-child { margin-bottom: 0; }
+    .art-grid.news-grid .detail-figs { margin-top: var(--card-gap); }
 
     /* ---- THE SINGLE-COLUMN COVER (2026-10-27, JJ) ----
        Wherever the card stacks (this query), the cover is full-bleed, portrait and flush
@@ -1389,7 +1418,7 @@
   /* Stacked: TEXT FIRST, then the gallery (JJ) — the opposite of the two-column order,
      hence the explicit `order`. */
   @media (max-width: 812px) {
-    .tech-grid { grid-template-columns: 1fr; gap: var(--art-stack-gap); }
+    .tech-grid { grid-template-columns: 1fr; gap: var(--card-gap); }   /* text → 32 → gallery, as the art card (2026-11-10) */
     /* ⚠︎ position:static, not just a new order — a sticky block in a one-column stack
        would pin over the gallery below it. Same reason .art-side drops its height. */
     .tech-text { position: static; }          /* document order already puts text first */
@@ -1400,16 +1429,23 @@
   .tech-figs figure { margin: 0; }
   .tech-figs img { width: 100%; height: auto; display: block; }
   /* First captions anywhere on the site — the schema's technicalGallery[].caption.
-     ⚠︎ ABOVE the image, not below (JJ, 2026-08-23). The caption is the FIRST child of its
-     <figure> in the markup, so this is real document order, not a visual reorder — a
-     screen reader and a text browser get the same sequence the eye does. HTML permits
-     figcaption as either the first or last child, so nothing is being bent to do it. */
+     ⚠︎ BELOW the image and RIGHT-ALIGNED (JJ, 2026-11-10) — reverses "above" of 2026-08-23.
+     The caption is the LAST child of its <figure> in the markup, so this is real document
+     order, not a visual reorder — a screen reader and a text browser get the same sequence
+     the eye does. The site-wide rule for photo captions: under the photo, flush right.
+     ⭐ ONE RULE FOR EVERY PHOTO CAPTION (2026-11-10): the card gallery and the news gallery
+     render their captions too now. Only the colour differs by ground — --muted on light
+     (the same grey as the artwork metadata, .detail-spec), --tech-cap on dark. */
+  .detail-figs figure { margin: 0; }
+  .detail-figs figcaption,
   .tech-figs figcaption {
-    margin-bottom: var(--caption-gap);
+    margin-top: var(--caption-gap);
     line-height: 1.4;
     font-size: var(--cap-size);
-    color: var(--tech-cap);
+    text-align: right;
   }
+  .detail-figs figcaption { color: var(--muted); }
+  .tech-figs figcaption   { color: var(--tech-cap); }
 
   /* ===================== ABOUT panel ===================== */
   :root {

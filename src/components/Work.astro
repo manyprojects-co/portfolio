@@ -41,9 +41,18 @@ const hasTech = !!(t.tagline || t.text?.length || t.gallery?.length);
 // medium / size / duration — grey under the title (JJ, 2026-08-13). 11/11 in the CMS.
 const spec = [wk.medium, wk.size, wk.duration].filter(Boolean);
 
+/* ⚠︎ 2026-11-10 (JJ): stacked is now TEXT FIRST — statement, then the lead image — so the
+   lead no longer rises above the statement and the split below is no longer load-bearing.
+   Kept: the CSS `order` rules still address .fig-lead / .fig-rest.
+   Original note: */
 /* ⚠︎ Split, not sliced at render time: the stacked order interleaves the first gallery
    item between the metadata and the statement, so it has to be its own block. */
 const figLead = wk.gallery?.length ? wk.gallery[0] : null;
+/* Photo captions on the card gallery (JJ, 2026-11-10): below the photo, right-aligned,
+   --muted. A row is wrapped in a <figure> ONLY when it carries a caption, so caption-less
+   rows render exactly as before. Never on a text row — "Image/Video Caption" is a media
+   field, and map.ts can fall back to `caption` as a text row's BODY. */
+const hasCap = (g: any) => !!g?.caption && g.kind !== "text";
 const figRest = wk.gallery?.length > 1 ? wk.gallery.slice(1) : [];
 const GAL_W = [900, 1400, 1920];
 ---
@@ -88,12 +97,24 @@ const GAL_W = [900, 1400, 1920];
         )}
         {figLead && (
           <div class="detail-figs fig-lead">
-            <Media media={figLead} alt={wk.title} widths={GAL_W} sizes="min(480px, 100vw)" />
+            {hasCap(figLead) ? (
+              <figure>
+                <Media media={figLead} alt={wk.title} widths={GAL_W} sizes="min(480px, 100vw)" />
+                <figcaption>{figLead.caption}</figcaption>
+              </figure>
+            ) : (
+              <Media media={figLead} alt={wk.title} widths={GAL_W} sizes="min(480px, 100vw)" />
+            )}
           </div>
         )}
         {figRest.length > 0 && (
           <div class="detail-figs fig-rest">
-            {figRest.map((g: any) => (
+            {figRest.map((g: any) => hasCap(g) ? (
+              <figure>
+                <Media media={g} alt={wk.title} widths={GAL_W} sizes="min(480px, 100vw)" />
+                <figcaption>{g.caption}</figcaption>
+              </figure>
+            ) : (
               <Media media={g} alt={wk.title} widths={GAL_W} sizes="min(480px, 100vw)" />
             ))}
           </div>
@@ -126,14 +147,14 @@ const GAL_W = [900, 1400, 1920];
             )}
           </div>
           {/* RIGHT — images and captions, in the flexible track like the sheet's media. */}
-          {/* ⚠︎ caption FIRST — JJ wants it above the image, and doing it in document order
-              rather than with CSS keeps the read order and the visual order the same.
-              <figcaption> is valid as either the first or last child of a <figure>. */}
+          {/* ⚠︎ caption LAST — below the image (JJ, 2026-11-10; it was above from 2026-08-23).
+              Done in document order rather than with CSS so the read order and the visual
+              order stay the same. */}
           <div class="tech-figs">
             {t.gallery?.length > 0 && t.gallery.map((g: any) => (
               <figure>
-                {g.caption && <figcaption>{g.caption}</figcaption>}
                 <Media media={g} alt={wk.title} widths={[900, 1400]} sizes="min(480px, 100vw)" />
+                {g.caption && <figcaption>{g.caption}</figcaption>}
               </figure>
             ))}
           </div>
