@@ -401,8 +401,12 @@
        leads and the caption annotates. ~5:1 on --tech-bg. History: was --tech-muted, then
        renamed and set to #FFF on 2026-08-23 to buy legibility back at --cap-size. */
     --tech-cap: #848484;
-    --tech-top: 60px;        /* [TUNE] gap between the gallery above and the black */
-    --tech-pad: 60px;        /* [TUNE] inner inset — matches the frame margin */
+    /* ⚠︎ BOTH FOLLOW --frame-margin (2026-11-10, JJ: "on mobile the technical section has
+       larger margins than the art section"). They were literal 60s that merely MATCHED the
+       frame, so when the frame halved at ≤600 (2026-10-27) the black section kept 60 while
+       the sheet above it went to 30. Derived now, so they cannot part again. */
+    --tech-top: var(--frame-margin);   /* [TUNE] gap between the gallery above and the black */
+    --tech-pad: var(--frame-margin);   /* [TUNE] inner inset — IS the frame margin */
     --bio-pin-top: var(--band);  /* [TUNE] where bio column 1 pins. = exactly where it loads,
                                     but ONLY because #bio's scroller has no top padding —
                                     see the .about-bio rule before changing either. */
