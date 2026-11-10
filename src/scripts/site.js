@@ -216,7 +216,7 @@ import { createTrace } from "../lib/trace.mjs";
   // ⭐ TILE COMPOSITION (2026-09-29): the card fills the viewport and the site lifts off it into
   // a shrunken rounded tile whose bottom edge rests at --site-rest. DETAIL_TOP is that line —
   // the card's CONTENT viewport starts there, and --detail-top is published from it.
-  let DETAIL_TOP  = cssNum("--site-rest", 90);
+  let DETAIL_TOP  = cssNum("--site-rest", 60);
   let SITE_CORNER = cssNum("--site-corner", 60);
   let CARD_CLOSE  = cssMs("--card-close", 300);   // the close's own --dur (JJ: egress was slow)
 
@@ -256,6 +256,9 @@ import { createTrace } from "../lib/trace.mjs";
      * parseFloat of that is NaN (the /newstest rig hit exactly this). The nav's `left` IS
      * var(--frame-margin), resolved to px. Same family as css-time.ts's 500ms → .5s. */
     FRAME = parseFloat(getComputedStyle(nav).left) || 60;
+    // ⭐ re-read here, like FRAME (2026-11-10): --site-rest is 60 on desktop and 40 at ≤600,
+    // so a value read once at init would be wrong after a resize across the breakpoint.
+    DETAIL_TOP = cssNum("--site-rest", 60);
     const navH = nav.getBoundingClientRect().height;
     BAND = FRAME * 2 + navH;            // frame above the nav, the nav, frame below it
     // ⭐ minus the safe-area inset (2026-09-30): the nav's gap to the viewport floor is 60 +
@@ -1834,7 +1837,7 @@ import { createTrace } from "../lib/trace.mjs";
     BOUNCE_MAX   = cssNum("--bounce-max", 48);
     BOUNCE_DIST  = cssNum("--bounce-dist", 300);
     LANDING_GIVE = cssNum("--landing-give", 1) === 1;
-    DETAIL_TOP  = cssNum("--site-rest", 90);
+    DETAIL_TOP  = cssNum("--site-rest", 60);
     SITE_CORNER = cssNum("--site-corner", 60);
     CARD_CLOSE  = cssMs("--card-close", 300);
     Object.assign(arb.config, {
