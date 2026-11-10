@@ -70,7 +70,13 @@ const figs = item.gallery?.length ? item.gallery : item.image ? [item.image] : [
     <div class="art-main">
       {figs.length > 0 && (
         <div class="detail-figs">
-          {figs.map((g: any) => (
+          {figs.map((g: any) => g?.caption && g.kind !== "text" ? (
+            <figure>
+              <Media media={g} alt={item.title} widths={[900, 1400, 1920]}
+                     sizes="min(480px, 100vw)" />
+              <figcaption>{g.caption}</figcaption>
+            </figure>
+          ) : (
             <Media media={g} alt={item.title} widths={[900, 1400, 1920]}
                    sizes="min(480px, 100vw)" />
           ))}
