@@ -49,6 +49,8 @@ cardGallery:
     mediaUrl: https://media.agawen.com/artworks/box-body/bb-art1.jpg
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/box-body/bb-art2.jpg
+  - mediaType: image
+    mediaUrl: https://media.agawen.com/artworks/box-body/bb-art3.jpg
 technicalText: >-
   Anamorphic illusions rely on centuries-old perspective tricks, and by the time
   this project was conceived, landmarks like Times Square and Shinjuku crossing
