@@ -1,0 +1,33 @@
+---
+/**
+ * Signatures.astro — the footer (JJ, 2026-11-10). JAga first, then Xin Wen, side by side,
+ * centred, at the end of the ART tab, the NEWS tab and every art and news card.
+ *
+ * It has NO ground of its own: it continues whatever it sits on — the site grey on a tab,
+ * the card grey on a card, the dark technical ground when a card ends in one. So it must be
+ * placed INSIDE the element that paints that ground (.sub, .art-ground, .tech).
+ *
+ * ⚠︎ `dark` swaps the FILE, not the colour. A CSS `filter: invert()` would be one line, but a
+ * resting filter inside the transforming world is a standing render surface (CLAUDE.md, the
+ * LQIP rule that cost an afternoon). Two small PNGs cost nothing.
+ *
+ * The files are in `public/signatures/` — the only images in the repo. They are site chrome,
+ * not CMS content, so they do not go through R2, the transform, or the media manifest.
+ * `width`/`height` are the files' true pixel sizes (trimmed to the ink + 4px), so the box is
+ * reserved before load. The inline `flex` grows each by its own pixel width, which keeps the
+ * two at the SAME SCALE they were drawn at — equal widths would enlarge XW by ~1.6×.
+ */
+interface Props { dark?: boolean }
+const { dark = false } = Astro.props;
+const tone = dark ? "white" : "black";
+const sigs = [
+  { file: "jaga", w: 586, h: 275, alt: "JJ Agcaoili's signature" },
+  { file: "xw",   w: 373, h: 304, alt: "Xin Wen's signature" },
+];
+---
+<footer class:list={["sigs", dark && "sigs-dark"]}>
+  {sigs.map((s) => (
+    <img src={`/signatures/${s.file}-${tone}.png`} alt={s.alt} width={s.w} height={s.h}
+         loading="lazy" decoding="async" draggable="false" style={`flex: ${s.w} 1 0%`} />
+  ))}
+</footer>

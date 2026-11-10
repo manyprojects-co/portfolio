@@ -28,6 +28,7 @@
  * ============================================================================
  */
 import Media from "./Media.astro";
+import Signatures from "./Signatures.astro";
 import { titleCase, typeLabel, longDate, dateRange, inlineMd } from "../lib/format";
 interface Props { item: any }
 const { item } = Astro.props;
@@ -84,4 +85,5 @@ const figs = item.gallery?.length ? item.gallery : item.image ? [item.image] : [
       )}
     </div>
   </div>
+  <Signatures />
 </div>

@@ -3,6 +3,7 @@
  *  relabelled "Work Type" ("Video", "Kinetic sculpture"). Replaced `premiereCity` on
  *  2026-09-30 (JJ). Empty → title and year only. */
 import Media from "./Media.astro";
+import Signatures from "./Signatures.astro";
 interface Props { works: any[] }
 const { works } = Astro.props;
 ---
@@ -19,4 +20,5 @@ const { works } = Astro.props;
       </a>
     ))}
   </div>
+  <Signatures />
 </div>

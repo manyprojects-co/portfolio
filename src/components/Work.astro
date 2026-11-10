@@ -32,6 +32,7 @@
  * ============================================================================
  */
 import Media from "./Media.astro";
+import Signatures from "./Signatures.astro";
 import { exhibitionItem, blocksHtml } from "../lib/format";
 interface Props { work: any }
 const { work: wk } = Astro.props;
@@ -122,6 +123,9 @@ const GAL_W = [900, 1400, 1920];
       </div>
     </div>
   </div>
+  {/* The footer continues the ground the card ENDS on: here on the grey when there is no
+      technical section, inside .tech (white signatures) when there is. Never both. */}
+  {!hasTech && <Signatures />}
 </div>
 
 {/* TECHNICAL — a SIBLING of .detail-body, never a child: its negative inline margin has
@@ -161,5 +165,6 @@ const GAL_W = [900, 1400, 1920];
         </div>
       )}
     </div>
+    <Signatures dark />
   </section>
 )}

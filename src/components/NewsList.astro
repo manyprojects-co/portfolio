@@ -8,6 +8,7 @@
  * Port brief: MP_CMS_CF/news-grid-port.md. `timeElapsed` / `data-elapsed` left with the row.
  */
 import Media from "./Media.astro";
+import Signatures from "./Signatures.astro";
 import { titleCase, typeLabel } from "../lib/format";
 interface Props { news: any[] }
 const { news } = Astro.props;
@@ -47,4 +48,5 @@ const place = (item: any) => [item.location, item.city && `(${item.city})`].filt
       </section>
     ))}
   </div>
+  <Signatures />
 </div>

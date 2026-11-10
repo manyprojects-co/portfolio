@@ -1451,6 +1451,39 @@
   .detail-figs figcaption { color: var(--muted); }
   .tech-figs figcaption   { color: var(--tech-cap); }
 
+  /* ===================== FOOTER — the signatures (JJ, 2026-11-10) =====================
+     Signatures.astro. JAga then Xin Wen, side by side, centred; the pair is 500px wide at
+     most and 70vw below that. 120px of air above and below.
+     ⚠︎ NO BACKGROUND, on purpose — it continues the ground it sits on, so it lives INSIDE
+     whatever paints that ground: .sub (site grey), .art-ground / the news card (card grey),
+     .tech (dark, with the white files).
+     ⚠︎ THE BOTTOM IS 120 MINUS THE FRAME MARGIN, because every one of those parents already
+     ends in exactly one --frame-margin of its own: .sub's padding-bottom, #detailScroll's
+     padding-bottom under the grey, .tech's own --tech-pad. 120 flat would make 180 (150 on
+     a phone). If a parent ever stops ending in one frame margin, this is what to revisit. */
+  :root {
+    --sig-w: min(500px, 70vw);   /* [TUNE] the PAIR's width */
+    --sig-space: 120px;          /* [TUNE] air above and below */
+    --sig-gap: 10%;              /* [TUNE] between the two, as a share of --sig-w */
+  }
+  .sigs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sig-gap);
+    width: var(--sig-w);
+    max-width: 100%;
+    margin-inline: auto;
+    padding: var(--sig-space) 0 calc(var(--sig-space) - var(--frame-margin));
+  }
+  .sigs img {
+    min-width: 0;            /* let flex shrink them below their pixel size */
+    height: auto;
+    display: block;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
   /* ===================== ABOUT panel ===================== */
   :root {
     /* ⛔ RETIRED 2026-08-23 (JJ): "bio adopts the art card's column width, spacing between,
