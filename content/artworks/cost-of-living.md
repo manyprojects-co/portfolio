@@ -45,8 +45,6 @@ cardGallery:
     mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-art6.png
   - mediaType: image
     mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-art7.png
-  - mediaType: image
-    mediaUrl: https://media.agawen.com/artworks/cost-of-living/col-art8.jpg
 technicalText: >-
   Cost of Living took a technique developed for [Box
   Body](https://agawen.com/art/box-body/) (2023) and
