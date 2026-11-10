@@ -25,7 +25,7 @@ artistStatement: >-
   surrounding a person’s propriety, property, and place.
 
 
-  Box Body was developed in collaboration with ++[Ahad
+  *Box Body* was developed in collaboration with ++[Ahad
   Mahmood](https://ahadmahmood.com/)++ (cinematography), with support from
   ++[Erving Tan](https://filmfreeway.com/ErvingTan)++ (additional videography)
   for the live interactive performance.
