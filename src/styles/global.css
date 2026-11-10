@@ -1257,8 +1257,13 @@
        ⚠︎ `.art-body .detail-hero`, NOT `.detail-hero`: the base rule (`width: 100%`, further
          down) is later in the file and would win on equal specificity — it did, once. */
     .art-body .detail-hero {
-      --cover-mobile-ratio: 5 / 6;                              /* [TUNE] = the -mcard export */
-      --cover-max-h: 60svh;                                     /* [TUNE] share of the viewport */
+      /* ⭐ 20% TALLER (JJ, 2026-11-10): 5/6 → 5/7.2 and the cap 60 → 72svh. BOTH, because on
+         most phones the cap was already the binding one (390 wide: 5/6 = 468px, 60svh ≈ 400–
+         500) — raising the ratio alone would have changed nothing there.
+         ⚠︎ The -mcard files are still 5:6 (1000×1200), so the box is now NARROWER than the
+         picture and `cover` crops ~8% off each side. Re-export at 1000×1440 to get it back. */
+      --cover-mobile-ratio: 5 / 7.2;                            /* [TUNE] the box; -mcard files are 5/6 */
+      --cover-max-h: 72svh;                                     /* [TUNE] share of the viewport */
       width: calc(100% + 2 * var(--detail-pad-x));
       max-width: none;
       margin-inline: calc(-1 * var(--detail-pad-x));
@@ -1452,8 +1457,8 @@
   .tech-figs figcaption   { color: var(--tech-cap); }
 
   /* ===================== FOOTER — the signatures (JJ, 2026-11-10) =====================
-     Signatures.astro. JAga then Xin Wen, side by side, centred; the pair is 500px wide at
-     most and 70vw below that. 120px of air above and below.
+     Signatures.astro. JAga then Xin Wen, side by side, centred; the pair is 250px wide at
+     most and 35vw below that. 120px of air above and below.
      ⚠︎ NO BACKGROUND, on purpose — it continues the ground it sits on, so it lives INSIDE
      whatever paints that ground: .sub (site grey), .art-ground / the news card (card grey),
      .tech (dark, with the white files).
@@ -1462,7 +1467,8 @@
      padding-bottom under the grey, .tech's own --tech-pad. 120 flat would make 180 (150 on
      a phone). If a parent ever stops ending in one frame margin, this is what to revisit. */
   :root {
-    --sig-w: min(500px, 70vw);   /* [TUNE] the PAIR's width */
+    --sig-w: min(250px, 35vw);   /* [TUNE] the PAIR's width. Halved the same day (JJ) from
+                                    min(500px, 70vw) — "across the board", so both terms. */
     --sig-space: 120px;          /* [TUNE] air above and below */
     --sig-gap: 10%;              /* [TUNE] between the two, as a share of --sig-w */
   }
